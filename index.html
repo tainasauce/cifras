@@ -1257,7 +1257,7 @@ function renderOverlay(){
     const f=S.pinFor||{};const nm=f.type==='song'?(S.songs.get(f.id)||{}).title:(S.cultos.get(f.id)||{}).name;
     body=`<h2>Excluir ${f.type==='song'?'cifra':'culto'}</h2>
       <p class="muted" style="margin:-6px 0 14px">Para excluir <b>${esc(nm||'')}</b>, digite a senha de exclusão do ministério.</p>
-      <form id="pinform" class="pinbox"><input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" aria-label="Senha de exclusão" placeholder="••••••">
+      <form id="pinform" class="pinbox"><input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="Senha de exclusão (4 números)" placeholder="••••">
       <p id="pin-err" class="pin-err" role="alert">${esc(S.pinErr||'')}</p>
       <div class="actions" style="justify-content:center"><button type="button" class="btn ghost" data-act="close-sheet">Cancelar</button><button type="submit" class="btn primary" style="background:var(--danger);border-color:var(--danger);color:#fff">Excluir</button></div></form>`;
   } else if(S.sheet==='newchoice'){
@@ -1766,7 +1766,7 @@ document.addEventListener('click',async ev=>{
     case 'del-song': S.pinFor={type:'song',id:S.edit.id};S.pinErr='';S.sheet='pin';renderOverlay();setTimeout(()=>{const p=$('#pin');p&&p.focus()},50);break;
     case 'pin-ok':{const p=$('#pin');if(!p)break;
       const f=S.pinFor,er=$('#pin-err'),btn=document.querySelector('#pinform [type=submit]');
-      if(!/^\d{4,8}$/.test(p.value)){if(er)er.textContent='Digite a senha de números.';break}
+      if(!/^\d{4}$/.test(p.value)){if(er)er.textContent='A senha tem 4 números.';break}
       if(btn){btn.disabled=true;btn.textContent='Conferindo…'}
       try{await db.del(f.type==='song'?'songs':'cultos',f.id,p.value)}
       catch(e){const m=e.code==='wrong-pin'?'Senha errada. Tente de novo.':e.code==='offline'?'Para excluir precisa de internet.':'Não foi possível excluir. Tente de novo.';
@@ -1776,7 +1776,7 @@ document.addEventListener('click',async ev=>{
       flash(f.type==='song'?'Cifra excluída.':'Culto excluído.');
       break}
     case 'new-culto':{const id=db.newId('cultos');const t=new Date();
-      if(await guard(db.setCulto(id,{name:'Culto de '+t.toLocaleDateString('pt-BR',{weekday:'long'}),date:todayStr(),items:[],updatedAt:Date.now(),criadoPor:S.uid||null}))){marcarVisto(id);S.cultoId=id;S.view='culto';S.pq='';S.sheet='picker';render();window.scrollTo(0,0)}break}
+      if(await guard(db.setCulto(id,{name:'Culto de '+t.toLocaleDateString('pt-BR',{weekday:'long'}),date:todayStr(),items:[],updatedAt:Date.now(),criadoPor:S.uid||null}))){marcarVisto(id);S.cultoId=id;S.pq='';go('culto');setTimeout(()=>{const n=$('#c-name');if(n){n.focus();n.select()}},80)}break}
     case 'open-culto': marcarVisto(b.dataset.id);S.cultoId=b.dataset.id;go('culto');break;
     case 'swdel': S.pinFor={type:b.dataset.type,id:b.dataset.id};S.pinErr='';S.sheet='pin';renderOverlay();setTimeout(()=>{const p=$('#pin');p&&p.focus()},50);break;
     case 'open-item':{const c=S.cultos.get(S.cultoId);const i=+b.dataset.i;const it=c.items[i];if(S.songs.get(it.songId)) openSong(it.songId,it.key,{cultoId:S.cultoId,index:i});break}
@@ -1799,6 +1799,7 @@ document.addEventListener('input',ev=>{
   if(t.id==='c1'||t.id==='c2'){P[t.id]=t.value;P.tema='custom';applyTema();const p=$('#mixprev');if(p)p.style.background=temaCustom().grad;
     document.querySelectorAll('.colors button').forEach(b=>b.setAttribute('aria-pressed','false'));const m=document.querySelector('.mix');if(m)m.classList.add('on');return}
   if(t.id==='q'){S.q=t.value;renderList()}
+  else if(t.id==='pin'){t.value=t.value.replace(/\D/g,'').slice(0,4);if(t.value.length===4){const f=$('#pinform');if(f)f.requestSubmit()}}
   else if(t.id==='pq'){S.pq=t.value;renderPicker()}
   else if(t.id==='speed'){P.speed=+t.value;saveP()}
   else if(S.view==='edit'&&t.id==='content') saveDraft();
