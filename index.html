@@ -221,7 +221,7 @@ input[type=range]{accent-color:var(--accent);width:140px}
 @media (max-width:520px){.grid2{grid-template-columns:1fr}}
 label.f{display:grid;gap:6px;font-size:14px;font-weight:800}
 label.f .h{font-weight:400;color:var(--muted);font-size:13px}
-input[type=text],input[type=search],input[type=date],input[type=number],select,textarea{background:var(--raise);border:1px solid var(--line);border-radius:14px;padding:11px 14px;width:100%}
+input[type=text],input[type=search],input[type=date],input[type=number],input[type=email],input[type=password],select,textarea{background:var(--raise);border:1px solid var(--line);border-radius:14px;padding:11px 14px;width:100%}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}
 textarea{resize:vertical}
 #content{font:14px/1.5 var(--f-mono);min-height:240px;white-space:pre;overflow-x:auto}
@@ -301,6 +301,20 @@ body.picking main{padding-bottom:330px}
 .istatus.err{background:color-mix(in srgb,var(--danger) 13%,var(--surface))}
 .spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:sp 0.8s linear infinite;flex:0 0 auto}
 @keyframes sp{to{transform:rotate(360deg)}}
+.gate{max-width:380px;margin:8vh auto 0;display:grid;justify-items:center;gap:10px;text-align:center}
+.gate h1{font-size:26px}
+.gate p{margin:0}
+.gate-logo{width:76px;height:76px;border-radius:22px;background:var(--accent);color:#fff;display:grid;place-items:center;font:800 40px/1 var(--f-display);position:relative;margin-bottom:6px}
+.gate-logo sup{position:absolute;top:14px;right:12px;font-size:18px;color:#ffd666}
+.gate-seg{margin:6px 0 4px}
+.people{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.people li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--raise);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.pp{flex:1;min-width:140px;display:grid}
+.pp span{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+.pa{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.btn.sm{padding:6px 12px;font-size:13px}
+.acct{position:relative}
+.acct .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--danger);color:#fff;font:800 11px/18px var(--f-body);font-style:normal;padding:0 4px}
 .acct{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--raise);display:grid;place-items:center;color:var(--muted);flex:0 0 auto}
 .acct.on{color:var(--accent);border-color:var(--accent)}
 .install{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:var(--r);padding:10px 12px;margin-bottom:14px;font-size:14px}
@@ -598,16 +612,18 @@ function demoSeed(){
   ]);
   S.cultos=new Map([['exemplo-domingo',{name:'Culto de domingo (exemplo)',date:todayStr(),items:[{songId:'exemplo-graca',key:'A'},{songId:'exemplo-rocha',key:'Ab'}],updatedAt:Date.now()}]]);
 }
-async function checkEditor(email){
-  if(!email){S.canWrite=false;return}
-  const k='cifras:editor:'+email;S.canWrite=store.get(k,false);
-  try{const s=await B.ff.getDoc(B.ff.doc(B.fs,'editores',email.toLowerCase()));S.canWrite=s.exists();store.set(k,S.canWrite)}catch{}
-  render();
+/* ===== Acesso: só entra quem o responsável aceitar ===== */
+const PAPEL={dev:'Responsável',editor:'Editor',leitor:'Pode ver'};
+function setMember(m){
+  S.member=m;S.role=m?m.papel:null;
+  S.canWrite=S.role==='editor'||S.role==='dev';S.isDev=S.role==='dev';
 }
+function unsubData(){B.unsubs.forEach(u=>{try{u()}catch{}});B.unsubs=[];B.subscribed=false}
+function unsubPeople(){(B.peopleUnsubs||[]).forEach(u=>{try{u()}catch{}});B.peopleUnsubs=[]}
 function subscribe(){
-  B.unsubs.forEach(u=>{try{u()}catch{}});B.unsubs=[];
+  unsubData();B.subscribed=true;
   const ff=B.ff,fs=B.fs;
-  const fail=e=>{S.loaded=true;S.err=e&&e.code==='permission-denied'?'O Firebase recusou a leitura. Confira se as regras foram publicadas (passo 4 do guia).':'Não consegui carregar as cifras agora.';render()};
+  const fail=e=>{S.loaded=true;S.err=e&&e.code==='permission-denied'?'Seu acesso foi retirado. Fale com o responsável.':'Não consegui carregar as cifras agora.';render()};
   const ok=()=>{S.loaded=true;S.slow=false};
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'songs'),s=>{S.songs=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'cultos'),s=>{S.cultos=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
@@ -618,32 +634,115 @@ function subscribe(){
     onData();
   },()=>{}));
 }
+function subscribePeople(){
+  unsubPeople();
+  const ff=B.ff,fs=B.fs;
+  B.peopleUnsubs.push(ff.onSnapshot(ff.collection(fs,'pedidos'),s=>{S.pedidos=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.at||0)-(b.at||0));render()},()=>{}));
+  B.peopleUnsubs.push(ff.onSnapshot(ff.collection(fs,'membros'),s=>{S.membros=s.docs.map(d=>({id:d.id,...d.data()}));if(S.sheet==='pessoas')renderOverlay()},()=>{}));
+}
+function watchUser(u){
+  (B.userUnsubs||[]).forEach(x=>{try{x()}catch{}});B.userUnsubs=[];
+  const ff=B.ff,fs=B.fs,k='cifras:membro:'+u.uid;
+  const cached=store.get(k,null);if(cached){setMember(cached);if(!B.subscribed)subscribe()}
+  B.userUnsubs.push(ff.onSnapshot(ff.doc(fs,'membros',u.uid),s=>{
+    const m=s.exists()?s.data():null;
+    if(!m&&s.metadata.fromCache&&cached) return;
+    store.set(k,m);setMember(m);S.authReady=true;
+    if(m){if(!B.subscribed)subscribe();if(S.isDev)subscribePeople();else unsubPeople()}
+    else{unsubData();unsubPeople();S.songs=new Map();S.cultos=new Map()}
+    render();
+  },()=>{S.authReady=true;render()}));
+  B.userUnsubs.push(ff.onSnapshot(ff.doc(fs,'pedidos',u.uid),s=>{S.pedido=s.exists()?s.data():null;render()},()=>{}));
+}
 (async function init(){
   const timer=setTimeout(()=>{if(!S.loaded){S.slow=true;render()}},10000);
   let cfg=null;
   try{cfg=(await import('./config.js')).FIREBASE_CONFIG}catch{}
   const demo=!cfg||!cfg.apiKey||/[?&]demo\b/.test(location.search);
-  if(demo){B.mode='demo';S.demo=true;S.canWrite=true;S.uid='demo';demoSeed();S.loaded=true;clearTimeout(timer);render();return}
+  if(demo){B.mode='demo';S.demo=true;setMember({papel:'dev',nome:'Demonstração'});S.uid='demo';S.authReady=true;demoSeed();S.loaded=true;clearTimeout(timer);render();return}
   try{
     const base=window.FB_BASE||('https://www.gstatic.com/firebasejs/'+FB_VER+'/');
     const [fa,ff,au]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-firestore.js'),import(base+'firebase-auth.js')]);
     const app=fa.initializeApp(cfg);
-    B.ff=ff;B.fa=au;B.mode='fb';S.canWrite=false;
+    B.ff=ff;B.fa=au;B.mode='fb';B.unsubs=[];B.peopleUnsubs=[];
     B.fs=ff.initializeFirestore(app,{localCache:ff.persistentLocalCache({tabManager:ff.persistentMultipleTabManager()})});
     B.auth=au.getAuth(app);
     au.onAuthStateChanged(B.auth,u=>{
-      if(!u){au.signInAnonymously(B.auth).catch(()=>{S.loaded=true;S.err=navigator.onLine?'Não consegui conectar. Confira se o login Anônimo está ativado no Firebase (passo 2 do guia).':'Sem internet. Abra o app com internet pelo menos uma vez para baixar as cifras.';render()});return}
-      S.uid=u.uid;S.email=u.isAnonymous?null:u.email;
-      subscribe();checkEditor(S.email);render();
+      clearTimeout(timer);
+      if(!u||u.isAnonymous){
+        if(u&&u.isAnonymous){au.signOut(B.auth).catch(()=>{});return}
+        S.uid=null;S.email=null;setMember(null);S.pedido=null;unsubData();unsubPeople();(B.userUnsubs||[]).forEach(x=>{try{x()}catch{}});
+        S.authReady=true;S.loaded=true;render();return;
+      }
+      S.uid=u.uid;S.email=u.email;S.authReady=!!store.get('cifras:membro:'+u.uid,null);S.loaded=true;
+      watchUser(u);render();
     });
-  }catch(e){S.loaded=true;S.err=navigator.onLine?'Não consegui iniciar o app. Confira o arquivo config.js.':'Sem internet. Abra o app com internet pelo menos uma vez para ele funcionar sem conexão.';render()}
+  }catch(e){S.loaded=true;S.authReady=true;S.err=navigator.onLine?'Não consegui iniciar o app. Confira o arquivo config.js.':'Sem internet. Abra o app com internet pelo menos uma vez para ele funcionar sem conexão.';render()}
 })();
+function authMsg(e){const c=e&&e.code||'';
+  return c.includes('email-already-in-use')?'Esse e-mail já tem conta. Use "Entrar".':c.includes('weak-password')?'A senha precisa ter pelo menos 6 caracteres.':c.includes('invalid-email')?'Esse e-mail não parece válido.':
+    c.includes('invalid')||c.includes('wrong-password')||c.includes('user-not-found')?'E-mail ou senha errados.':c.includes('network')?'Sem internet. Tente de novo quando conectar.':c.includes('too-many')?'Muitas tentativas. Espere alguns minutos.':'Não deu certo. Tente de novo.'}
 async function login(email,pass){
-  try{await B.fa.signInWithEmailAndPassword(B.auth,email.trim().toLowerCase(),pass);S.sheet=null;flash('Pronto, você entrou como editor.');}
-  catch(e){const c=e&&e.code||'';return c.includes('invalid')||c.includes('wrong-password')||c.includes('user-not-found')?'E-mail ou senha errados.':c.includes('network')?'Sem internet. Tente de novo quando conectar.':c.includes('too-many')?'Muitas tentativas. Espere alguns minutos.':'Não consegui entrar. Tente de novo.'}
+  try{await B.fa.signInWithEmailAndPassword(B.auth,email.trim().toLowerCase(),pass);S.sheet=null}catch(e){return authMsg(e)}
   return '';
 }
-async function logout(){try{await B.fa.signOut(B.auth)}catch{}S.canWrite=false;S.email=null;S.sheet=null;render()}
+async function signup(nome,email,pass){
+  try{
+    const cred=await B.fa.createUserWithEmailAndPassword(B.auth,email.trim().toLowerCase(),pass);
+    await B.ff.setDoc(B.ff.doc(B.fs,'pedidos',cred.user.uid),{nome:nome.trim(),email:cred.user.email,at:Date.now()});
+  }catch(e){return authMsg(e)}
+  return '';
+}
+async function pedirAcesso(){
+  try{await B.ff.setDoc(B.ff.doc(B.fs,'pedidos',S.uid),{nome:(S.pedidoNome||S.email.split('@')[0]),email:S.email,at:Date.now()})}catch{flash('Não consegui enviar o pedido. Tente de novo.')}
+}
+async function resetSenha(email){
+  if(!email){return 'Digite seu e-mail acima e toque de novo em "Esqueci a senha".'}
+  try{await B.fa.sendPasswordResetEmail(B.auth,email.trim().toLowerCase());return 'ok'}catch(e){return authMsg(e)}
+}
+async function logout(){try{await B.fa.signOut(B.auth)}catch{}S.sheet=null;S.view='songs';S.gateTab='login';render()}
+/* responsável aceita, muda papel e remove pessoas */
+async function aceitar(p,papel){
+  try{await B.ff.setDoc(B.ff.doc(B.fs,'membros',p.id),{nome:p.nome||'',email:p.email||'',papel,desde:Date.now()});await B.ff.deleteDoc(B.ff.doc(B.fs,'pedidos',p.id))}
+  catch{flash('Não consegui aceitar. Tente de novo.')}
+}
+async function recusar(id){try{await B.ff.deleteDoc(B.ff.doc(B.fs,'pedidos',id))}catch{flash('Não consegui recusar. Tente de novo.')}}
+async function mudarPapel(id,papel){try{await B.ff.updateDoc(B.ff.doc(B.fs,'membros',id),{papel})}catch{flash('Não consegui mudar. Tente de novo.')}}
+async function removerMembro(id){try{await B.ff.deleteDoc(B.ff.doc(B.fs,'membros',id))}catch{flash('Não consegui remover. Tente de novo.')}}
+function gateHTML(){
+  if(!S.authReady) return `<div class="gate"><div class="gate-logo">C<sup>♯</sup></div><p class="muted">Carregando…</p></div>`;
+  if(S.uid&&!S.member){
+    return `<div class="gate"><div class="gate-logo">C<sup>♯</sup></div>
+      ${S.pedido?`<h1>Pedido enviado</h1><p class="muted">Assim que o responsável do ministério aceitar, as cifras aparecem aqui sozinhas.</p>`
+        :`<h1>Sem acesso ainda</h1><p class="muted">Sua conta (${esc(S.email)}) ainda não foi aceita pelo responsável.</p><button class="btn primary" data-act="pedir" style="width:100%">Pedir acesso</button>`}
+      <button class="btn ghost" data-act="logout" style="margin-top:8px">Sair</button></div>`;
+  }
+  const su=S.gateTab==='signup';
+  return `<div class="gate"><div class="gate-logo">C<sup>♯</sup></div><h1>Cifras do Ministério</h1>
+    <p class="muted">${su?'Crie sua conta. O responsável do ministério vai aceitar seu acesso.':'Entre com seu e-mail e senha.'}</p>
+    <div class="seg gate-seg"><button data-act="gtab" data-t="login" aria-pressed="${!su}">Entrar</button><button data-act="gtab" data-t="signup" aria-pressed="${su}">Criar conta</button></div>
+    <form id="gateform" class="form" style="gap:10px;width:100%" autocomplete="on">
+      ${su?'<input type="text" id="g-nome" autocomplete="name" placeholder="Seu nome" aria-label="Seu nome" required>':''}
+      <input type="email" id="g-email" autocomplete="username" placeholder="seu@email.com" aria-label="E-mail" required>
+      <input type="password" id="g-pass" autocomplete="${su?'new-password':'current-password'}" placeholder="${su?'Crie uma senha (mínimo 6)':'Senha'}" aria-label="Senha" minlength="6" required>
+      <p id="g-err" class="pin-err" role="alert"></p>
+      <button type="submit" class="btn primary">${su?'Criar conta e pedir acesso':'Entrar'}</button>
+      ${su?'':'<button type="button" class="btn ghost" data-act="reset">Esqueci a senha</button>'}
+    </form></div>`;
+}
+function pessoasHTML(){
+  const ped=S.pedidos||[],mem=(S.membros||[]).slice().sort((a,b)=>(a.papel==='dev'?-1:b.papel==='dev'?1:String(a.nome||a.email).localeCompare(String(b.nome||b.email))));
+  return `<h2>Pessoas</h2>
+    <div class="eyebrow" style="margin-bottom:8px">Pedidos de acesso${ped.length?` (${ped.length})`:''}</div>
+    ${ped.length?`<ul class="people">${ped.map(p=>`<li><div class="pp"><b>${esc(p.nome||'Sem nome')}</b><span>${esc(p.email||'')}</span></div>
+      <div class="pa"><button class="btn primary sm" data-act="aceitar" data-id="${esc(p.id)}" data-p="leitor">Aceitar</button><button class="btn sm" data-act="aceitar" data-id="${esc(p.id)}" data-p="editor">Como editor</button><button class="btn ghost danger sm" data-act="recusar" data-id="${esc(p.id)}">Recusar</button></div></li>`).join('')}</ul>`
+      :'<p class="muted" style="margin:0 0 6px">Nenhum pedido agora. Quem criar conta no app aparece aqui.</p>'}
+    <div class="eyebrow" style="margin:18px 0 8px">Quem tem acesso (${mem.length})</div>
+    <ul class="people">${mem.map(m=>`<li><div class="pp"><b>${esc(m.nome||m.email||'')}${m.id===S.uid?' (você)':''}</b><span>${esc(m.email||'')}</span></div>
+      ${m.papel==='dev'?'<span class="tag">Responsável</span>':`<div class="pa"><div class="seg">${['leitor','editor'].map(r=>`<button data-act="papel" data-id="${esc(m.id)}" data-p="${r}" aria-pressed="${m.papel===r}">${r==='leitor'?'Pode ver':'Editor'}</button>`).join('')}</div>
+        <button class="icon" data-act="remover" data-id="${esc(m.id)}" aria-label="Tirar o acesso de ${esc(m.nome||m.email||'')}">${ic('x')}</button></div>`}</li>`).join('')}</ul>
+    <p class="hint">Editores cadastram, editam e excluem cifras. Quem "pode ver" só abre as cifras e os cultos. Só você aceita pessoas.</p>`;
+}
 window.addEventListener('online',()=>{S.offline=false;render()});
 window.addEventListener('offline',()=>{S.offline=true;render()});
 S.offline=!navigator.onLine;
@@ -735,6 +834,11 @@ function notesHTML(){
 }
 function render(){
   renderLive();
+  if(B.mode!=='demo'&&(!S.authReady||!S.member)){
+    document.body.classList.remove('songmode');stopScroll();
+    $('#app').innerHTML=(S.err?`<p class="note err" role="alert">${esc(S.err)}</p>`:'')+gateHTML();$('#bottomroot').innerHTML='';
+    if(S.sheet!=='none')S.sheet=null;renderOverlay();return;
+  }
   const v={songs:viewSongs,song:viewSong,edit:viewEdit,cultos:viewCultos,culto:viewCulto}[S.view]||viewSongs;
   const sb0=$('.sheetbox'),keep=sb0&&S.view==='song'&&S.song&&S.song.id===S.lastSong?sb0.scrollTop:0;
   document.body.classList.toggle('songmode',S.view==='song');
@@ -779,7 +883,7 @@ function viewSongs(){
     card=`<button class="next" data-act="open-culto" data-id="${esc(nc.id)}"><span class="datebox"><b>${d.day}</b><span>${d.mon}</span></span>
       <div><div class="k">${nc.date===todayStr()?'Hoje':'Próximo culto'}</div><h3>${esc(nc.name)}</h3><p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right')}</button>`;}
   return `${installHint()}<div class="hello"><div><div class="eyebrow">${greet()}, ministério</div><h1>Nossas <em>cifras</em></h1></div>
-    <button class="acct${S.canWrite&&!S.demo?' on':''}" data-act="sheet" data-s="conta" aria-label="${S.email?'Sua conta':'Entrar como editor'}">${ic('user')}</button></div>
+    <button class="acct${S.canWrite?' on':''}" data-act="sheet" data-s="conta" aria-label="Sua conta${S.isDev&&(S.pedidos||[]).length?', há pedidos de acesso':''}">${ic('user')}${S.isDev&&(S.pedidos||[]).length?`<i class="badge">${S.pedidos.length}</i>`:''}</button></div>
   <label class="search" for="q">${ic('search')}<input type="search" id="q" placeholder="Buscar música ou artista" value="${esc(S.q)}" aria-label="Buscar música ou artista"></label>
   ${S.q?'':card}
   <div id="list"></div>`;
@@ -895,19 +999,18 @@ function renderOverlay(){
       <div class="setrow"><div class="l"><b>Velocidade da rolagem</b></div><input type="range" id="speed" min="5" max="90" value="${P.speed}" aria-label="Velocidade da rolagem"></div>
     </div>`;
   } else if(S.sheet==='conta'){
-    const logged=!!S.email;
-    body=`<h2>${logged?'Sua conta':S.demo?'Modo demonstração':'Entrar como editor'}</h2>
-    ${S.demo?`<p class="muted" style="margin-top:-6px">O app ainda não foi ligado ao Firebase. Siga o guia de publicação para todos verem as mesmas cifras.</p>`:
-     logged?`<p style="margin:-6px 0 6px"><b>${esc(S.email)}</b></p><p class="muted" style="margin:0 0 14px">${S.canWrite?'Você pode cadastrar, editar e excluir cifras.':'Esta conta ainda não está na lista de editores. Peça ao responsável para incluir seu e-mail.'}</p>
-       <button class="btn" data-act="logout" style="width:100%">Sair</button>`:
-     `<p class="muted" style="margin:-6px 0 14px">Quem só vai tocar não precisa entrar. Para cadastrar e editar cifras, use o e-mail e a senha que o responsável criou para você.</p>
-      <form id="loginform" class="form" style="gap:10px"><input type="email" id="l-email" autocomplete="username" placeholder="seu@email.com" aria-label="E-mail" required>
-      <input type="password" id="l-pass" autocomplete="current-password" placeholder="Senha" aria-label="Senha" required>
-      <p id="l-err" class="pin-err" role="alert"></p><button type="submit" class="btn primary">Entrar</button></form>`}
-    <div class="set" style="margin-top:18px">
+    const m=S.member||{};
+    body=`<h2>Sua conta</h2>
+    ${S.demo?`<p class="muted" style="margin-top:-6px">Modo demonstração: o app ainda não foi ligado ao Firebase.</p>`:
+      `<p style="margin:-6px 0 2px"><b>${esc(m.nome||S.email||'')}</b></p><p class="muted" style="margin:0 0 14px">${esc(S.email||'')} · ${PAPEL[S.role]||''}</p>`}
+    ${S.isDev?`<button class="btn primary" data-act="sheet" data-s="pessoas" style="width:100%;margin-bottom:8px">${ic('user')} Pessoas${(S.pedidos||[]).length?` · ${S.pedidos.length} ${S.pedidos.length===1?'pedido':'pedidos'}`:''}</button>`:''}
+    <div class="set" style="margin-top:10px">
       <div class="setrow"><div class="l"><b>Cópia de segurança</b><span>Baixa todas as cifras e cultos num arquivo</span></div><button class="btn" data-act="backup-out">Baixar</button></div>
       ${S.canWrite?`<div class="setrow"><div class="l"><b>Importar cópia</b><span>Traz as cifras de um arquivo de cópia</span></div><button class="btn" data-act="backup-in">Importar</button></div>`:''}
-    </div>`;
+    </div>
+    ${S.demo?'':`<button class="btn ghost" data-act="logout" style="width:100%;margin-top:12px">Sair da conta</button>`}`;
+  } else if(S.sheet==='pessoas'){
+    body=pessoasHTML();
   } else if(S.sheet==='pin'){
     const f=S.pinFor||{};const nm=f.type==='song'?(S.songs.get(f.id)||{}).title:(S.cultos.get(f.id)||{}).name;
     body=`<h2>Excluir ${f.type==='song'?'cifra':'culto'}</h2>
@@ -1387,6 +1490,13 @@ document.addEventListener('click',async ev=>{
     case 'degree': P.degree=!P.degree;saveP();render();break;
     case 'ctl-toggle': toggleCtl();break;
     case 'logout': logout();break;
+    case 'gtab': S.gateTab=b.dataset.t;render();break;
+    case 'pedir': pedirAcesso();break;
+    case 'reset':{const e=$('#g-email'),er=$('#g-err');const r=await resetSenha(e&&e.value);if(er)er.textContent=r==='ok'?'Enviei um e-mail para você criar uma senha nova.':r;break}
+    case 'aceitar':{const p=(S.pedidos||[]).find(x=>x.id===b.dataset.id);if(p){b.disabled=true;await aceitar(p,b.dataset.p)}break}
+    case 'recusar': b.disabled=true;await recusar(b.dataset.id);break;
+    case 'papel': await mudarPapel(b.dataset.id,b.dataset.p);break;
+    case 'remover': if(b.dataset.confirm){await removerMembro(b.dataset.id)}else{b.dataset.confirm='1';b.innerHTML='Tirar?';b.style.width='auto';b.style.padding='0 10px'}break;
     case 'backup-out': exportBackup();break;
     case 'backup-in': $('#bkin').click();break;
     case 'install': if(deferredInstall){deferredInstall.prompt();deferredInstall.userChoice.finally(()=>{deferredInstall=null;render()})}break;
@@ -1455,6 +1565,9 @@ document.addEventListener('change',ev=>{
   else if(t.id==='c-name'||t.id==='c-date'){const c=S.cultos.get(S.cultoId);if(!c)return;const patch=t.id==='c-name'?{name:t.value.trim()||c.name}:{date:t.value||c.date};guard(db.setCulto(S.cultoId,{...c,...patch,updatedAt:Date.now()}))}
 });
 document.addEventListener('submit',async ev=>{
+  if(ev.target.id==='gateform'){ev.preventDefault();const b=ev.target.querySelector('[type=submit]'),lbl=b.textContent;b.disabled=true;b.textContent='Aguarde…';
+    const su=S.gateTab==='signup';const m=su?await signup($('#g-nome').value,$('#g-email').value,$('#g-pass').value):await login($('#g-email').value,$('#g-pass').value);
+    if(m){const e=$('#g-err');if(e)e.textContent=m;b.disabled=false;b.textContent=lbl}return}
   if(ev.target.id==='loginform'){ev.preventDefault();const b=ev.target.querySelector('[type=submit]');b.disabled=true;b.textContent='Entrando…';
     const m=await login($('#l-email').value,$('#l-pass').value);if(m){const e=$('#l-err');if(e)e.textContent=m;b.disabled=false;b.textContent='Entrar'}return}
   if(ev.target.id==='pinform'){ev.preventDefault();const b=document.createElement('button');b.dataset.act='pin-ok';document.body.appendChild(b);b.click();b.remove();return}
