@@ -150,6 +150,16 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 .songmode main#app>.back{align-self:flex-start;margin-bottom:8px}
 .songmode main#app>.sheetbox{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .songmode .titlebox{margin:20px 0 12px}
+.dock .mid{align-items:center}
+.nav.full{width:46px;height:46px}
+body.stage #livebar,body.stage .songmode main#app>.back{display:none!important}
+body.stage main#app>.back,body.stage main#app>.ctl,body.stage main#app>.titlebox,body.stage main#app>.note,body.stage .upnext,body.stage .dock .ctl,body.stage .dock .nav:not(.full){display:none!important}
+body.stage.songmode main#app{top:env(safe-area-inset-top);padding-top:8px;max-width:none}
+body.stage .sheetbox{border-radius:14px;padding-bottom:96px}
+body.stage.songmode main#app{bottom:0!important}
+body.stage .dock{background:transparent;border-top:0;backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none}
+body.stage .dock .wrap>div{justify-content:center}
+body.stage .dock button{pointer-events:auto;box-shadow:0 8px 24px -8px rgba(0,0,0,.7)}
 .dock.low .ctl{margin:0 0 10px;box-shadow:none;background:var(--surface)}
 .dock.low .ctl-tog{bottom:auto;top:-15px}
 .dock.low .ctl-tog svg{transform:rotate(180deg)}
@@ -574,7 +584,7 @@ const I={
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
   cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
-  plus:'<path d="M12 5v14M5 12h14"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
   cloudoff:'<path d="M3 3l18 18M8 7a5.5 5.5 0 0 1 9.6 3.2A4 4 0 0 1 20.5 17M17 19H7a4.5 4.5 0 0 1-1.6-8.7"/>', share:'<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>', minus:'<path d="M5 12h14"/>',
   left:'<path d="m15 18-6-6 6-6"/>', right:'<path d="m9 18 6-6-6-6"/>',
   play:'<path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/>',
@@ -879,7 +889,7 @@ function renderLive(){
 }
 
 /* ================= Navegação ================= */
-function go(view){stopScroll();document.body.classList.remove('picking');if(view!=='edit'){S.selW=null;$('#bottomroot').innerHTML=''}S.view=view;S.confirmDel=false;S.sheet=null;S.organize=false;render();window.scrollTo(0,0)}
+function go(view){stopScroll();if(view!=='song'&&S.stage){S.stage=false;document.body.classList.remove('stage');try{document.fullscreenElement&&document.exitFullscreen()}catch{}}document.body.classList.remove('picking');if(view!=='edit'){S.selW=null;$('#bottomroot').innerHTML=''}S.view=view;S.confirmDel=false;S.sheet=null;S.organize=false;render();window.scrollTo(0,0)}
 function openSong(id,keyStr,ctx,fromLive){
   const s=S.songs.get(id); if(!s) return;
   S.song={id,...s};S.ctx=ctx||null;S.sheet=null;
@@ -921,6 +931,7 @@ function render(){
   renderBottom();
   renderOverlay();
   if(S.view==='edit'){if(S.etab==='acordes'){S.model=toModel($('#content').value);renderPlacer()}renderPickPanel()}
+  syncHistory();
 }
 function songsSorted(q){
   const nq=norm(q);
@@ -1017,6 +1028,50 @@ function layoutSong(){
   document.documentElement.style.setProperty('--top',(lb&&lb.classList.contains('on')?lb.offsetHeight:0)+'px');
 }
 window.addEventListener('resize',()=>{if(S.view==='song')layoutSong()});
+/* ===== Tela cheia: só a cifra e o Rolar ===== */
+function setStage(on){
+  if(S.stage===on) return;
+  S.stage=on;document.body.classList.toggle('stage',on);
+  try{
+    if(on&&!document.fullscreenElement&&document.documentElement.requestFullscreen&&!isStandalone()) document.documentElement.requestFullscreen({navigationUI:'hide'}).catch(()=>{});
+    if(!on&&document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  }catch{}
+  render();
+}
+/* ===== Voltar: botão/gesto do Android, gesto do iPhone e voltar do navegador ===== */
+const NAV={has:false,ignore:false,inPop:false};
+function atRoot(){return S.view==='songs'&&!S.sheet&&!S.stage}
+function syncHistory(){
+  try{
+    if(!atRoot()&&!NAV.has){history.pushState({cifras:1},'');NAV.has=true}
+    else if(atRoot()&&NAV.has&&!NAV.inPop){NAV.has=false;NAV.ignore=true;history.back()}
+  }catch{}
+}
+function handleBack(){
+  if(S.sheet){S.sheet=null;renderOverlay();if(S.view==='culto')render();return true}
+  if(S.stage){setStage(false);return true}
+  if(S.view==='edit'){$('[data-act=cancel-edit]')&&$('[data-act=cancel-edit]').click();return true}
+  if(S.view==='song'){if(S.ctx){S.cultoId=S.ctx.cultoId;go('culto')}else go('songs');return true}
+  if(S.view==='culto'){go('cultos');return true}
+  if(S.view==='cultos'){go('songs');return true}
+  return false;
+}
+window.addEventListener('popstate',()=>{
+  if(NAV.ignore){NAV.ignore=false;return}
+  NAV.has=false;NAV.inPop=true;
+  try{handleBack()}finally{NAV.inPop=false}
+  syncHistory();
+});
+/* gesto de arrastar da borda esquerda para voltar (no app instalado no iPhone não existe gesto do sistema) */
+(function(){
+  let x0=null,y0=0,t0=0;
+  document.addEventListener('touchstart',e=>{const t=e.touches[0];if(t.clientX<=24&&isStandalone()&&!atRoot()){x0=t.clientX;y0=t.clientY;t0=Date.now()}else x0=null},{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(x0===null) return;const t=e.changedTouches[0];const dx=t.clientX-x0,dy=Math.abs(t.clientY-y0);x0=null;
+    if(dx>70&&dy<60&&Date.now()-t0<700){if(NAV.has)history.back();else handleBack()}
+  },{passive:true});
+})();
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&S.stage&&!isStandalone()){S.stage=false;document.body.classList.remove('stage');render()}});
 function toggleCtl(){
   const k0=$('#keybig');const r0=k0&&k0.getBoundingClientRect();
   P.ctlOpen=!P.ctlOpen;saveP();S.ctlAnim=P.ctlOpen;render();S.ctlAnim=false;
@@ -1038,7 +1093,8 @@ function renderBottom(){
     }
     const bottomCtl=P.ctlPos==='bottom'&&P.ctlOpen;
     d.innerHTML=`<div class="dock${P.ctlPos==='bottom'?' low':''}"><div class="wrap" style="display:block">${bottomCtl?ctlCard():''}${up}<div style="display:flex;gap:8px;align-items:center">${prev}
-      <div class="mid"><button class="btn ${scrollState.on?'primary':''} play" data-act="scroll" aria-pressed="${scrollState.on}">${ic(scrollState.on?'pause':'play')} ${scrollState.on?'Pausar':'Rolar'}</button></div>${next}</div></div></div>`;
+      <div class="mid"><button class="btn ${scrollState.on?'primary':''} play" data-act="scroll" aria-pressed="${scrollState.on}">${ic(scrollState.on?'pause':'play')} ${scrollState.on?'Pausar':'Rolar'}</button>
+      <button class="nav full" data-act="stage" aria-label="${S.stage?'Sair da tela cheia':'Tela cheia'}" title="${S.stage?'Sair da tela cheia':'Tela cheia'}">${ic(S.stage?'shrink':'expand')}</button></div>${next}</div></div></div>`;
     requestAnimationFrame(layoutSong);
     return;
   }
@@ -1053,6 +1109,7 @@ function renderBottom(){
 }
 function renderOverlay(){
   const o=$('#overlay');
+  setTimeout(syncHistory,0);
   if(!S.sheet){o.innerHTML='';return}
   let body='';
   if(S.sheet==='keys'&&S.song){
@@ -1562,9 +1619,10 @@ document.addEventListener('click',async ev=>{
   switch(act){
     case 'tab': go(b.dataset.tab);break;
     case 'open-song': openSong(b.dataset.id);break;
-    case 'back': if(S.ctx){S.cultoId=S.ctx.cultoId;go('culto')}else go('songs');break;
+    case 'back': if(NAV.has)history.back();else{if(S.ctx){S.cultoId=S.ctx.cultoId;go('culto')}else go('songs')}break;
+    case 'stage': setStage(!S.stage);break;
     case 'sheet': S.sheet=b.dataset.s;renderOverlay();break;
-    case 'close-sheet': S.sheet=null;renderOverlay();if(S.view==='culto')render();break;
+    case 'close-sheet': if(NAV.has&&S.view==='songs'&&!S.stage)history.back();else{S.sheet=null;renderOverlay();if(S.view==='culto')render()}break;
     case 'key': S.sheet=null;setKey(+b.dataset.k);break;
     case 'step': setKey(S.target+ +b.dataset.d);break;
     case 'capo':{const k='cifras:capo:'+S.song.id;store.set(k,Math.max(0,Math.min(9,store.get(k,0)+ +b.dataset.d)));render();break}
@@ -1631,7 +1689,7 @@ document.addEventListener('click',async ev=>{
     case 'follow': S.follow=!S.follow;if(S.follow&&liveActive()) followLive(); else render();break;
   }
 });
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pk-other'){e.preventDefault();$('[data-act=pk-other]').click();return}if(e.key==='Escape'&&S.sheet){S.sheet=null;renderOverlay();if(S.view==='culto')render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pk-other'){e.preventDefault();$('[data-act=pk-other]').click();return}if(e.key==='Escape'){if(S.sheet){S.sheet=null;renderOverlay();if(S.view==='culto')render()}else if(S.stage)setStage(false)}});
 document.addEventListener('input',ev=>{
   const t=ev.target;
   if(t.id==='c1'||t.id==='c2'){P[t.id]=t.value;P.tema='custom';applyTema();const p=$('#mixprev');if(p)p.style.background=temaCustom().grad;
