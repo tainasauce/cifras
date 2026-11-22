@@ -371,6 +371,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .w.sel{background:var(--soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .pc b,.pl-chords{color:var(--honey)}
 .colors{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.mix{display:flex;align-items:center;gap:10px;margin-top:8px;background:var(--raise);border-radius:16px;padding:10px 12px;box-shadow:var(--hl)}
+.mix.on{box-shadow:inset 0 0 0 2px var(--ink)}
+.mix label{display:grid;justify-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--muted)}
+.mix span{color:var(--muted);font-weight:800}
+.mix input[type=color]{-webkit-appearance:none;appearance:none;width:44px;height:44px;border:0;border-radius:50%;padding:0;background:none;cursor:pointer;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+.mix input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.mix input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
+.mix input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
+.mixprev{flex:1;height:44px;border-radius:12px}
 .colors button{border:0;border-radius:14px;padding:0 0 8px;background:var(--raise);box-shadow:var(--hl);color:var(--muted);font-size:12px;font-weight:700;display:grid;gap:6px;overflow:hidden}
 .colors button i{display:block;height:34px}
 .colors button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ink);color:var(--ink)}
@@ -588,10 +597,26 @@ const TEMAS={
   oceano:{nome:'Oceano',grad:'linear-gradient(135deg,#2563eb,#06b6d4)',a:'#3b82f6',c:'#93c5fd',s:['#2563eb','#06b6d4']},
   esmeralda:{nome:'Esmeralda',grad:'linear-gradient(135deg,#059669,#22d3ee)',a:'#10b981',c:'#6ee7b7',s:['#059669','#22d3ee']},
   fogo:{nome:'Fogo',grad:'linear-gradient(135deg,#dc2626,#f59e0b)',a:'#f97316',c:'#fdba74',s:['#dc2626','#f59e0b']},
-  rosa:{nome:'Rosa',grad:'linear-gradient(135deg,#db2777,#f472b6)',a:'#ec4899',c:'#f9a8d4',s:['#db2777','#f472b6']}
+  rosa:{nome:'Rosa',grad:'linear-gradient(135deg,#db2777,#f472b6)',a:'#ec4899',c:'#f9a8d4',s:['#db2777','#f472b6']},
+  por:{nome:'Pôr do sol',grad:'linear-gradient(135deg,#f97316,#e11d48 55%,#7e22ce)',a:'#f43f5e',c:'#fda4af',s:['#f97316','#7e22ce']},
+  uva:{nome:'Uva',grad:'linear-gradient(135deg,#4f46e5,#9333ea 55%,#db2777)',a:'#8b5cf6',c:'#c4b5fd',s:['#4f46e5','#db2777']},
+  ceu:{nome:'Céu',grad:'linear-gradient(135deg,#0ea5e9,#818cf8)',a:'#38bdf8',c:'#bae6fd',s:['#0ea5e9','#818cf8']},
+  lima:{nome:'Lima',grad:'linear-gradient(135deg,#84cc16,#10b981)',a:'#22c55e',c:'#bef264',s:['#84cc16','#10b981']},
+  dourado:{nome:'Dourado',grad:'linear-gradient(135deg,#f59e0b,#fde047)',a:'#f59e0b',c:'#fde68a',s:['#f59e0b','#fde047']},
+  coral:{nome:'Coral',grad:'linear-gradient(135deg,#fb7185,#fdba74)',a:'#fb7185',c:'#fecdd3',s:['#fb7185','#fdba74']}
 };
+/* cor personalizada: Cor 1 + Cor 2 formam o gradiente */
+const hexRgb=h=>{h=String(h||'').replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16)||0;return [n>>16&255,n>>8&255,n&255]};
+const rgbHex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
+const mixHex=(x,y,t)=>{const a=hexRgb(x),b=hexRgb(y);return rgbHex(a.map((v,i)=>v+(b[i]-v)*t))};
+function temaCustom(){
+  const c1=P.c1||'#22d3ee',c2=P.c2||'#a855f7';
+  const sat=h=>{const v=hexRgb(h);return Math.max(...v)-Math.min(...v)};
+  const main=sat(c2)>=sat(c1)?c2:c1;
+  return {nome:'A minha',grad:`linear-gradient(120deg,${c1},${c2})`,a:main,c:mixHex(main,'#ffffff',.42),s:[c1,c2]};
+}
 function applyTema(){
-  const t=TEMAS[P.tema]||TEMAS.aurora,r=document.documentElement.style;
+  const t=P.tema==='custom'?temaCustom():(TEMAS[P.tema]||TEMAS.aurora),r=document.documentElement.style;
   r.setProperty('--grad',t.grad);r.setProperty('--accent',t.a);r.setProperty('--honey',t.c);
   const a=document.getElementById('gs1'),b=document.getElementById('gs2');if(a){a.setAttribute('stop-color',t.s[0]);b.setAttribute('stop-color',t.s[1])}
 }
@@ -1052,6 +1077,13 @@ function renderOverlay(){
       `<p style="margin:-6px 0 2px"><b>${esc(m.nome||S.email||'')}</b></p><p class="muted" style="margin:0 0 14px">${esc(S.email||'')} · ${PAPEL[S.role]||''}</p>`}
     <div class="eyebrow" style="margin-top:4px">Cor do app</div>
     <div class="colors" role="group" aria-label="Cor do app">${Object.entries(TEMAS).map(([k,t])=>`<button data-act="tema" data-t="${k}" aria-pressed="${(P.tema||'aurora')===k}"><i style="background:${t.grad}"></i>${t.nome}</button>`).join('')}</div>
+    <div class="eyebrow" style="margin-top:14px">Criar a minha</div>
+    <div class="mix${P.tema==='custom'?' on':''}">
+      <label for="c1">Cor 1<input type="color" id="c1" value="${esc(P.c1||'#22d3ee')}"></label>
+      <span aria-hidden="true">+</span>
+      <label for="c2">Cor 2<input type="color" id="c2" value="${esc(P.c2||'#a855f7')}"></label>
+      <i class="mixprev" id="mixprev" style="background:${temaCustom().grad}"></i>
+    </div>
     <div style="height:14px"></div>
     ${S.isDev?`<button class="btn primary" data-act="sheet" data-s="pessoas" style="width:100%;margin-bottom:8px">${ic('user')} Pessoas${(S.pedidos||[]).length?` · ${S.pedidos.length} ${S.pedidos.length===1?'pedido':'pedidos'}`:''}</button>`:''}
     <div class="set" style="margin-top:10px">
@@ -1602,6 +1634,8 @@ document.addEventListener('click',async ev=>{
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pk-other'){e.preventDefault();$('[data-act=pk-other]').click();return}if(e.key==='Escape'&&S.sheet){S.sheet=null;renderOverlay();if(S.view==='culto')render()}});
 document.addEventListener('input',ev=>{
   const t=ev.target;
+  if(t.id==='c1'||t.id==='c2'){P[t.id]=t.value;P.tema='custom';applyTema();const p=$('#mixprev');if(p)p.style.background=temaCustom().grad;
+    document.querySelectorAll('.colors button').forEach(b=>b.setAttribute('aria-pressed','false'));const m=document.querySelector('.mix');if(m)m.classList.add('on');return}
   if(t.id==='q'){S.q=t.value;renderList()}
   else if(t.id==='pq'){S.pq=t.value;renderPicker()}
   else if(t.id==='speed'){P.speed=+t.value;saveP()}
@@ -1610,6 +1644,7 @@ document.addEventListener('input',ev=>{
 });
 document.addEventListener('change',ev=>{
   const t=ev.target;
+  if(t.id==='c1'||t.id==='c2'){saveP();return}
   if(t.id==='f-root'||t.id==='f-minor'){renderPickPanel();saveDraft()}
   else if(t.id==='f-draft') saveDraft();
   else if(t.dataset.act==='item-key'){const c=S.cultos.get(S.cultoId);const items=c.items.map((it,k)=>k===+t.dataset.i?{...it,key:t.value}:it);guard(db.setCulto(S.cultoId,{...c,items,updatedAt:Date.now()}))}
