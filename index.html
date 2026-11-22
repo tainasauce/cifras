@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
 <meta name="mobile-web-app-capable" content="yes">
@@ -163,6 +163,11 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 .sp-hint{font-size:12px;color:var(--muted);text-align:center}
 .swipe{position:relative;overflow:hidden}
 .cultos .swipe{border-radius:var(--r)}
+.cultos,.cards,.list,.items{grid-template-columns:minmax(0,1fr)}
+.cultos>li,.cards>li{min-width:0}
+html,body{overflow-x:hidden;max-width:100%;touch-action:pan-x pan-y}
+button,a,input,select,textarea,label{touch-action:manipulation}
+.sheetbox{touch-action:pan-y}
 .swdel{position:absolute;top:0;right:0;bottom:0;width:92px;border:0;background:var(--danger);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;align-content:center;gap:2px}
 .swdel svg{width:20px;height:20px}
 .swipe>.song,.swipe>.culto{position:relative;background:var(--raise);transition:transform .22s cubic-bezier(.2,.9,.25,1);touch-action:pan-y}
@@ -1111,6 +1116,21 @@ function marcarVisto(id){const v=vistos();if(!v.has(id)){v.add(id);store.set('ci
   document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);
   document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-act=scroll]'))e.preventDefault()});
 })();
+/* ===== Zoom: a tela não aumenta; a pinça dentro da cifra muda o tamanho da letra ===== */
+(function(){
+  ['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+  let pz=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  document.addEventListener('touchstart',e=>{
+    if(e.touches.length===2){const box=e.target.closest('.sheetbox');if(box){pz={d0:dist(e.touches),f0:P.font,sheet:box.querySelector('.sheet')}}}
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(e.touches.length>1)e.preventDefault();
+    if(!pz||e.touches.length!==2)return;
+    const f=Math.round(Math.max(12,Math.min(40,pz.f0*dist(e.touches)/pz.d0)));
+    if(f!==P.font){P.font=f;if(pz.sheet)pz.sheet.style.setProperty('--sz',f+'px')}
+  },{passive:false});
+  document.addEventListener('touchend',e=>{if(pz&&e.touches.length<2){pz=null;saveP()}},{passive:true});
+})();
 /* ===== Tela cheia: só a cifra e o Rolar ===== */
 function setStage(on){
   if(S.stage===on) return;
@@ -1728,7 +1748,7 @@ document.addEventListener('click',async ev=>{
     case 'awake': P.awake=P.awake===false;saveP();renderOverlay();break;
     case 'ctlpos': P.ctlPos=b.dataset.v;P.ctlOpen=true;saveP();render();break;
     case 'acc': P.acc=b.dataset.v;saveP();render();break;
-    case 'font': P.font=Math.max(12,Math.min(30,P.font+ +b.dataset.d*2));saveP();render();break;
+    case 'font': P.font=Math.max(12,Math.min(40,P.font+ +b.dataset.d*2));saveP();render();break;
     case 'scroll': if(Date.now()-(S.noScrollClick||0)<500)break; if(scrollState.on) stopScroll(); else {scrollState.on=true;scrollState.last=0;scrollState.acc=0;scrollState.raf=requestAnimationFrame(tick)} renderBottom();break;
     case 'nav':{const c=S.cultos.get(S.ctx.cultoId);const i=S.ctx.index+ +b.dataset.d;const it=c&&c.items[i];if(it) openSong(it.songId,it.key,{cultoId:S.ctx.cultoId,index:i});break}
     case 'new-song':{sel=null;S.sheet=null;const mode=b.dataset.mode||'write';S.edit=newEdit(mode);S.etab='letra';S.selW=null;
