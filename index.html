@@ -177,7 +177,7 @@ button,a,input,select,textarea,label{touch-action:manipulation}
 .tabic .badge{position:absolute;top:-4px;right:-10px;min-width:16px;height:16px;border-radius:8px;background:var(--danger);color:#fff;font:800 10px/16px var(--f-body);font-style:normal;padding:0 4px}
 .nav.full{width:46px;height:46px}
 body.stage #livebar,body.stage .songmode main#app>.back{display:none!important}
-body.stage main#app>.back,body.stage main#app>.ctl,body.stage main#app>.titlebox,body.stage main#app>.note,body.stage .upnext,body.stage .dock .ctl,body.stage .dock .nav:not(.full){display:none!important}
+body.stage main#app>.back,body.stage main#app>.ctl,body.stage main#app>.titlebox,body.stage main#app>.note,body.stage .upnext,body.stage .dock .ctl,body.stage .dock .nav:not(.full):not(.sol){display:none!important}
 body.stage.songmode main#app{top:env(safe-area-inset-top);padding-top:8px;max-width:none}
 body.stage .sheetbox{border-radius:14px;padding-bottom:96px}
 body.stage.songmode main#app{bottom:0!important}
@@ -403,6 +403,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .sheet .c,.sheet .sp b{color:var(--honey)}
 .sheet{color:#fff;font-weight:500}
 .sheet .c,.sheet .sp b{font-weight:700}
+.sheetbox.sol{background:#fbfaf7!important;box-shadow:none!important}
+.sheetbox.sol .sheet{color:#0b0b0f}
+.sheetbox.sol .sheet .c,.sheetbox.sol .sheet .sp b{color:var(--chord-sol)}
+.sheetbox.sol .sheet .sec{color:#55565f}
+.sheetbox.sol .btn.ghost{color:#33343c}
+.sheetbox.sol .note{background:#eeece6;color:#222}
+.nav.sol[aria-pressed="true"]{background:var(--grad);color:#fff}
 .chip2 .badge,.acct .badge{border-color:var(--bg)}
 .w.sel{background:var(--soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .pc b,.pl-chords{color:var(--honey)}
@@ -610,7 +617,7 @@ const I={
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
   cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
-  plus:'<path d="M12 5v14M5 12h14"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
   cloudoff:'<path d="M3 3l18 18M8 7a5.5 5.5 0 0 1 9.6 3.2A4 4 0 0 1 20.5 17M17 19H7a4.5 4.5 0 0 1-1.6-8.7"/>', share:'<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>', minus:'<path d="M5 12h14"/>',
   left:'<path d="m15 18-6-6 6-6"/>', right:'<path d="m9 18 6-6-6-6"/>',
   play:'<path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/>',
@@ -653,7 +660,7 @@ function temaCustom(){
 }
 function applyTema(){
   const t=P.tema==='custom'?temaCustom():(TEMAS[P.tema]||TEMAS.aurora),r=document.documentElement.style;
-  r.setProperty('--grad',t.grad);r.setProperty('--accent',t.a);r.setProperty('--honey',t.c);
+  r.setProperty('--grad',t.grad);r.setProperty('--accent',t.a);r.setProperty('--honey',t.c);r.setProperty('--chord-sol',mixHex(t.a,'#000000',.28));
   const a=document.getElementById('gs1'),b=document.getElementById('gs2');if(a){a.setAttribute('stop-color',t.s[0]);b.setAttribute('stop-color',t.s[1])}
 }
 const $=s=>document.querySelector(s);
@@ -1044,7 +1051,7 @@ function viewSong(){
     <h1>${esc(s.title)}</h1>${meta?`<p>${meta}</p>`:''}
     ${!open?`<button class="ctl-tog solo" data-act="ctl-toggle" aria-expanded="false" aria-label="Mostrar controles">${ic('down')}</button>`:''}
   </div>
-  <div class="sheetbox" tabindex="0" aria-label="Cifra"><div class="sheet" style="--sz:${P.font}px">${renderSheet(s.content,shift,spell,P.lyrics,P.degree?o:null)}</div>
+  <div class="sheetbox${P.sol?' sol':''}" tabindex="0" aria-label="Cifra"><div class="sheet" style="--sz:${P.font}px">${renderSheet(s.content,shift,spell,P.lyrics,P.degree?o:null)}</div>
   ${s.notes?`<p class="note" style="margin:16px 0 0">${esc(s.notes)}</p>`:''}
   ${S.canWrite?`<div style="margin-top:14px;text-align:center"><button class="btn ghost" data-act="edit-song">${ic('edit')} Editar esta cifra</button></div>`:''}</div>`;
 }
@@ -1198,7 +1205,8 @@ function renderBottom(){
     }
     const bottomCtl=P.ctlPos==='bottom'&&P.ctlOpen;
     d.innerHTML=`<div class="dock${P.ctlPos==='bottom'?' low':''}"><div class="wrap" style="display:block">${bottomCtl?ctlCard():''}${up}<div style="display:flex;gap:8px;align-items:center">${prev}
-      <div class="mid"><button class="btn ${scrollState.on?'primary':''} play" data-act="scroll" aria-pressed="${scrollState.on}">${ic(scrollState.on?'pause':'play')} ${scrollState.on?'Pausar':'Rolar'}</button>
+      <div class="mid"><button class="nav sol" data-act="sol" aria-pressed="${!!P.sol}" aria-label="${P.sol?'Desligar modo sol':'Modo sol: fundo branco para ler no sol'}" title="Modo sol">${ic('sun')}</button>
+      <button class="btn ${scrollState.on?'primary':''} play" data-act="scroll" aria-pressed="${scrollState.on}">${ic(scrollState.on?'pause':'play')} ${scrollState.on?'Pausar':'Rolar'}</button>
       <button class="nav full" data-act="stage" aria-label="${S.stage?'Sair da tela cheia':'Tela cheia'}" title="${S.stage?'Sair da tela cheia':'Tela cheia'}">${ic(S.stage?'shrink':'expand')}</button></div>${next}</div></div></div>`;
     requestAnimationFrame(layoutSong);
     return;
@@ -1726,6 +1734,7 @@ document.addEventListener('click',async ev=>{
     case 'open-song': openSong(b.dataset.id);break;
     case 'back': if(NAV.has)history.back();else{if(S.ctx){S.cultoId=S.ctx.cultoId;go('culto')}else go('songs')}break;
     case 'stage': setStage(!S.stage);break;
+    case 'sol': P.sol=!P.sol;saveP();render();break;
     case 'sheet': S.sheet=b.dataset.s;renderOverlay();break;
     case 'close-sheet': if(NAV.has&&S.view==='songs'&&!S.stage)history.back();else{S.sheet=null;renderOverlay();if(S.view==='culto')render()}break;
     case 'key': S.sheet=null;setKey(+b.dataset.k);break;
