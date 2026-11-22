@@ -151,6 +151,16 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 .songmode main#app>.sheetbox{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .songmode .titlebox{margin:20px 0 12px}
 .dock .mid{align-items:center}
+[data-act=scroll]{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+[data-act=scroll].holding{transform:scale(1.06);background:var(--grad);color:#fff}
+.speedpop{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,10px) scale(.96);opacity:0;pointer-events:none;z-index:60;width:min(300px,86vw);background:rgba(29,30,36,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:20px;padding:14px 16px;box-shadow:0 18px 40px -12px rgba(0,0,0,.8),var(--hl);transition:opacity .15s,transform .15s}
+.speedpop.on{opacity:1;transform:translate(-50%,0) scale(1)}
+.sp-top{display:flex;justify-content:space-between;align-items:baseline;font-weight:800;font-size:14px;color:var(--muted)}
+.sp-top b{font-size:30px;line-height:1;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sp-bar{position:relative;height:8px;border-radius:9px;background:var(--soft);margin:12px 0 8px}
+.sp-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:9px;background:var(--grad)}
+.sp-bar em{position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.sp-hint{font-size:12px;color:var(--muted);text-align:center}
 .swipe{position:relative;overflow:hidden}
 .cultos .swipe{border-radius:var(--r)}
 .swdel{position:absolute;top:0;right:0;bottom:0;width:92px;border:0;background:var(--danger);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;align-content:center;gap:2px}
@@ -1072,6 +1082,35 @@ function marcarVisto(id){const v=vistos();if(!v.has(id)){v.add(id);store.set('ci
     const r=e.target.closest('.swipe>.open');if(r){e.stopImmediatePropagation();e.preventDefault();r.classList.remove('open')}
   },true);
 })();
+/* ===== Segurar o Rolar: ajusta a velocidade arrastando para os lados ===== */
+(function(){
+  let g=null;const MIN=5,MAX=120;
+  const lvl=v=>Math.max(1,Math.round(v/6));
+  function pop(){let el=$('#speedpop');if(!el){el=document.createElement('div');el.id='speedpop';el.className='speedpop';el.setAttribute('role','status');document.body.appendChild(el)}
+    const pct=(P.speed-MIN)/(MAX-MIN)*100;
+    el.innerHTML=`<div class="sp-top"><span>Velocidade</span><b>${lvl(P.speed)}</b></div><div class="sp-bar"><i style="width:${pct}%"></i><em style="left:${pct}%"></em></div><div class="sp-hint">‹ mais devagar · mais rápido ›</div>`;
+    el.classList.add('on');}
+  function hide(){const el=$('#speedpop');if(el)el.classList.remove('on')}
+  document.addEventListener('pointerdown',e=>{
+    const b=e.target.closest('[data-act=scroll]');if(!b)return;
+    g={b,id:e.pointerId,x:e.clientX,y:e.clientY,v0:P.speed,on:false};
+    g.t=setTimeout(()=>{if(!g)return;g.on=true;g.x=g.lastX??g.x;g.v0=P.speed;try{b.setPointerCapture(g.id)}catch{}b.classList.add('holding');pop();try{navigator.vibrate&&navigator.vibrate(12)}catch{}},320);
+  });
+  document.addEventListener('pointermove',e=>{
+    if(!g||e.pointerId!==g.id)return;g.lastX=e.clientX;
+    if(!g.on){if(Math.abs(e.clientY-g.y)>24||Math.abs(e.clientX-g.x)>24){clearTimeout(g.t);g=null}return}
+    e.preventDefault();
+    P.speed=Math.round(Math.max(MIN,Math.min(MAX,g.v0+(e.clientX-g.x)*0.4)));pop();
+    const r=$('#speed');if(r)r.value=P.speed;
+  },{passive:false});
+  const end=e=>{
+    if(!g||(e&&e.pointerId!==g.id))return;clearTimeout(g.t);
+    if(g.on){saveP();hide();g.b.classList.remove('holding');S.noScrollClick=Date.now()}
+    g=null;
+  };
+  document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);
+  document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-act=scroll]'))e.preventDefault()});
+})();
 /* ===== Tela cheia: só a cifra e o Rolar ===== */
 function setStage(on){
   if(S.stage===on) return;
@@ -1690,7 +1729,7 @@ document.addEventListener('click',async ev=>{
     case 'ctlpos': P.ctlPos=b.dataset.v;P.ctlOpen=true;saveP();render();break;
     case 'acc': P.acc=b.dataset.v;saveP();render();break;
     case 'font': P.font=Math.max(12,Math.min(30,P.font+ +b.dataset.d*2));saveP();render();break;
-    case 'scroll': if(scrollState.on) stopScroll(); else {scrollState.on=true;scrollState.last=0;scrollState.acc=0;scrollState.raf=requestAnimationFrame(tick)} renderBottom();break;
+    case 'scroll': if(Date.now()-(S.noScrollClick||0)<500)break; if(scrollState.on) stopScroll(); else {scrollState.on=true;scrollState.last=0;scrollState.acc=0;scrollState.raf=requestAnimationFrame(tick)} renderBottom();break;
     case 'nav':{const c=S.cultos.get(S.ctx.cultoId);const i=S.ctx.index+ +b.dataset.d;const it=c&&c.items[i];if(it) openSong(it.songId,it.key,{cultoId:S.ctx.cultoId,index:i});break}
     case 'new-song':{sel=null;S.sheet=null;const mode=b.dataset.mode||'write';S.edit=newEdit(mode);S.etab='letra';S.selW=null;
       const d=store.get('cifras:draft:new',null);S.restored=mode!=='paste'&&!!(d&&(d.title||d.content));if(S.restored)S.edit={...S.edit,...d,id:null};go('edit');if(mode==='paste')$('#filein').click();break}
