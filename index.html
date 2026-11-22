@@ -211,6 +211,13 @@ body.stage .dock button{pointer-events:auto;box-shadow:0 8px 24px -8px rgba(0,0,
 .scrim{position:fixed;inset:0;z-index:40;background:rgba(10,16,12,.42);display:flex;align-items:flex-end;justify-content:center;animation:fade .18s ease}
 .panel{width:100%;max-width:560px;background:var(--surface);border-radius:24px 24px 0 0;padding:10px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.2);animation:up .22s cubic-bezier(.2,.8,.2,1);max-height:88%;overflow:auto}
 .panel .grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 14px}
+.panel{overscroll-behavior:contain}
+.acct .ava{position:absolute;inset:2px;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:cover;border-radius:50%}
+.fotorow{display:flex;align-items:center;gap:12px;margin-top:8px;background:var(--raise);border-radius:16px;padding:10px 12px;box-shadow:var(--hl)}
+.fotorow .l{flex:1;min-width:0;display:grid;gap:2px}.fotorow .l span{font-size:12px;color:var(--muted)}
+.fotobig{width:56px;height:56px;border-radius:50%;border:0;padding:0;background:var(--soft);display:grid;place-items:center;color:var(--muted);overflow:hidden;flex:0 0 auto;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+.fotobig img{width:100%;height:100%;object-fit:cover}
+.fotobtns{display:flex;flex-direction:column;gap:6px}.fotobtns .btn{padding:8px 14px;min-height:0}
 .panel h2{font-size:22px;margin-bottom:14px}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
 @keyframes fade{from{opacity:0}}
@@ -434,6 +441,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 <main class="wrap" id="app"></main>
 <div id="bottomroot"></div>
 <div id="overlay"></div>
+<input type="file" id="fotoin" accept="image/*" hidden aria-hidden="true" tabindex="-1">
 <input type="file" id="bkin" accept=".json,application/json" hidden aria-hidden="true" tabindex="-1">
 <input type="file" id="filein" accept=".txt,.text,.pdf,.docx,.doc,.cho,.chordpro,.crd,image/*,application/pdf" hidden aria-hidden="true" tabindex="-1">
 
@@ -999,7 +1007,7 @@ function viewSongs(){
     card=`<button class="next" data-act="open-culto" data-id="${esc(nc.id)}"><span class="datebox"><b>${d.day}</b><span>${d.mon}</span></span>
       <div><div class="k">${nc.date===todayStr()?'Hoje':'Próximo culto'}${isNovo(nc.id)?' · Novo':''}</div><h3>${esc(nc.name)}</h3><p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right')}</button>`;}
   return `${installHint()}<div class="hello"><div><div class="eyebrow">${greet()}, ministério</div><h1>Nossas <em>cifras</em></h1></div>
-    <button class="acct${S.canWrite?' on':''}" data-act="sheet" data-s="conta" aria-label="Sua conta${S.isDev&&(S.pedidos||[]).length?', há pedidos de acesso':''}">${ic('user')}${S.isDev&&(S.pedidos||[]).length?`<i class="badge">${S.pedidos.length}</i>`:''}</button></div>
+    <button class="acct${S.canWrite?' on':''}" data-act="sheet" data-s="conta" aria-label="Sua conta${S.isDev&&(S.pedidos||[]).length?', há pedidos de acesso':''}">${fotoAtual()?`<img class="ava" src="${fotoAtual()}" alt="">`:ic('user')}${S.isDev&&(S.pedidos||[]).length?`<i class="badge">${S.pedidos.length}</i>`:''}</button></div>
   <label class="search" for="q">${ic('search')}<input type="search" id="q" placeholder="Buscar música ou artista" value="${esc(S.q)}" aria-label="Buscar música ou artista"></label>
   ${S.q?'':card}
   <div id="list"></div>`;
@@ -1220,6 +1228,42 @@ function renderBottom(){
     <button data-act="tab" data-tab="songs" ${cur==='songs'?'aria-current="page"':''}>${ic('music')}Músicas</button>
     <button data-act="tab" data-tab="cultos" ${cur==='cultos'?'aria-current="page"':''}><span class="tabic">${ic('cal')}${novos()?`<i class="badge">${novos()}</i>`:''}</span>Cultos</button></div></nav>`;
 }
+/* ===== Foto de perfil (guardada neste aparelho) ===== */
+const fotoKey=()=>'cifras:foto:'+(S.uid||'eu');
+function fotoAtual(){try{return localStorage.getItem(fotoKey())||''}catch{return ''}}
+function salvarFoto(f){
+  const url=URL.createObjectURL(f);const img=new Image();
+  img.onload=()=>{const n=256,c=document.createElement('canvas');c.width=c.height=n;const x=c.getContext('2d');
+    const m=Math.min(img.naturalWidth,img.naturalHeight);x.drawImage(img,(img.naturalWidth-m)/2,(img.naturalHeight-m)/2,m,m,0,0,n,n);URL.revokeObjectURL(url);
+    try{localStorage.setItem(fotoKey(),c.toDataURL('image/jpeg',.85))}catch{flash('Não coube a foto no aparelho.');return}
+    renderOverlay();render()};
+  img.onerror=()=>{URL.revokeObjectURL(url);flash('Não consegui abrir essa imagem.')};
+  img.src=url;
+}
+function closeSheet(){if(NAV.has&&S.view==='songs'&&!S.stage)history.back();else{S.sheet=null;renderOverlay();if(S.view==='culto')render()}}
+/* ===== Arrastar a folha para baixo fecha (como no iPhone) ===== */
+(function(){
+  let d=null;
+  document.addEventListener('touchstart',e=>{
+    const pn=e.target.closest('.panel');d=null;if(!pn||e.touches.length!==1)return;
+    if(e.target.closest('input,textarea,select,.seg,.res'))return;
+    const t=e.touches[0];d={pn,y:t.clientY,x:t.clientX,t:Date.now(),dy:0,lock:null,top:pn.scrollTop<=0};
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!d)return;const t=e.touches[0],dy=t.clientY-d.y,dx=t.clientX-d.x;
+    if(!d.lock&&(Math.abs(dy)>6||Math.abs(dx)>6))d.lock=(dy>0&&Math.abs(dy)>Math.abs(dx)&&d.top&&d.pn.scrollTop<=0)?'v':'no';
+    if(d.lock!=='v')return;
+    e.preventDefault();d.dy=Math.max(0,dy);d.pn.style.transition='none';d.pn.style.transform=`translateY(${d.dy}px)`;
+    const sc=d.pn.parentElement;if(sc)sc.style.background=`rgba(10,16,12,${(.42*Math.max(0,1-d.dy/400)).toFixed(3)})`;
+  },{passive:false});
+  const end=()=>{
+    if(!d||d.lock!=='v'){d=null;return}
+    const {pn,dy,t}=d;d=null;const v=dy/Math.max(1,Date.now()-t);
+    if(dy>110||(dy>40&&v>.5)){pn.style.transition='transform .18s ease-in';pn.style.transform='translateY(110%)';setTimeout(closeSheet,170)}
+    else{pn.style.transition='transform .22s cubic-bezier(.2,.8,.2,1)';pn.style.transform='';const sc=pn.parentElement;if(sc)sc.style.background=''}
+  };
+  document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchcancel',end,{passive:true});
+})();
 function renderOverlay(){
   const o=$('#overlay');
   setTimeout(syncHistory,0);
@@ -1254,6 +1298,10 @@ function renderOverlay(){
       <label for="c2">Cor 2<input type="color" id="c2" value="${esc(P.c2||'#a855f7')}"></label>
       <i class="mixprev" id="mixprev" style="background:${temaCustom().grad}"></i>
     </div>
+    <div class="eyebrow" style="margin-top:14px">Foto de perfil</div>
+    <div class="fotorow"><button class="fotobig" data-act="foto-pick" aria-label="${fotoAtual()?'Trocar foto de perfil':'Adicionar foto de perfil'}">${fotoAtual()?`<img src="${fotoAtual()}" alt="">`:ic('user')}</button>
+      <div class="l"><b>${fotoAtual()?'Sua foto':'Adicionar foto'}</b><span>Aparece no botão da sua conta, neste aparelho</span></div>
+      <div class="fotobtns"><button class="btn" data-act="foto-pick">${fotoAtual()?'Trocar':'Escolher'}</button>${fotoAtual()?`<button class="btn ghost" data-act="foto-del" aria-label="Tirar a foto">Tirar</button>`:''}</div></div>
     <div style="height:14px"></div>
     ${S.isDev?`<button class="btn primary" data-act="sheet" data-s="pessoas" style="width:100%;margin-bottom:8px">${ic('user')} Pessoas${(S.pedidos||[]).length?` · ${S.pedidos.length} ${S.pedidos.length===1?'pedido':'pedidos'}`:''}</button>`:''}
     <div class="set" style="margin-top:10px">
@@ -1709,7 +1757,7 @@ async function importFile(f,auto){
     const ph=$('#pane-acordes');if(ph) ph.scrollIntoView({block:'start'});
   }catch(e){setStatus(esc(e.message||'Não consegui ler esse arquivo. Cole a cifra no campo abaixo.'),'err')}
 }
-document.addEventListener('change',ev=>{if(ev.target.id==='bkin'){const f=ev.target.files&&ev.target.files[0];ev.target.value='';if(f)importBackup(f);return}if(ev.target.id==='filein'){const f=ev.target.files&&ev.target.files[0];ev.target.value='';if(f) importFile(f)}});
+document.addEventListener('change',ev=>{if(ev.target.id==='fotoin'){const f=ev.target.files&&ev.target.files[0];ev.target.value='';if(f)salvarFoto(f);return}if(ev.target.id==='bkin'){const f=ev.target.files&&ev.target.files[0];ev.target.value='';if(f)importBackup(f);return}if(ev.target.id==='filein'){const f=ev.target.files&&ev.target.files[0];ev.target.value='';if(f) importFile(f)}});
 
 /* ================= Rolagem automática ================= */
 function stopScroll(){scrollState.on=false;cancelAnimationFrame(scrollState.raf)}
@@ -1736,7 +1784,7 @@ document.addEventListener('click',async ev=>{
     case 'stage': setStage(!S.stage);break;
     case 'sol': P.sol=!P.sol;saveP();render();break;
     case 'sheet': S.sheet=b.dataset.s;renderOverlay();break;
-    case 'close-sheet': if(NAV.has&&S.view==='songs'&&!S.stage)history.back();else{S.sheet=null;renderOverlay();if(S.view==='culto')render()}break;
+    case 'close-sheet': closeSheet();break;
     case 'key': S.sheet=null;setKey(+b.dataset.k);break;
     case 'step': setKey(S.target+ +b.dataset.d);break;
     case 'capo':{const k='cifras:capo:'+S.song.id;store.set(k,Math.max(0,Math.min(9,store.get(k,0)+ +b.dataset.d)));render();break}
@@ -1754,6 +1802,8 @@ document.addEventListener('click',async ev=>{
     case 'remover': if(b.dataset.confirm){await removerMembro(b.dataset.id)}else{b.dataset.confirm='1';b.innerHTML='Tirar?';b.style.width='auto';b.style.padding='0 10px'}break;
     case 'backup-out': exportBackup();break;
     case 'backup-in': $('#bkin').click();break;
+    case 'foto-pick': $('#fotoin').click();break;
+    case 'foto-del': try{localStorage.removeItem(fotoKey())}catch{}renderOverlay();render();break;
     case 'install': if(deferredInstall){deferredInstall.prompt();deferredInstall.userChoice.finally(()=>{deferredInstall=null;render()})}break;
     case 'install-x': store.set('cifras:nohint',true);render();break;
     case 'awake': P.awake=P.awake===false;saveP();renderOverlay();break;
