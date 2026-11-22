@@ -1,6 +1,6 @@
 // Guarda o app no aparelho para abrir sem internet.
 // Ao mudar qualquer arquivo do app, aumente o número da versão abaixo.
-const VERSION = 'cifras-v3';
+const VERSION = 'cifras-v4';
 const SHELL = ['./', './index.html', './config.js', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 const CDN = ['www.gstatic.com', 'fonts.googleapis.com', 'fonts.gstatic.com', 'unpkg.com', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'tessdata.projectnaptha.com'];
