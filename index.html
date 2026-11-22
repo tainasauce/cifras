@@ -212,6 +212,7 @@ body.stage .dock button{pointer-events:auto;box-shadow:0 8px 24px -8px rgba(0,0,
 .panel{width:100%;max-width:560px;background:var(--surface);border-radius:24px 24px 0 0;padding:10px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.2);animation:up .22s cubic-bezier(.2,.8,.2,1);max-height:88%;overflow:auto}
 .panel .grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 14px}
 .panel{overscroll-behavior:contain}
+.people .pava{width:38px;height:38px;border-radius:50%;flex:0 0 auto;background:var(--soft);display:grid;place-items:center;font-weight:800;color:var(--muted);overflow:hidden;align-self:center}.people .pava img{width:100%;height:100%;object-fit:cover}
 .acct .ava{position:absolute;inset:2px;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:cover;border-radius:50%}
 .fotorow{display:flex;align-items:center;gap:12px;margin-top:8px;background:var(--raise);border-radius:16px;padding:10px 12px;box-shadow:var(--hl)}
 .fotorow .l{flex:1;min-width:0;display:grid;gap:2px}.fotorow .l span{font-size:12px;color:var(--muted)}
@@ -750,6 +751,7 @@ function subscribe(){
   const ok=()=>{S.loaded=true;S.slow=false};
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'songs'),s=>{S.songs=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'cultos'),s=>{S.cultos=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
+  B.unsubs.push(ff.onSnapshot(ff.collection(fs,'fotos'),s=>{S.fotos=Object.fromEntries(s.docs.map(d=>[d.id,d.data().img||'']));fotosMudaram()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.doc(fs,'live','atual'),s=>{
     const prev=S.live;S.live=s.exists()?s.data():null;
     if(S.broadcast&&S.live&&S.live.by&&S.live.by!==S.uid) S.broadcast=null;
@@ -794,7 +796,7 @@ function watchUser(u){
       clearTimeout(timer);
       if(!u||u.isAnonymous){
         if(u&&u.isAnonymous){au.signOut(B.auth).catch(()=>{});return}
-        S.uid=null;S.email=null;setMember(null);S.pedido=null;unsubData();unsubPeople();(B.userUnsubs||[]).forEach(x=>{try{x()}catch{}});
+        S.uid=null;S.email=null;S.fotos=null;setMember(null);S.pedido=null;unsubData();unsubPeople();(B.userUnsubs||[]).forEach(x=>{try{x()}catch{}});
         S.authReady=true;S.loaded=true;render();return;
       }
       S.uid=u.uid;S.email=u.email;S.authReady=!!store.get('cifras:membro:'+u.uid,null);S.loaded=true;
@@ -853,6 +855,7 @@ function gateHTML(){
       ${su?'':'<button type="button" class="btn ghost" data-act="reset">Esqueci a senha</button>'}
     </form></div>`;
 }
+const avaP=m=>{const f=fotoDe(m.id);return `<span class="pava">${f?`<img src="${f}" alt="">`:esc(String(m.nome||m.email||'?').trim().charAt(0).toUpperCase())}</span>`};
 function pessoasHTML(){
   const ped=S.pedidos||[],mem=(S.membros||[]).slice().sort((a,b)=>(a.papel==='dev'?-1:b.papel==='dev'?1:String(a.nome||a.email).localeCompare(String(b.nome||b.email))));
   return `<h2>Pessoas</h2>
@@ -861,7 +864,7 @@ function pessoasHTML(){
       <div class="pa"><button class="btn primary sm" data-act="aceitar" data-id="${esc(p.id)}" data-p="leitor">Aceitar</button><button class="btn sm" data-act="aceitar" data-id="${esc(p.id)}" data-p="editor">Como editor</button><button class="btn ghost danger sm" data-act="recusar" data-id="${esc(p.id)}">Recusar</button></div></li>`).join('')}</ul>`
       :'<p class="muted" style="margin:0 0 6px">Nenhum pedido agora. Quem criar conta no app aparece aqui.</p>'}
     <div class="eyebrow" style="margin:18px 0 8px">Quem tem acesso (${mem.length})</div>
-    <ul class="people">${mem.map(m=>`<li><div class="pp"><b>${esc(m.nome||m.email||'')}${m.id===S.uid?' (você)':''}</b><span>${esc(m.email||'')}</span></div>
+    <ul class="people">${mem.map(m=>`<li>${avaP(m)}<div class="pp"><b>${esc(m.nome||m.email||'')}${m.id===S.uid?' (você)':''}</b><span>${esc(m.email||'')}</span></div>
       ${m.papel==='dev'?'<span class="tag">Responsável</span>':`<div class="pa"><div class="seg">${['leitor','editor'].map(r=>`<button data-act="papel" data-id="${esc(m.id)}" data-p="${r}" aria-pressed="${m.papel===r}">${r==='leitor'?'Pode ver':'Editor'}</button>`).join('')}</div>
         <button class="icon" data-act="remover" data-id="${esc(m.id)}" aria-label="Tirar o acesso de ${esc(m.nome||m.email||'')}">${ic('x')}</button></div>`}</li>`).join('')}</ul>
     <p class="hint">Editores cadastram, editam e excluem cifras. Quem "pode ver" só abre as cifras e os cultos. Só você aceita pessoas.</p>`;
@@ -1230,13 +1233,22 @@ function renderBottom(){
 }
 /* ===== Foto de perfil (guardada neste aparelho) ===== */
 const fotoKey=()=>'cifras:foto:'+(S.uid||'eu');
-function fotoAtual(){try{return localStorage.getItem(fotoKey())||''}catch{return ''}}
+function fotoDe(uid){return (S.fotos&&S.fotos[uid])||''}
+function fotoAtual(){if(S.fotos&&S.uid in S.fotos)return S.fotos[S.uid]||'';try{return localStorage.getItem(fotoKey())||''}catch{return ''}}
+function fotosMudaram(){const f=fotoAtual();try{f?localStorage.setItem(fotoKey(),f):localStorage.removeItem(fotoKey())}catch{}
+  const a=$('.acct');if(a){const old=a.querySelector('.ava,svg');if(old)old.outerHTML=f?`<img class="ava" src="${f}" alt="">`:ic('user')}
+  if(S.sheet==='conta'||S.sheet==='pessoas')renderOverlay()}
+async function gravarFoto(img){
+  if(B.mode==='demo'||!B.ff||!S.uid){try{img?localStorage.setItem(fotoKey(),img):localStorage.removeItem(fotoKey())}catch{}renderOverlay();render();return}
+  S.fotos=Object.assign({},S.fotos,{[S.uid]:img});fotosMudaram();
+  try{img?await B.ff.setDoc(B.ff.doc(B.fs,'fotos',S.uid),{img,at:Date.now()}):await B.ff.deleteDoc(B.ff.doc(B.fs,'fotos',S.uid))}
+  catch(e){flash('Não consegui salvar a foto agora. Tente de novo.')}
+}
 function salvarFoto(f){
   const url=URL.createObjectURL(f);const img=new Image();
-  img.onload=()=>{const n=256,c=document.createElement('canvas');c.width=c.height=n;const x=c.getContext('2d');
+  img.onload=()=>{const n=200,c=document.createElement('canvas');c.width=c.height=n;const x=c.getContext('2d');
     const m=Math.min(img.naturalWidth,img.naturalHeight);x.drawImage(img,(img.naturalWidth-m)/2,(img.naturalHeight-m)/2,m,m,0,0,n,n);URL.revokeObjectURL(url);
-    try{localStorage.setItem(fotoKey(),c.toDataURL('image/jpeg',.85))}catch{flash('Não coube a foto no aparelho.');return}
-    renderOverlay();render()};
+    gravarFoto(c.toDataURL('image/jpeg',.8))};
   img.onerror=()=>{URL.revokeObjectURL(url);flash('Não consegui abrir essa imagem.')};
   img.src=url;
 }
@@ -1300,7 +1312,7 @@ function renderOverlay(){
     </div>
     <div class="eyebrow" style="margin-top:14px">Foto de perfil</div>
     <div class="fotorow"><button class="fotobig" data-act="foto-pick" aria-label="${fotoAtual()?'Trocar foto de perfil':'Adicionar foto de perfil'}">${fotoAtual()?`<img src="${fotoAtual()}" alt="">`:ic('user')}</button>
-      <div class="l"><b>${fotoAtual()?'Sua foto':'Adicionar foto'}</b><span>Aparece no botão da sua conta, neste aparelho</span></div>
+      <div class="l"><b>${fotoAtual()?'Sua foto':'Adicionar foto'}</b><span>Fica no seu cadastro, em qualquer aparelho</span></div>
       <div class="fotobtns"><button class="btn" data-act="foto-pick">${fotoAtual()?'Trocar':'Escolher'}</button>${fotoAtual()?`<button class="btn ghost" data-act="foto-del" aria-label="Tirar a foto">Tirar</button>`:''}</div></div>
     <div style="height:14px"></div>
     ${S.isDev?`<button class="btn primary" data-act="sheet" data-s="pessoas" style="width:100%;margin-bottom:8px">${ic('user')} Pessoas${(S.pedidos||[]).length?` · ${S.pedidos.length} ${S.pedidos.length===1?'pedido':'pedidos'}`:''}</button>`:''}
@@ -1803,7 +1815,7 @@ document.addEventListener('click',async ev=>{
     case 'backup-out': exportBackup();break;
     case 'backup-in': $('#bkin').click();break;
     case 'foto-pick': $('#fotoin').click();break;
-    case 'foto-del': try{localStorage.removeItem(fotoKey())}catch{}renderOverlay();render();break;
+    case 'foto-del': gravarFoto('');break;
     case 'install': if(deferredInstall){deferredInstall.prompt();deferredInstall.userChoice.finally(()=>{deferredInstall=null;render()})}break;
     case 'install-x': store.set('cifras:nohint',true);render();break;
     case 'awake': P.awake=P.awake===false;saveP();renderOverlay();break;
