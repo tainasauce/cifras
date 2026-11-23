@@ -285,6 +285,9 @@ textarea{resize:vertical}
 .chead input{font:700 22px var(--f-display);border-color:transparent;background:transparent;padding:4px 8px;margin-left:-8px}
 .chead input[type=date]{font:600 14px var(--f-body);color:var(--muted);width:auto;padding:2px 8px}
 .chead input:hover{border-color:var(--line)}
+.showdate{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-top:6px;cursor:pointer}
+.chead .showdate input{width:18px;height:18px;margin:0;padding:0;accent-color:var(--accent);flex:0 0 auto}
+.cdate{font-size:13px;font-weight:600;opacity:.8;margin-top:1px}.cdate::first-letter{text-transform:uppercase}
 .items{list-style:none;margin:0;padding:0;background:var(--raise);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;counter-reset:n}
 .item{display:flex;gap:12px;align-items:center;padding:10px 12px}
 .item+.item{border-top:1px solid var(--line)}
@@ -364,7 +367,13 @@ body.picking main{padding-bottom:330px}
 .install>svg{color:var(--accent)}
 .note.off{display:flex;gap:8px;align-items:center}
 .pinbox{display:grid;gap:8px;justify-items:center}
-.pinbox input{width:190px;text-align:center;font:700 26px var(--f-mono);letter-spacing:.35em;padding:12px}
+.pindots{display:flex;gap:16px;margin:6px 0 2px}.pindots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--muted);transition:background .12s,border-color .12s}
+.pindots i.on{background:var(--ink);border-color:var(--ink)}
+.pindots.shake{animation:shake .38s}@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.pinpad{display:grid;grid-template-columns:repeat(3,74px);gap:12px 22px;margin-top:4px}
+.pinpad button{width:74px;height:74px;border-radius:50%;border:0;background:var(--soft);color:var(--ink);font:600 28px var(--f-body);box-shadow:var(--hl)}
+.pinpad button:active{background:var(--line)}.pinbox.busy .pinpad{opacity:.4;pointer-events:none}
+.pin-err.wait{color:var(--muted)}
 .pin-err{min-height:20px;margin:0;color:var(--danger);font-size:14px;font-weight:700}
 .choices{display:grid;gap:10px}
 .choice{display:flex;gap:14px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--raise);border-radius:var(--r);padding:16px}
@@ -384,6 +393,7 @@ body.picking main{padding-bottom:330px}
 .otherrow input{flex:1;font-family:var(--f-mono)}
 
 /* ===== Aurora fosca: gradiente nos destaques, vidro escuro nas barras ===== */
+body:not(.songmode)::before{content:'';position:fixed;top:0;left:0;right:0;height:calc(env(safe-area-inset-top) + 10px);background:linear-gradient(var(--bg) 70%,transparent);z-index:35;pointer-events:none}
 body{background:radial-gradient(140% 50% at 50% -12%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 60%) fixed,var(--bg)}
 .cards,.items,.culto,.sheetbox,.ctl,.picker .res button,.people li,.choice,.placer,.empty{background:var(--raise);border-color:transparent;box-shadow:var(--hl)}
 .cards li+li,.item+.item{border-top-color:rgba(255,255,255,.05)}
@@ -738,7 +748,7 @@ const db={
     const ref=B.ff.doc(B.fs,col,id);
     const t=(p)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>{const e=new Error('t');e.code='offline';no(e)},12000))]);
     await t(B.ff.updateDoc(ref,{apagarCom:String(pin)}));
-    try{await t(B.ff.deleteDoc(ref))}catch(e){if(e.code==='permission-denied'){const w=new Error('pin');w.code='wrong-pin';throw w}throw e}
+    try{await t(B.ff.runTransaction?B.ff.runTransaction(B.fs,async tx=>{tx.delete(ref)}):B.ff.deleteDoc(ref))}catch(e){if(e.code==='permission-denied'){const w=new Error('pin');w.code='wrong-pin';throw w}throw e}
   }
 };
 function clean(o){return JSON.parse(JSON.stringify(o))}
@@ -917,6 +927,7 @@ async function pushLive(data){
   liveWriting=false;
 }
 async function guard(p,msg){try{await p;return true}catch(e){flash((msg||'Não foi possível salvar')+'. Tente de novo.');return false}}
+function pinDots(){const d=$('#pindots');if(!d)return;const n=(S.pinVal||'').length;[...d.children].forEach((x,i)=>x.classList.toggle('on',i<n));d.setAttribute('aria-label',n+' de 4 números')}
 function salvarCulto(){const c=S.cultos.get(S.cultoId);if(!c)return;const n=$('#c-name'),dt=$('#c-date');
   const patch={name:(n&&n.value.trim())||c.name,date:(dt&&dt.value)||c.date,updatedAt:Date.now()};
   guard(db.setCulto(S.cultoId,{...c,...patch}));toast('Culto salvo');go('cultos')}
@@ -1041,7 +1052,7 @@ function viewSongs(){
   let card='';
   if(nc){const d=dParts(nc.date);const names=(nc.items||[]).map(it=>S.songs.get(it.songId)).filter(Boolean).map(s=>s.title);
     card=`<button class="next" data-act="open-culto" data-id="${esc(nc.id)}"><span class="datebox"><b>${d.day}</b><span>${d.mon}</span></span>
-      <div><div class="k">${nc.date===todayStr()?'Hoje':'Próximo culto'}${isNovo(nc.id)?' · Novo':''}</div><h3>${esc(nc.name)}</h3><p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right')}</button>`;}
+      <div><div class="k">${nc.date===todayStr()?'Hoje':'Próximo culto'}${isNovo(nc.id)?' · Novo':''}</div><h3>${esc(nc.name)}</h3>${nc.showDate?`<div class="cdate">${esc(fmtDate(nc.date))}</div>`:''}<p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right')}</button>`;}
   return `${installHint()}<div class="hello"><div><div class="eyebrow">${greet()}, ministério</div><h1>Nossas <em>cifras</em></h1></div>
     <button class="acct${S.canWrite?' on':''}" data-act="sheet" data-s="conta" aria-label="Sua conta${S.isDev&&(S.pedidos||[]).length?', há pedidos de acesso':''}">${fotoAtual()?`<img class="ava" src="${fotoAtual()}" alt="">`:ic('user')}${S.isDev&&(S.pedidos||[]).length?`<i class="badge">${S.pedidos.length}</i>`:''}</button></div>
   <div class="searchrow"><label class="search" for="q">${ic('search')}<input type="search" id="q" placeholder="Buscar música ou artista" value="${esc(S.q)}" aria-label="Buscar música ou artista"></label>
@@ -1364,9 +1375,10 @@ function renderOverlay(){
     const f=S.pinFor||{};const nm=f.type==='song'?(S.songs.get(f.id)||{}).title:(S.cultos.get(f.id)||{}).name;
     body=`<h2>Excluir ${f.type==='song'?'cifra':'culto'}</h2>
       <p class="muted" style="margin:-6px 0 14px">Para excluir <b>${esc(nm||'')}</b>, digite a senha de exclusão do ministério.</p>
-      <form id="pinform" class="pinbox"><input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="Senha de exclusão (4 números)" placeholder="••••">
+      <div class="pinbox"><div class="pindots" id="pindots" role="img" aria-label="0 de 4 números">${'<i></i>'.repeat(4)}</div>
       <p id="pin-err" class="pin-err" role="alert">${esc(S.pinErr||'')}</p>
-      <div class="actions" style="justify-content:center"><button type="button" class="btn ghost" data-act="close-sheet">Cancelar</button><button type="submit" class="btn primary" style="background:var(--danger);border-color:var(--danger);color:#fff">Excluir</button></div></form>`;
+      <div class="pinpad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-act="pk" data-k="${n}">${n}</button>`).join('')}<span></span><button type="button" data-act="pk" data-k="0">0</button><button type="button" data-act="pk" data-k="del" aria-label="Apagar número">⌫</button></div>
+      <button type="button" class="btn ghost" data-act="close-sheet" style="margin-top:6px">Cancelar</button></div>`;
   } else if(S.sheet==='newchoice'){
     body=`<h2>Adicionar cifra</h2><div class="choices">
       <button class="choice" data-act="new-song" data-mode="paste"><span class="ci">${ic('clip')}</span><span><b>Cifra existente</b><span>Escolher o arquivo (PDF, Word, foto ou print) e o app monta a cifra</span></span></button>
@@ -1428,7 +1440,7 @@ function updatePreview(){ if(S.etab==='acordes'){S.model=toModel($('#content').v
 function cultoRow(c,destaque){
   const d=dParts(c.date);const names=(c.items||[]).map(it=>S.songs.get(it.songId)).filter(Boolean).map(s=>s.title);
   return `<li class="${S.canWrite?'swipe':''}">${S.canWrite?`<button class="swdel" data-act="swdel" data-type="culto" data-id="${esc(c.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}<button class="culto${destaque?' next':''}${c.date<todayStr()?' past':''}" data-act="open-culto" data-id="${esc(c.id)}"><span class="datebox"><b>${d.day}</b><span>${d.mon}</span></span>
-    <div>${destaque?`<div class="k">${c.date===todayStr()?'Hoje':'Próximo culto'}</div>`:''}<h3>${esc(c.name)}${isNovo(c.id)?'<span class="tag novo">Novo</span>':''}</h3><p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right','i chev')}</button></li>`;
+    <div>${destaque?`<div class="k">${c.date===todayStr()?'Hoje':'Próximo culto'}</div>`:''}<h3>${esc(c.name)}${isNovo(c.id)?'<span class="tag novo">Novo</span>':''}</h3>${c.showDate?`<div class="cdate">${esc(fmtDate(c.date))}</div>`:''}<p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right','i chev')}</button></li>`;
 }
 function viewCultos(){
   const all=cultosSorted(),t=todayStr();
@@ -1446,7 +1458,7 @@ function viewCulto(){
   const mineLive=isLive&&S.broadcast===S.cultoId;
   return `<button class="back" data-act="tab" data-tab="cultos">${ic('left')} Cultos</button>
   <div class="chead"><span class="datebox" style="background:var(--tint);color:var(--accent)"><b>${d.day}</b><span>${d.mon}</span></span>
-    <div style="flex:1;min-width:0">${w?`<input type="text" id="c-name" value="${esc(c.name)}" aria-label="Nome do culto"><br><input type="date" id="c-date" value="${esc(c.date)}" aria-label="Data do culto">`
+    <div style="flex:1;min-width:0">${w?`<input type="text" id="c-name" value="${esc(c.name)}" aria-label="Nome do culto"><br><input type="date" id="c-date" value="${esc(c.date)}" aria-label="Data do culto"><label class="showdate"><input type="checkbox" id="c-showdate"${c.showDate?' checked':''}> Mostrar data abaixo do nome</label>`
       :`<h1>${esc(c.name)}</h1><div class="muted" style="font-size:14px">${esc(fmtDate(c.date))}</div>`}</div></div>
   ${items.length?`<div style="margin-bottom:16px">${mineLive?`<button class="btn" data-act="live-stop" style="width:100%">Encerrar ao vivo</button>`:`<button class="btn live" data-act="live-start" style="width:100%">● Conduzir ao vivo</button>`}</div>`:''}
   <div class="toolrow"><span class="eyebrow">${items.length} ${items.length===1?'música':'músicas'}</span>${w&&items.length?`<button class="btn ghost" data-act="organize" style="padding:6px 10px">${S.organize?ic('check')+' Pronto':'Organizar'}</button>`:''}</div>
@@ -1874,14 +1886,20 @@ document.addEventListener('click',async ev=>{
     case 'pk-other':{const o=$('#pk-other');const v=o.value.trim().replace(/^\[|\]$/g,'');if(v){setChordAtSel(v)}break}
     case 'edit-song': sel=null;S.restored=false;S.edit={...S.song,mode:'edit'};S.etab='acordes';S.selW=null;go('edit');S.model=toModel(S.edit.content);renderPlacer();break;
     case 'cancel-edit': if(S.edit&&S.edit.id&&S.songs.get(S.edit.id)){openSong(S.edit.id,keyName(S.target,parseKey(S.song.key).minor),S.ctx)}else go('songs');break;
-    case 'del-song': S.pinFor={type:'song',id:S.edit.id};S.pinErr='';S.sheet='pin';renderOverlay();setTimeout(()=>{const p=$('#pin');p&&p.focus()},50);break;
-    case 'pin-ok':{const p=$('#pin');if(!p)break;
-      const f=S.pinFor,er=$('#pin-err'),btn=document.querySelector('#pinform [type=submit]');
-      if(!/^\d{4}$/.test(p.value)){if(er)er.textContent='A senha tem 4 números.';break}
-      if(btn){btn.disabled=true;btn.textContent='Conferindo…'}
-      try{await db.del(f.type==='song'?'songs':'cultos',f.id,p.value)}
+    case 'del-song': S.pinFor={type:'song',id:S.edit.id};S.pinErr='';S.pinVal='';S.pinBusy=false;if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();break;
+    case 'pk':{if(S.pinBusy)break;const k=b.dataset.k;S.pinVal=S.pinVal||'';
+      S.pinVal=k==='del'?S.pinVal.slice(0,-1):(S.pinVal+k).slice(0,4);pinDots();
+      if(navigator.vibrate)try{navigator.vibrate(8)}catch{}
+      if(S.pinVal.length===4)setTimeout(()=>{const x=document.createElement('button');x.dataset.act='pin-ok';document.body.appendChild(x);x.click();x.remove()},120);break}
+    case 'pin-ok':{if(S.pinBusy||S.sheet!=='pin')break;const pin=S.pinVal||'';
+      const f=S.pinFor,er=$('#pin-err');
+      if(!/^\d{4}$/.test(pin)){if(er)er.textContent='A senha tem 4 números.';break}
+      S.pinBusy=true;if(er){er.textContent='Conferindo…';er.classList.add('wait')}document.querySelector('.pinbox')?.classList.add('busy');
+      try{await db.del(f.type==='song'?'songs':'cultos',f.id,pin)}
       catch(e){const m=e.code==='wrong-pin'?'Senha errada. Tente de novo.':e.code==='offline'?'Para excluir precisa de internet.':'Não foi possível excluir. Tente de novo.';
-        if(er)er.textContent=m;if(btn){btn.disabled=false;btn.textContent='Excluir'}p.value='';p.focus();break}
+        S.pinBusy=false;S.pinVal='';pinDots();document.querySelector('.pinbox')?.classList.remove('busy');
+        if(er){er.classList.remove('wait');er.textContent=m}const d=$('#pindots');if(d){d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake')}break}
+      S.pinBusy=false;
       S.sheet=null;renderOverlay();
       if(f.type==='song'){clearDraft();S.song=null;go('songs')}else go('cultos');
       flash(f.type==='song'?'Cifra excluída.':'Culto excluído.');
@@ -1891,7 +1909,7 @@ document.addEventListener('click',async ev=>{
     case 'open-culto': marcarVisto(b.dataset.id);S.cultoId=b.dataset.id;go('culto');break;
     case 'fav': toggleFav(b.dataset.id);break;
     case 'favtog': S.soFav=!S.soFav;render();break;
-    case 'swdel': S.pinFor={type:b.dataset.type,id:b.dataset.id};S.pinErr='';S.sheet='pin';renderOverlay();setTimeout(()=>{const p=$('#pin');p&&p.focus()},50);break;
+    case 'swdel': S.pinFor={type:b.dataset.type,id:b.dataset.id};S.pinErr='';S.pinVal='';S.pinBusy=false;if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();break;
     case 'open-item':{const c=S.cultos.get(S.cultoId);const i=+b.dataset.i;const it=c.items[i];if(S.songs.get(it.songId)) openSong(it.songId,it.key,{cultoId:S.cultoId,index:i});break}
     case 'organize': S.organize=!S.organize;render();break;
     case 'move':{const c=S.cultos.get(S.cultoId);const items=[...c.items];const i=+b.dataset.i,j=i+ +b.dataset.d;[items[i],items[j]]=[items[j],items[i]];guard(db.setCulto(S.cultoId,{...c,items,updatedAt:Date.now()}));break}
@@ -1900,7 +1918,7 @@ document.addEventListener('click',async ev=>{
     case 'picker-open': S.sheet='picker';S.pq='';renderOverlay();break;
     case 'add-item':{const c=S.cultos.get(S.cultoId);const s=S.songs.get(b.dataset.id);
       await guard(db.setCulto(S.cultoId,{...c,items:[...(c.items||[]),{songId:b.dataset.id,key:s.key}],updatedAt:Date.now()}));renderPicker();break}
-    case 'del-culto': S.pinFor={type:'culto',id:S.cultoId};S.pinErr='';S.sheet='pin';renderOverlay();setTimeout(()=>{const p=$('#pin');p&&p.focus()},50);break;
+    case 'del-culto': S.pinFor={type:'culto',id:S.cultoId};S.pinErr='';S.pinVal='';S.pinBusy=false;if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();break;
     case 'live-start':{const c=S.cultos.get(S.cultoId);const it=c.items[0];S.broadcast=S.cultoId;S.follow=false;
       openSong(it.songId,it.key,{cultoId:S.cultoId,index:0});break}
     case 'live-stop': S.broadcast=null;pushLive({...(S.live||{}),active:false,at:Date.now(),by:S.uid||'anon'});render();break;
@@ -1913,7 +1931,6 @@ document.addEventListener('input',ev=>{
   if(t.id==='c1'||t.id==='c2'){P[t.id]=t.value;P.tema='custom';applyTema();const p=$('#mixprev');if(p)p.style.background=temaCustom().grad;
     document.querySelectorAll('.colors button').forEach(b=>b.setAttribute('aria-pressed','false'));const m=document.querySelector('.mix');if(m)m.classList.add('on');return}
   if(t.id==='q'){S.q=t.value;renderList()}
-  else if(t.id==='pin'){t.value=t.value.replace(/\D/g,'').slice(0,4);if(t.value.length===4){const f=$('#pinform');if(f)f.requestSubmit()}}
   else if(t.id==='pq'){S.pq=t.value;renderPicker()}
   else if(t.id==='speed'){P.speed=+t.value;saveP()}
   else if(S.view==='edit'&&t.id==='content') saveDraft();
@@ -1925,6 +1942,7 @@ document.addEventListener('change',ev=>{
   if(t.id==='f-root'||t.id==='f-minor'){renderPickPanel();saveDraft()}
   else if(t.id==='f-draft') saveDraft();
   else if(t.dataset.act==='item-key'){const c=S.cultos.get(S.cultoId);const items=c.items.map((it,k)=>k===+t.dataset.i?{...it,key:t.value}:it);guard(db.setCulto(S.cultoId,{...c,items,updatedAt:Date.now()}))}
+  else if(t.id==='c-showdate'){const c=S.cultos.get(S.cultoId);if(!c)return;guard(db.setCulto(S.cultoId,{...c,showDate:t.checked,updatedAt:Date.now()}))}
   else if(t.id==='c-name'||t.id==='c-date'){const c=S.cultos.get(S.cultoId);if(!c)return;const patch=t.id==='c-name'?{name:t.value.trim()||c.name}:{date:t.value||c.date};guard(db.setCulto(S.cultoId,{...c,...patch,updatedAt:Date.now()}))}
 });
 document.addEventListener('submit',async ev=>{
@@ -1933,7 +1951,6 @@ document.addEventListener('submit',async ev=>{
     if(m){const e=$('#g-err');if(e)e.textContent=m;b.disabled=false;b.textContent=lbl}return}
   if(ev.target.id==='loginform'){ev.preventDefault();const b=ev.target.querySelector('[type=submit]');b.disabled=true;b.textContent='Entrando…';
     const m=await login($('#l-email').value,$('#l-pass').value);if(m){const e=$('#l-err');if(e)e.textContent=m;b.disabled=false;b.textContent='Entrar'}return}
-  if(ev.target.id==='pinform'){ev.preventDefault();const b=document.createElement('button');b.dataset.act='pin-ok';document.body.appendChild(b);b.click();b.remove();return}
   if(ev.target.id!=='songform') return; ev.preventDefault();
   const data=collectForm(); if(!data.title){$('#f-title').focus();return}
   data.updatedAt=Date.now();data.updatedBy=S.uid||null;
