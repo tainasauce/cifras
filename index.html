@@ -1121,6 +1121,7 @@ function marcarVisto(id){const v=vistos();if(!v.has(id)){v.add(id);store.set('ci
   let sw=null;
   const closeAll=ex=>document.querySelectorAll('.swipe>.open').forEach(el=>{if(el!==ex)el.classList.remove('open')});
   document.addEventListener('touchstart',e=>{
+    if(e.target.closest('.swacts,.swdel')){sw=null;return}
     const r=e.target.closest('.swipe>.song,.swipe>.culto');if(!r){closeAll();sw=null;return}
     const t=e.touches[0];if(t.clientX<=24){sw=null;return}
     const w=parseFloat(getComputedStyle(r.parentElement).getPropertyValue('--sw'))||92;
