@@ -320,7 +320,7 @@ label.f .h{font-weight:400;color:var(--muted);font-size:13px}
 input[type=text],input[type=search],input[type=date],input[type=number],input[type=email],input[type=password],select,textarea{background:var(--raise);border:1px solid var(--line);border-radius:14px;padding:11px 14px;width:100%}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}
 textarea{resize:vertical}
-#content{font:14px/1.5 var(--f-mono);min-height:240px;white-space:pre;overflow-x:auto}
+#content,#lyr{font:14px/1.5 var(--f-mono);min-height:240px;white-space:pre;overflow-x:auto}
 .keypick{display:flex;gap:8px;align-items:center}
 .keypick select{flex:1}
 .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -396,7 +396,7 @@ textarea{resize:vertical}
 .pc.cur>span{box-shadow:inset 0 -2px 0 var(--accent)}
 body.facil #songform .btn,body.facil .facilsave .btn,body.facil .pick .btn{min-height:52px;font-size:17px;padding:12px 20px}
 body.facil #songform input[type=text],body.facil #songform input[type=number],body.facil #songform select,body.facil #songform textarea,body.facil .pick input[type=text]{font-size:18px;min-height:52px}
-body.facil textarea#content{font-size:19px;line-height:1.6}
+body.facil #songform textarea#lyr{font-size:19px;line-height:1.6;min-height:340px}
 body.facil .steps button{min-height:56px;font-size:18px}
 body.facil .w{padding:7px 8px;border-radius:10px}
 body.facil .pc b{font-size:18px}body.facil .pc>span{font-size:24px}
@@ -474,7 +474,8 @@ body.picking main#app{padding-bottom:calc(330px + env(safe-area-inset-top))}
 .choice .ci{width:46px;height:46px;border-radius:14px;background:var(--soft);color:var(--accent);display:grid;place-items:center;flex:0 0 auto}
 .choice b{display:block;font-size:17px}
 .choice span span{font-size:14px;color:var(--muted)}
-#content{min-height:300px}
+#content,#lyr{min-height:300px}
+.grid2.lado{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .writer{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:grid;gap:10px}
 .writer .lbl{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em}
 .palette{display:flex;flex-wrap:wrap;gap:6px}
@@ -1252,7 +1253,7 @@ function ctlCard(){
       ${S.role==='mod2'?`<button class="chip2" data-act="stage">${ic('expand')} Tela cheia</button>`:''}
       <button class="chip2 icon-only" data-act="sheet" data-s="adjust" aria-label="Ajustes">${ic('sliders')}${capo?`<i class="badge">${capo}</i>`:P.degree?`<i class="badge">I</i>`:''}</button>
     </div>
-    ${S.role==='mod2'&&S.canWrite?`<div class="facilbar ctl-r3"><button class="btn primary" data-act="edit-song">${ic('edit')} Editar música</button><button class="btn" data-act="edit-letra">${ic('edit')} Editar letra</button></div>`:''}
+    ${S.role==='mod2'&&S.canWrite?`<div class="facilbar ctl-r3"><button class="btn primary" data-act="edit-song">${ic('edit')} Editar</button></div>`:''}
     ${info?`<p class="ctl-info">${esc(info)}</p>`:''}
     <button class="ctl-tog" data-act="ctl-toggle" aria-expanded="true" aria-label="Recolher controles">${ic('up')}</button>
   </div>`;
@@ -1262,7 +1263,7 @@ function viewSong(){
   const {s,o,shift,spell}=songCalc();
   const cul=S.ctx&&S.cultos.get(S.ctx.cultoId);
   const open=P.ctlOpen,top=P.ctlPos!=='bottom';
-  const meta=[s.artist,s.bpm?s.bpm+' BPM':'',S.target!==o.idx?'original em '+s.key:'',cul?(S.ctx.index+1)+'ª do culto':''].filter(Boolean).map(esc).join(' · ');
+  const meta=[s.artist,S.target!==o.idx?'original em '+s.key:'',cul?(S.ctx.index+1)+'ª do culto':''].filter(Boolean).map(esc).join(' · ');
   return `<button class="back" data-act="back">${ic('left')} ${cul?esc(cul.name):'Músicas'}</button>
   ${open&&top?ctlCard():''}
   <div class="titlebox">
@@ -1577,13 +1578,15 @@ function viewEdit(){
   const e=S.edit,o=parseKey(e.key);
   const rootOpts=KEY_LABELS.map((l,i)=>`<option value="${i}"${i===o.idx?' selected':''}>${l}</option>`).join('');
   const paste=e.mode==='paste';
-  return `<button class="back" data-act="cancel-edit">${ic('left')} Cancelar</button>
+  return `${S.role==='mod2'?`<div class="facilsave"><button type="submit" form="songform" class="btn primary">${ic('check')} Salvar cifra</button><button type="button" class="btn ghost" data-act="cancel-edit">Cancelar</button></div><div class="facilsp"></div>`:''}
+  ${S.role==='mod2'?'':`<button class="back" data-act="cancel-edit">${ic('left')} Cancelar</button>`}
   <div class="pagehead"><h1>${e.id?'Editar cifra':paste?'Cifra existente':'Nova cifra'}</h1></div>
-  ${S.role==='mod2'?`<div class="facilsave"><button type="submit" form="songform" class="btn primary">${ic('check')} Salvar cifra</button><button type="button" class="btn ghost" data-act="cancel-edit">Cancelar</button></div><div class="facilsp"></div>`:''}
   <form class="form" id="songform" autocomplete="off">
-    <label class="f" for="f-title">Nome da música<input type="text" id="f-title" required value="${esc(e.title)}" placeholder="Ex.: Grande é o Senhor"></label>
-    <div class="grid2">
+    <div class="grid2 lado">
+      <label class="f" for="f-title">Nome da música<input type="text" id="f-title" required value="${esc(e.title)}" placeholder="Ex.: Grande é o Senhor"></label>
       <label class="f" for="f-artist">Artista ou ministério<input type="text" id="f-artist" value="${esc(e.artist)}" placeholder="Ex.: Eli Soares"></label>
+    </div>
+    <div class="grid2">
       <label class="f" for="f-root">Tom da cifra<span class="keypick"><select id="f-root">${rootOpts}</select><select id="f-minor" aria-label="Maior ou menor"><option value="">maior</option><option value="m"${o.minor?' selected':''}>menor</option></select></span></label>
     </div>
     ${S.restored?`<p class="note" style="margin:0">Recuperei o rascunho que você não tinha salvado. <button type="button" class="btn ghost" data-act="discard-draft" style="padding:2px 8px">Começar do zero</button></p>`:''}
@@ -1596,7 +1599,8 @@ function viewEdit(){
       ${paste?`<div class="importbox"><button type="button" class="btn primary" data-act="pick-file">${ic('clip')} Escolher arquivo da cifra</button><span>PDF, Word, texto, foto ou print</span></div>`:''}
       <p class="hint" style="margin:0 0 10px">${paste?'Ou cole aqui o texto da cifra, do site ou do WhatsApp. Depois confira em <b>Acordes</b>.':'Escreva só a letra, uma frase por linha. Depois vá em <b>Acordes</b> e toque nas palavras para pôr os acordes.'}</p>
       <div class="palette secs" style="margin-bottom:10px">${['Intro','Verso','Pré-refrão','Refrão','Ponte','Final'].map(p=>`<button type="button" data-ins-sec="${p}">+ ${p}</button>`).join('')}</div>
-      <textarea id="content" spellcheck="false" aria-label="Letra da música" placeholder="${paste?'Cole a cifra aqui':'[Verso]&#10;Primeira frase da letra&#10;Segunda frase da letra'}">${esc(e.content)}</textarea>
+      <textarea id="lyr" spellcheck="false" aria-label="Letra da música" placeholder="${paste?'Cole a cifra aqui':'[Verso]&#10;Primeira frase da letra&#10;Segunda frase da letra'}">${esc(plainOf(normFull(e.content)))}</textarea>
+      <textarea id="content" hidden aria-hidden="true">${esc(normFull(e.content||''))}</textarea>
     </div>
     <div id="pane-acordes" ${S.etab==='acordes'?'':'hidden'}>
       <p class="hint" style="margin:0 0 10px">Toque numa palavra e escolha o acorde. Para pôr no meio da palavra, escolha a sílaba.</p>
@@ -1604,7 +1608,6 @@ function viewEdit(){
     </div>
     <div class="grid2">
       <label class="f" for="f-notes">Observações <span class="h">opcional</span><input type="text" id="f-notes" value="${esc(e.notes||'')}" placeholder="Ex.: repetir o refrão 2x no final"></label>
-      <label class="f" for="f-bpm">BPM <span class="h">opcional</span><input type="number" id="f-bpm" min="30" max="240" value="${esc(e.bpm||'')}"></label>
       <label class="f" for="f-refs">Links de referência <span class="h">opcional · um por linha</span><textarea id="f-refs" rows="2" placeholder="https://youtu.be/...  ao vivo" style="min-height:0">${esc((e.refs||[]).map(r=>r.url+(r.label?'  '+r.label:'')).join('\n'))}</textarea></label>
     </div>
     <label class="check" for="f-draft" style="font-size:14px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="f-draft"${e.draft?' checked':''}> Vamos tirar ainda <span class="muted" style="font-size:12px">· fica em Próximas canções</span></label>
@@ -1684,7 +1687,7 @@ function viewCulto(){
 /* ================= Escrever cifra ================= */
 function collectForm(){
   const r=+$('#f-root').value,mi=$('#f-minor').value==='m';
-  return {title:$('#f-title').value.trim(),artist:$('#f-artist').value.trim(),key:keyName(r,mi),bpm:$('#f-bpm').value?+$('#f-bpm').value:null,
+  return {title:$('#f-title').value.trim(),artist:$('#f-artist').value.trim(),key:keyName(r,mi),bpm:(S.edit&&S.edit.bpm)||null,
     content:$('#content').value.replace(/\s+$/,''),notes:$('#f-notes').value.trim(),refs:parseRefs(($('#f-refs')||{}).value||''),draft:$('#f-draft').checked};
 }
 const draftKey=()=>'cifras:draft:'+(S.edit&&S.edit.id||'new');
@@ -1714,6 +1717,40 @@ function toModel(text){
   }
   return out;
 }
+function normFull(t){return toModel(String(t||'')).map(L=>L.type==='lyric'?lyricToInline(L):L.text).join('\n')}
+function secChords(l){const c=classify(l);return c.type==='section'&&c.rest&&c.rest.trim()&&isChordLine(c.rest)?c:null}
+function plainLine(l){const c=classify(l);if(c.type==='inline')return l.replace(/\[[^\]]*\]/g,'');const sc=secChords(l);return sc?'['+sc.label+']':l}
+function plainOf(full){return String(full||'').split('\n').map(plainLine).join('\n')}
+function carryChords(fl,po,pn){const sc=secChords(fl);if(sc)return classify(pn).type==='section'?pn.replace(/\s+$/,'')+' '+sc.rest:pn;if(classify(fl).type!=='inline')return pn;
+  const ch=[];let txt='',last=0;for(const m of fl.matchAll(/\[([^\]]+)\]/g)){txt+=fl.slice(last,m.index);last=m.index+m[0].length;ch.push({pos:txt.length,c:m[1]})}
+  let p=0;while(p<po.length&&p<pn.length&&po[p]===pn[p])p++;
+  let q=0;while(q<po.length-p&&q<pn.length-p&&po[po.length-1-q]===pn[pn.length-1-q])q++;
+  const d=pn.length-po.length;let out='',at=0;
+  ch.map(c=>({c:c.c,pos:c.pos<=p?c.pos:c.pos>=po.length-q?c.pos+d:Math.min(p,pn.length)})).map(c=>({...c,pos:Math.max(0,Math.min(pn.length,c.pos))})).sort((a,b)=>a.pos-b.pos)
+    .forEach(c=>{out+=pn.slice(at,c.pos)+'['+c.c+']';at=c.pos});
+  return out+pn.slice(at)}
+function mergeLyr(full,plain){
+  const F=String(full||'').split('\n'),Po=F.map(plainLine),Pn=String(plain).split('\n');
+  let a=0;while(a<Po.length&&a<Pn.length&&Po[a]===Pn[a])a++;
+  let z=0;while(z<Po.length-a&&z<Pn.length-a&&Po[Po.length-1-z]===Pn[Pn.length-1-z])z++;
+  const oM=Po.slice(a,Po.length-z),nM=Pn.slice(a,Pn.length-z),fM=F.slice(a,F.length-z);const out=[];
+  if(oM.length*nM.length<=160000){
+    const n=oM.length,m=nM.length,L=Array.from({length:n+1},()=>new Uint16Array(m+1));
+    for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)L[i][j]=oM[i]===nM[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+    let i=0,j=0,bo=[],bn=[];
+    const flush=()=>{const pr=pairLines(bo.map(k=>oM[k]),bn);for(let k=0;k<bn.length;k++)out.push(pr[k]>=0?carryChords(fM[bo[pr[k]]],oM[bo[pr[k]]],bn[k]):bn[k]);bo=[];bn=[]};
+    while(i<n||j<m){if(i<n&&j<m&&oM[i]===nM[j]){flush();out.push(fM[i]);i++;j++}else if(j<m&&(i>=n||L[i][j+1]>=L[i+1][j])){bn.push(nM[j]);j++}else{bo.push(i);i++}}
+    flush();
+  }else nM.forEach((l,k)=>out.push(k<oM.length?carryChords(fM[k],oM[k],l):l));
+  return F.slice(0,a).concat(out,F.slice(F.length-z)).join('\n')}
+function lineSim(a,b){if(!a.trim()||!b.trim())return 0;let p=0;while(p<a.length&&p<b.length&&a[p]===b[p])p++;let q=0;while(q<a.length-p&&q<b.length-p&&a[a.length-1-q]===b[b.length-1-q])q++;return (p+q)/Math.max(a.length,b.length)}
+function pairLines(O,N){const n=O.length,m=N.length,D=Array.from({length:n+1},()=>new Float64Array(m+1));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--){const sm=lineSim(O[i],N[j]);D[i][j]=Math.max(D[i+1][j],D[i][j+1],sm>=.3?D[i+1][j+1]+sm:-1)}
+  const r=new Array(m).fill(-1);let i=0,j=0;
+  while(i<n&&j<m){const sm=lineSim(O[i],N[j]);if(sm>=.3&&D[i][j]===D[i+1][j+1]+sm){r[j]=i;i++;j++}else if(D[i][j]===D[i+1][j])i++;else j++}
+  return r}
+function syncLyr(){const ta=$('#content'),ly=$('#lyr');if(ta&&ly){ta.value=mergeLyr(ta.value,ly.value);saveDraft()}}
+function refreshLyr(){const ta=$('#content'),ly=$('#lyr');if(ta&&ly){ta.value=normFull(ta.value);ly.value=plainOf(ta.value)}}
 function lyricToInline(L){let out='',last=0;for(const c of L.chords){out+=L.text.slice(last,c.pos)+'['+c.ch+']';last=c.pos}return out+L.text.slice(last)}
 function commitModel(){
   const ta=$('#content');if(!ta)return;
@@ -1804,22 +1841,23 @@ function switchTab(t){
   $('#pane-letra').hidden=t!=='letra';$('#pane-acordes').hidden=t!=='acordes';
   $('#et-letra').setAttribute('aria-selected',t==='letra');$('#et-acordes').setAttribute('aria-selected',t==='acordes');
   if(t==='acordes'){S.model=toModel($('#content').value);S.selW=null;renderPlacer()}
-  else S.selW=null;
+  else{S.selW=null;refreshLyr()}
   renderPickPanel();
 }
 let sel=null;
 function insertSection(name){
-  const ta=$('#content');if(!ta)return;
+  const ta=$('#lyr');if(!ta)return;
   let s0=sel?sel.s:ta.value.length;let text='['+name+']\n';
   const ls=ta.value.lastIndexOf('\n',s0-1)+1;if(ls!==s0)text='\n'+text;
   if(s0>0&&ta.value[s0-1]!=='\n'&&ls===s0) text='\n'+text;
   ta.value=ta.value.slice(0,s0)+text+ta.value.slice(s0);
   const p=s0+text.length;sel={s:p,e:p};
   try{ta.focus({preventScroll:true});ta.setSelectionRange(p,p)}catch{}
-  saveDraft();
+  syncLyr();
 }
 document.addEventListener('pointerdown',e=>{if(e.target.closest('[data-ins-sec]'))e.preventDefault()});
-['select','keyup','click','input'].forEach(t=>document.addEventListener(t,e=>{if(e.target&&e.target.id==='content')sel={s:e.target.selectionStart,e:e.target.selectionEnd}}));
+document.addEventListener('paste',e=>{if(e.target&&e.target.id==='lyr')setTimeout(()=>{syncLyr();const ly=$('#lyr'),p=ly.selectionStart,before=ly.value.length;refreshLyr();try{const np=Math.max(0,p-(before-ly.value.length));ly.setSelectionRange(np,np)}catch{}saveDraft()},0)});
+['select','keyup','click','input'].forEach(t=>document.addEventListener(t,e=>{if(e.target&&e.target.id==='lyr')sel={s:e.target.selectionStart,e:e.target.selectionEnd}}));
 document.addEventListener('click',e=>{
   const p=e.target.closest('[data-ins-sec]');if(p){insertSection(p.dataset.insSec);return}
   const w=e.target.closest('.w[data-pl]');if(w){selectWord(+w.dataset.pl,+w.dataset.ws,+w.dataset.we);return}
@@ -2021,7 +2059,7 @@ async function importFile(f,auto){
     if(!$('#f-title').value.trim()) $('#f-title').value=res.title||name;
     if(res.artist&&!$('#f-artist').value.trim()) $('#f-artist').value=res.artist;
     if(res.key){const k=parseKey(res.key);$('#f-root').value=String(k.idx);$('#f-minor').value=k.minor?'m':''}
-    $('#content').value=res.content;
+    $('#content').value=normFull(res.content);refreshLyr();
     switchTab('acordes');
     const fromImg=(f.type||'').startsWith('image/')||['jpg','jpeg','png','heic','heif','webp'].includes(ext);
     setStatus(fromImg?'Pronto! Confira abaixo: apague em <b>Letra</b> o que não for da música (hora, botões, título do site) e corrija algum acorde tocando na palavra. Depois salve.':'Pronto! Confira os acordes abaixo. Se algum estiver fora do lugar, toque na palavra para corrigir, depois salve.','ok');
@@ -2165,6 +2203,7 @@ document.addEventListener('input',ev=>{
   if(t.id==='q'){S.q=t.value;renderList()}
   else if(t.id==='pq'){S.pq=t.value;renderPicker()}
   else if(t.id==='speed'){P.speed=+t.value;saveP()}
+  else if(S.view==='edit'&&t.id==='lyr') syncLyr();
   else if(S.view==='edit'&&t.id==='content') saveDraft();
   else if(S.view==='edit'&&t.closest&&t.closest('#songform')) saveDraft();
 });
