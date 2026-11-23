@@ -106,13 +106,24 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 .refs{display:grid;gap:8px}
 .ref{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;background:var(--soft);border:0;color:var(--ink);font-weight:700;text-decoration:none;text-align:left;width:100%}
 .ref svg{width:18px;height:18px;color:var(--honey);flex:0 0 auto}
-#mini{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:22;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:8px;border-radius:16px;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.07)}
-#mini iframe{width:136px;height:77px;border:0;border-radius:10px;flex:0 0 auto;background:#000}
-#mini .mt{flex:1;min-width:0;display:grid;gap:2px}#mini .mt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}#mini .mt span{font-size:11px;color:var(--muted)}
+#mini{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:22;max-width:520px;margin:0 auto;padding:10px;border-radius:20px;background:color-mix(in srgb,var(--surface) 96%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.07);animation:miniUp .32s cubic-bezier(.2,.9,.3,1)}
+@keyframes miniUp{from{transform:translateY(110%);opacity:0}to{transform:none;opacity:1}}
+#mini .mv{position:relative;width:100%;height:200px;min-width:200px;border-radius:14px;overflow:hidden;background:#000}
+#mini .mv iframe,#mini .mv>div{position:absolute;inset:0;width:100%;height:100%;border:0}
+#mini .mh{display:flex;align-items:center;gap:8px;margin:8px 2px 2px}
+#mini .mh b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
 #mini .icon{width:34px;height:34px;flex:0 0 auto}
+#mini .mc{display:flex;align-items:center;gap:10px;margin:4px 2px 0}
+#mini .mpp{width:48px;height:48px;border-radius:50%;border:0;flex:0 0 auto;display:grid;place-items:center;background:var(--grad,var(--accent));color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+#mini .mpp svg{width:24px;height:24px}
+#mini .ms{flex:1;min-width:0;display:grid;gap:3px}
+#mini input[type=range]{width:100%;height:28px;margin:0;background:transparent;-webkit-appearance:none;appearance:none;accent-color:var(--accent)}
+#mini input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--p,0%),rgba(255,255,255,.18) var(--p,0%))}
+#mini input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;margin-top:-6.5px;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+#mini .mtm{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 body.songmode #mini{bottom:calc(var(--bot,80px) + 8px)}
-body.mini.songmode main#app{bottom:calc(var(--bot,80px) + 101px)}
-body.mini:not(.songmode) main#app{padding-bottom:calc(250px + env(safe-area-inset-bottom) + env(safe-area-inset-top))}
+body.mini.songmode main#app{bottom:calc(var(--bot,80px) + 318px)}
+body.mini:not(.songmode) main#app{padding-bottom:calc(420px + env(safe-area-inset-bottom) + env(safe-area-inset-top))}
 .empty{text-align:center;padding:36px 18px;color:var(--muted);background:var(--surface);border:1.5px dashed var(--line);border-radius:var(--r)}
 .note{background:var(--soft);border-radius:14px;padding:11px 15px;font-size:14px;margin:0 0 16px}
 .note.err{background:color-mix(in srgb,var(--danger) 15%,var(--surface))}
@@ -681,7 +692,7 @@ function segHTML(L,shift,spell){
     html+=`<span class="sw">${pcs}</span>`;
   }
   const ends=C.filter(c=>c.pos>=len);
-  if(ends.length) html+=ends.map(c=>`<span class="sw"><span class="sp"><b>${esc(mapTok(c.ch,shift,spell))}</b><span></span></span></span>`).join('');
+  if(ends.length) html+=ends.map(c=>`<span class="sw"><span class="sp"><b>${esc(mapTok(c.ch,shift,spell))}</b><span>&nbsp;</span></span></span>`).join('');
   return `<div class="ln sg"${lead?` style="padding-left:${lead}ch"`:''}>${html}</div>`;
 }
 function renderSheet(text,shift,spell,lyricsOnly,degKey){
@@ -1141,13 +1152,32 @@ function refsHTML(song){const rs=(song&&song.refs)||[];if(!rs.length)return '';
   return `<div class="setrow" style="display:block"><div class="l" style="margin-bottom:8px"><b>Ouvir referência</b><span>YouTube toca aqui mesmo, com a cifra aberta</span></div><div class="refs">${rs.map(r=>{const k=refKind(r.url);const nome=k+(r.label?' · '+esc(r.label):'');
     return ytId(r.url)?`<button class="ref" data-act="play-ref" data-u="${esc(r.url)}" data-t="${esc(song.title)}">${ic('play')}<span>${nome}</span></button>`
     :`<a class="ref" href="${esc(r.url)}" target="_blank" rel="noopener">${ic('ext')}<span>${nome}</span></a>`}).join('')}</div></div>`}
+let YTP=null,YTT=0,YTseek=false,ytApi=null;
+function loadYT(){if(window.YT&&YT.Player)return Promise.resolve();if(ytApi)return ytApi;
+  ytApi=new Promise(r=>{const prev=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=()=>{prev&&prev();r()};const t=document.createElement('script');t.src='https://www.youtube.com/iframe_api';t.async=true;t.onerror=()=>{ytApi=null};document.head.appendChild(t)});return ytApi}
+function fmtT(x){x=Math.max(0,Math.floor(x||0));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')}
+function miniUI(){const m=document.getElementById('mini');if(!m||!YTP||!YTP.getDuration)return;
+  const d=YTP.getDuration()||0,c=YTP.getCurrentTime?YTP.getCurrentTime()||0:0,st=YTP.getPlayerState?YTP.getPlayerState():-1;
+  const r=m.querySelector('input[type=range]');if(r&&!YTseek){r.max=Math.max(1,Math.floor(d));r.value=Math.floor(c);r.style.setProperty('--p',(d?c/d*100:0)+'%');m.querySelector('.mtc').textContent=fmtT(c)}
+  m.querySelector('.mtd').textContent=fmtT(d);
+  const pp=m.querySelector('.mpp');const playing=st===1||st===3;if(pp.dataset.s!==String(playing)){pp.dataset.s=String(playing);pp.innerHTML=ic(playing?'pause':'play');pp.setAttribute('aria-label',playing?'Pausar':'Tocar')}}
 function playRef(url,title){const id=ytId(url);if(!id){window.open(url,'_blank','noopener');return}
-  let m=document.getElementById('mini');if(!m){m=document.createElement('div');m.id='mini';m.setAttribute('role','region');m.setAttribute('aria-label','Player da referência');document.body.appendChild(m)}
-  m.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1" title="Referência: ${esc(title||'')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-    <div class="mt"><b>${esc(title||'Referência')}</b><span>YouTube · toque no vídeo se não começar</span></div>
-    <a class="icon" href="https://youtu.be/${id}" target="_blank" rel="noopener" aria-label="Abrir no YouTube">${ic('ext')}</a><button class="icon" data-act="mini-close" aria-label="Fechar o player">${ic('x')}</button>`;
-  document.body.classList.add('mini')}
-function closeMini(){const m=document.getElementById('mini');if(m)m.remove();document.body.classList.remove('mini')}
+  closeMini();const m=document.createElement('div');m.id='mini';m.setAttribute('role','region');m.setAttribute('aria-label','Player da referência');
+  m.innerHTML=`<div class="mv"><div id="ytp"></div></div>
+    <div class="mh"><b>${esc(title||'Referência')}</b><a class="icon" href="https://youtu.be/${id}" target="_blank" rel="noopener" aria-label="Abrir no YouTube">${ic('ext')}</a><button class="icon" data-act="mini-close" aria-label="Fechar o player">${ic('x')}</button></div>
+    <div class="mc"><button class="mpp" data-act="mini-pp" data-s="false" aria-label="Tocar">${ic('play')}</button>
+      <div class="ms"><input type="range" min="0" max="1" step="1" value="0" aria-label="Posição da música"><div class="mtm"><span class="mtc">0:00</span><span class="mtd">0:00</span></div></div></div>`;
+  document.body.appendChild(m);document.body.classList.add('mini');
+  const r=m.querySelector('input[type=range]');
+  r.addEventListener('input',()=>{YTseek=true;const d=+r.max||1;r.style.setProperty('--p',(r.value/d*100)+'%');m.querySelector('.mtc').textContent=fmtT(+r.value)});
+  r.addEventListener('change',()=>{YTseek=false;if(YTP&&YTP.seekTo)YTP.seekTo(+r.value,true);miniUI()});
+  loadYT().then(()=>{if(!document.getElementById('ytp'))return;
+    YTP=new YT.Player('ytp',{videoId:id,host:'https://www.youtube-nocookie.com',playerVars:{autoplay:1,playsinline:1,rel:0,modestbranding:1},
+      events:{onReady:e=>{try{e.target.playVideo()}catch(_){}miniUI()},onStateChange:miniUI}});
+    clearInterval(YTT);YTT=setInterval(miniUI,500)}).catch(()=>{});
+}
+function miniPP(){if(!YTP||!YTP.getPlayerState)return;const st=YTP.getPlayerState();if(st===1||st===3)YTP.pauseVideo();else YTP.playVideo();setTimeout(miniUI,80)}
+function closeMini(){clearInterval(YTT);YTT=0;try{YTP&&YTP.destroy&&YTP.destroy()}catch(_){}YTP=null;YTseek=false;const m=document.getElementById('mini');if(m)m.remove();document.body.classList.remove('mini')}
 function ouvirMusica(id){const s=S.songs.get(id);if(!s)return;const rs=s.refs||[];const yt=rs.find(r=>ytId(r.url));
   if(!yt){if(rs[0])window.open(rs[0].url,'_blank','noopener');return}
   openSong(id);playRef(yt.url,s.title)}
@@ -1706,7 +1736,7 @@ function renderPlacer(){
     }
     const ends=L.chords.filter(c=>c.pos>=len);
     const selEnd=W&&W.li===li&&W.ws===len;
-    html+=`<button type="button" class="w end${selEnd?' sel':''}" data-pl="${li}" data-ws="${len}" data-we="${len}" aria-label="Acorde no fim da linha"><span class="pc"><b>${ends.length?esc(ends.map(c=>c.ch).join(' ')):'&nbsp;'}</b><span>${ends.length?'':'+'}</span></span></button>`;
+    html+=`<button type="button" class="w end${selEnd?' sel':''}" data-pl="${li}" data-ws="${len}" data-we="${len}" aria-label="Acorde no fim da linha"><span class="pc"><b>${ends.length?esc(ends.map(c=>c.ch).join(' ')):'&nbsp;'}</b><span>${ends.length?'&nbsp;':'+'}</span></span></button>`;
     return `<div class="pl-line">${html}</div>`;
   }).join('');
 }
@@ -2011,6 +2041,7 @@ document.addEventListener('click',async ev=>{
     case 'ouvir': ouvirMusica(b.dataset.id);break;
     case 'play-ref': S.sheet=null;renderOverlay();playRef(b.dataset.u,b.dataset.t);break;
     case 'mini-close': closeMini();break;
+    case 'mini-pp': miniPP();break;
     case 'back': if(NAV.has)history.back();else{if(S.ctx){S.cultoId=S.ctx.cultoId;go('culto')}else go('songs')}break;
     case 'stage': setStage(!S.stage);break;
     case 'sol': P.sol=!P.sol;saveP();render();break;
