@@ -411,7 +411,7 @@ body.facil .pick .icon{min-width:52px;min-height:52px}
 body.facil .swipe>.song,body.facil .swipe>.culto{transform:none!important;width:calc(100% - var(--sw,92px))!important;margin-right:var(--sw,92px);transition:none;border-radius:var(--r) 0 0 var(--r)}
 body.facil .swacts>button{font-size:15px}
 body.facil .song .t{font-size:18px}
-.facilbar{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.facilbar{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 4px;width:100%}
 .facilbar .btn{flex:1 1 180px;justify-content:center}
 .facilsp{height:78px}
 .facilsave{position:fixed;top:calc(var(--st,0px) + 4px);left:0;right:0;margin:0 auto;width:calc(100% - 36px);max-width:724px;box-sizing:border-box;z-index:30;display:flex;gap:10px;padding:10px;border-radius:var(--r);background:var(--raise);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45)}
@@ -1253,9 +1253,11 @@ function ctlCard(){
     </div>
     <div class="ctl-r2">
       <span class="fpill" role="group" aria-label="Tamanho da letra"><button data-act="font" data-d="-1" aria-label="Diminuir letra" style="font-size:12px">A</button><button data-act="font" data-d="1" aria-label="Aumentar letra" style="font-size:18px">A</button></span>
-      <button class="chip2" data-act="lyrics" aria-pressed="${P.lyrics}">${ic('mic')} Letra</button>
+      ${S.role!=='mod2'?`<button class="chip2" data-act="lyrics" aria-pressed="${P.lyrics}">${ic('mic')} Letra</button>`:''}
+      ${S.role==='mod2'?`<button class="chip2" data-act="stage">${ic('expand')} Tela cheia</button>`:''}
       <button class="chip2 icon-only" data-act="sheet" data-s="adjust" aria-label="Ajustes">${ic('sliders')}${capo?`<i class="badge">${capo}</i>`:P.degree?`<i class="badge">I</i>`:''}</button>
     </div>
+    ${S.role==='mod2'&&S.canWrite?`<div class="facilbar ctl-r3"><button class="btn primary" data-act="edit-song">${ic('edit')} Editar música</button><button class="btn" data-act="edit-letra">${ic('edit')} Editar letra</button></div>`:''}
     ${info?`<p class="ctl-info">${esc(info)}</p>`:''}
     <button class="ctl-tog" data-act="ctl-toggle" aria-expanded="true" aria-label="Recolher controles">${ic('up')}</button>
   </div>`;
@@ -1267,7 +1269,6 @@ function viewSong(){
   const open=P.ctlOpen,top=P.ctlPos!=='bottom';
   const meta=[s.artist,s.bpm?s.bpm+' BPM':'',S.target!==o.idx?'original em '+s.key:'',cul?(S.ctx.index+1)+'ª do culto':''].filter(Boolean).map(esc).join(' · ');
   return `<button class="back" data-act="back">${ic('left')} ${cul?esc(cul.name):'Músicas'}</button>
-  ${S.role==='mod2'&&S.canWrite?`<div class="facilbar"><button class="btn primary" data-act="edit-song">${ic('edit')} Editar acordes</button><button class="btn" data-act="edit-letra">${ic('edit')} Editar letra</button></div>`:''}
   ${open&&top?ctlCard():''}
   <div class="titlebox">
     ${!open?`<button id="keybig" class="kbig solo" data-act="ctl-toggle" aria-label="Tom ${keyName(S.target,o.minor)}, toque para mostrar os controles">${keyName(S.target,o.minor)}</button>`:''}
@@ -1276,7 +1277,7 @@ function viewSong(){
   </div>
   <div class="sheetbox${P.sol?' sol':''}" tabindex="0" aria-label="Cifra">${vslotHTML(s)}<div class="sheet" style="--sz:${P.font}px">${renderSheet(s.content,shift,spell,P.lyrics,P.degree?o:null)}</div>
   ${s.notes?`<p class="note" style="margin:16px 0 0">${esc(s.notes)}</p>`:''}
-  ${S.canWrite?`<div style="margin-top:14px;text-align:center"><button class="btn ghost" data-act="edit-song">${ic('edit')} Editar esta cifra</button></div>`:''}</div>`;
+  ${S.canWrite&&S.role!=='mod2'?`<div style="margin-top:14px;text-align:center"><button class="btn ghost" data-act="edit-song">${ic('edit')} Editar esta cifra</button></div>`:''}</div>`;
 }
 function layoutSong(){
   const dk=document.querySelector('.dock'),lb=$('#livebar');
@@ -1430,9 +1431,10 @@ function renderBottom(){
     }
     const bottomCtl=P.ctlPos==='bottom'&&P.ctlOpen;
     d.innerHTML=`<div class="dock${P.ctlPos==='bottom'?' low':''}"><div class="wrap" style="display:block">${bottomCtl?ctlCard():''}${up}<div style="display:flex;gap:8px;align-items:center">${prev}
-      <div class="mid"><button class="nav sol" data-act="sol" aria-pressed="${!!P.sol}" aria-label="${P.sol?'Desligar modo sol':'Modo sol: fundo branco para ler no sol'}" title="Modo sol">${ic('sun')}</button>
+      ${S.role==='mod2'?(S.stage?`<div class="mid"><button class="nav full" data-act="stage" aria-label="Sair da tela cheia" title="Sair da tela cheia">${ic('shrink')}</button></div>`:'<div class="mid"></div>'):`<div class="mid"><button class="nav sol" data-act="sol" aria-pressed="${!!P.sol}" aria-label="${P.sol?'Desligar modo sol':'Modo sol: fundo branco para ler no sol'}" title="Modo sol">${ic('sun')}</button>
       <button class="btn ${scrollState.on?'primary':''} play" data-act="scroll" aria-pressed="${scrollState.on}">${ic(scrollState.on?'pause':'play')} ${scrollState.on?'Pausar':'Rolar'}</button>
-      <button class="nav full" data-act="stage" aria-label="${S.stage?'Sair da tela cheia':'Tela cheia'}" title="${S.stage?'Sair da tela cheia':'Tela cheia'}">${ic(S.stage?'shrink':'expand')}</button></div>${next}</div></div></div>`;
+      <button class="nav full" data-act="stage" aria-label="${S.stage?'Sair da tela cheia':'Tela cheia'}" title="${S.stage?'Sair da tela cheia':'Tela cheia'}">${ic(S.stage?'shrink':'expand')}</button></div>`}${next}</div></div></div>`;
+    if(S.role==='mod2'&&!S.ctx&&!bottomCtl&&!S.stage)d.innerHTML='';
     requestAnimationFrame(layoutSong);
     return;
   }
@@ -1507,7 +1509,9 @@ function renderOverlay(){
       return `<button data-act="key" data-k="${i}" aria-pressed="${i===S.target}">${a}${k.minor?'m':''}<small>${b?b+(k.minor?'m':''):(i===k.idx?'original':'')}${b&&i===k.idx?' · orig.':''}</small></button>`}).join('')}</div>`;
   } else if(S.sheet==='adjust'&&S.song){
     const {capo,o:k,shapes}=songCalc();
-    body=`<h2>Ajustes</h2><div class="set">${refsHTML(S.song)}
+    body=`<h2>Ajustes</h2><div class="set">${S.role==='mod2'?`<div class="setrow"><div class="l"><b>Rolar a cifra</b><span>Desce a cifra sozinha</span></div><button class="btn ${scrollState.on?'primary':''}" data-act="scroll" aria-pressed="${scrollState.on}">${ic(scrollState.on?'pause':'play')} ${scrollState.on?'Pausar':'Rolar'}</button></div>
+      <div class="setrow"><div class="l"><b>Só a letra</b><span>Esconde os acordes</span></div><button class="switch" role="switch" aria-checked="${!!P.lyrics}" data-act="lyrics" aria-label="Só a letra"></button></div>
+      <div class="setrow"><div class="l"><b>Modo claro</b><span>Fundo branco, bom pra ler no sol</span></div><button class="switch" role="switch" aria-checked="${!!P.sol}" data-act="sol" aria-label="Modo claro"></button></div>`:''}${refsHTML(S.song)}
       <div class="setrow"><div class="l"><b>Capotraste</b><span>${capo?`Soa em ${keyName(S.target,k.minor)}, você toca formas de ${keyName(shapes,k.minor)}`:'Só no seu aparelho'}</span></div>
         <div class="capo"><button class="round" data-act="capo" data-d="-1" aria-label="Tirar uma casa">−</button><b>${capo?capo+'ª':'—'}</b><button class="round" data-act="capo" data-d="1" aria-label="Pôr uma casa">+</button></div></div>
       <div class="setrow"><div class="l"><b>Modo grau</b><span>C vira I, Am vira VIm, C/E vira I/III</span></div><button class="switch" role="switch" aria-checked="${P.degree}" data-act="degree" aria-label="Modo grau"></button></div>
@@ -2086,7 +2090,7 @@ document.addEventListener('click',async ev=>{
     case 'ctlpos': P.ctlPos=b.dataset.v;P.ctlOpen=true;saveP();render();break;
     case 'acc': P.acc=b.dataset.v;saveP();render();break;
     case 'font': P.font=Math.max(12,Math.min(40,P.font+ +b.dataset.d*2));saveP();render();break;
-    case 'scroll': if(Date.now()-(S.noScrollClick||0)<500)break; if(scrollState.on) stopScroll(); else {scrollState.on=true;scrollState.last=0;scrollState.acc=0;scrollState.raf=requestAnimationFrame(tick)} renderBottom();break;
+    case 'scroll': if(Date.now()-(S.noScrollClick||0)<500)break; if(scrollState.on) stopScroll(); else {scrollState.on=true;scrollState.last=0;scrollState.acc=0;scrollState.raf=requestAnimationFrame(tick)} renderBottom();if(S.sheet==='adjust'){S.sheet=null;renderOverlay()}break;
     case 'nav':{const c=S.cultos.get(S.ctx.cultoId);const i=S.ctx.index+ +b.dataset.d;const it=c&&c.items[i];if(it) openSong(it.songId,it.key,{cultoId:S.ctx.cultoId,index:i});break}
     case 'new-song':{sel=null;S.sheet=null;const mode=b.dataset.mode||'write';S.edit=newEdit(mode);S.etab='letra';S.selW=null;
       const d=store.get('cifras:draft:new',null);S.restored=mode!=='paste'&&!!(d&&(d.title||d.content));if(S.restored)S.edit={...S.edit,...d,id:null};go('edit');if(mode==='paste')$('#filein').click();break}
