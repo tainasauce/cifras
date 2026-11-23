@@ -394,10 +394,6 @@ textarea{resize:vertical}
 .pc b{font:600 14px/1.3 var(--f-mono);color:var(--honey);white-space:pre;min-height:1.3em;padding-right:4px}
 .pc>span{font-size:18px;line-height:1.35}
 .pc.cur>span{box-shadow:inset 0 -2px 0 var(--accent)}
-.palette .kn{display:none}
-.kbhint{display:none;margin:0;font-size:12px;color:var(--muted);line-height:1.9}
-.kbhint kbd{display:inline-block;min-width:22px;padding:0 5px;margin:0 1px;border-radius:6px;background:var(--soft);border:1px solid var(--line);font:700 12px var(--f-mono);text-align:center;color:var(--text,inherit)}
-@media (hover:hover) and (pointer:fine){.kbhint{display:block}}
 body.facil{font-size:18px}
 body.facil .btn{min-height:52px;font-size:17px;padding:12px 20px}
 body.facil .icon{min-width:48px;min-height:48px}
@@ -410,14 +406,17 @@ body.facil .pl-line{margin-bottom:14px;row-gap:6px}
 body.facil .palette{gap:10px}
 body.facil .palette button{min-width:84px;padding:10px 14px;position:relative;border-radius:14px}
 body.facil .palette button b{font-size:21px}
-body.facil .palette .kn{display:block;position:absolute;top:4px;left:7px;font:800 11px var(--f-mono);font-style:normal;color:var(--muted)}
 body.facil .letters button{min-width:44px;min-height:48px;font-size:20px}
 body.facil .pick .icon{min-width:52px;min-height:52px}
-body.facil .kbhint{display:block;font-size:14px}
-body.facil .kbhint kbd{font-size:14px;min-width:28px}
 body.facil .swipe>.song,body.facil .swipe>.culto{transform:none!important;width:calc(100% - var(--sw,92px))!important;margin-right:var(--sw,92px);transition:none;border-radius:var(--r) 0 0 var(--r)}
 body.facil .swacts>button{font-size:15px}
 body.facil .song .t{font-size:18px}
+.facilbar{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.facilbar .btn{flex:1 1 180px;justify-content:center}
+.facilsp{height:78px}
+.facilsave{position:fixed;top:calc(var(--st,0px) + 4px);left:0;right:0;margin:0 auto;width:calc(100% - 36px);max-width:724px;box-sizing:border-box;z-index:30;display:flex;gap:10px;padding:10px;border-radius:var(--r);background:var(--raise);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.facilsave .btn{flex:1;justify-content:center}
+.swedit{background:#7a5cff}
 body.picking main#app{padding-bottom:calc(330px + env(safe-area-inset-top))}
 .pick{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 30px rgba(20,24,31,.12);border-radius:20px 20px 0 0}
 .wrap{padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
@@ -1000,7 +999,7 @@ function pessoasHTML(){
     <ul class="people">${mem.map(m=>`<li>${avaP(m)}<div class="pp"><b>${esc(m.nome||m.email||'')}${m.id===S.uid?' (você)':''}</b><span>${esc(m.email||'')}</span></div>
       ${m.papel==='dev'?'<span class="tag">Responsável</span>':`<div class="pa"><div class="seg">${['leitor','editor','mod2'].map(r=>`<button data-act="papel" data-id="${esc(m.id)}" data-p="${r}" aria-pressed="${m.papel===r}">${PAPEL[r]}</button>`).join('')}</div>
         <button class="icon" data-act="remover" data-id="${esc(m.id)}" aria-label="Tirar o acesso de ${esc(m.nome||m.email||'')}">${ic('x')}</button></div>`}</li>`).join('')}</ul>
-    <p class="hint">Editores cadastram, editam e excluem cifras. Mod2 pode o mesmo que o Editor, com botões maiores, ações sempre à vista e atalhos de teclado. Quem "pode ver" só abre as cifras e os cultos. Só você aceita pessoas.</p>`;
+    <p class="hint">Editores cadastram, editam e excluem cifras. Mod2 pode o mesmo que o Editor, com botões maiores e tudo à vista: Editar na lista, no topo da cifra e Salvar sempre visível. Quem "pode ver" só abre as cifras e os cultos. Só você aceita pessoas.</p>`;
 }
 window.addEventListener('online',()=>{S.offline=false;render()});
 window.addEventListener('offline',()=>{S.offline=true;render()});
@@ -1195,6 +1194,7 @@ function songRow(s){
   if(est&&w)acts.push(`<button class="swfin" data-act="finalizar" data-id="${esc(s.id)}" tabindex="-1">${ic('check')}Finalizada</button>`);
   else acts.push(`<button class="swfav${fav?' on':''}" data-act="fav" data-id="${esc(s.id)}" tabindex="-1">${ic('heart',fav?'i fill':'i')}${fav?'Tirar':'Favoritar'}</button>`);
   if(recente&&w)acts.push(`<button class="swest" data-act="estudar" data-id="${esc(s.id)}" tabindex="-1">${ic('left')}Voltar</button>`);
+  if(w&&S.role==='mod2')acts.push(`<button class="swedit" data-act="edit-from-list" data-id="${esc(s.id)}" tabindex="-1">${ic('edit')}Editar</button>`);
   if(w)acts.push(`<button class="swdel" data-act="swdel" data-type="song" data-id="${esc(s.id)}" tabindex="-1">${ic('trash')}Excluir</button>`);
   return `<li class="swipe" style="--sw:${acts.length*92}px"><span class="swacts">${acts.join('')}</span><button class="song" data-act="open-song" data-id="${esc(s.id)}">${capa(s)}
     <div><div class="t">${esc(s.title)}${fav?`<span class="favmark" aria-label="Favorita">${ic('heart','i fill')}</span>`:''}${est&&!String(s.content||'').trim()?'<span class="tag semcifra">sem cifra</span>':''}${est&&(S.q||S.soFav)?'<span class="tag">Próxima</span>':''}</div><div class="a">${esc(s.artist||'Sem artista')} · <b class="ktom" aria-label="Tom ${esc(s.key)}">${esc(s.key)}</b></div></div>${(s.refs||[]).length?`<span class="fone" role="button" tabindex="0" data-act="ouvir" data-id="${esc(s.id)}" aria-label="Ouvir referência de ${esc(s.title)}">${ic('fone')}</span>`:ic('right','i chev')}</button></li>`;
@@ -1267,6 +1267,7 @@ function viewSong(){
   const open=P.ctlOpen,top=P.ctlPos!=='bottom';
   const meta=[s.artist,s.bpm?s.bpm+' BPM':'',S.target!==o.idx?'original em '+s.key:'',cul?(S.ctx.index+1)+'ª do culto':''].filter(Boolean).map(esc).join(' · ');
   return `<button class="back" data-act="back">${ic('left')} ${cul?esc(cul.name):'Músicas'}</button>
+  ${S.role==='mod2'&&S.canWrite?`<div class="facilbar"><button class="btn primary" data-act="edit-song">${ic('edit')} Editar acordes</button><button class="btn" data-act="edit-letra">${ic('edit')} Editar letra</button></div>`:''}
   ${open&&top?ctlCard():''}
   <div class="titlebox">
     ${!open?`<button id="keybig" class="kbig solo" data-act="ctl-toggle" aria-label="Tom ${keyName(S.target,o.minor)}, toque para mostrar os controles">${keyName(S.target,o.minor)}</button>`:''}
@@ -1579,6 +1580,7 @@ function viewEdit(){
   const paste=e.mode==='paste';
   return `<button class="back" data-act="cancel-edit">${ic('left')} Cancelar</button>
   <div class="pagehead"><h1>${e.id?'Editar cifra':paste?'Cifra existente':'Nova cifra'}</h1></div>
+  ${S.role==='mod2'?`<div class="facilsave"><button type="submit" form="songform" class="btn primary">${ic('check')} Salvar cifra</button><button type="button" class="btn ghost" data-act="cancel-edit">Cancelar</button></div><div class="facilsp"></div>`:''}
   <form class="form" id="songform" autocomplete="off">
     <label class="f" for="f-title">Nome da música<input type="text" id="f-title" required value="${esc(e.title)}" placeholder="Ex.: Grande é o Senhor"></label>
     <div class="grid2">
@@ -1793,10 +1795,9 @@ function renderPickPanel(){
       <button type="button" class="icon" data-act="pk-next" aria-label="Próxima palavra">${ic('right')}</button>
       <button type="button" class="icon" data-act="pk-close" aria-label="Fechar">${ic('x')}</button></div>
     ${word.length>1?`<div class="letters" aria-label="Em qual letra o acorde começa">${letters}</div>`:''}
-    <div class="palette">${harmonicField({idx:r,minor:mi}).map((h,k)=>`<button type="button" data-chord="${esc(h.chord)}" aria-pressed="${!!cur&&cur.ch===h.chord}" aria-keyshortcuts="${k+1}"><i class="kn" aria-hidden="true">${k+1}</i><b>${esc(h.chord)}</b><small>${h.deg}</small></button>`).join('')}</div>
+    <div class="palette">${harmonicField({idx:r,minor:mi}).map(h=>`<button type="button" data-chord="${esc(h.chord)}" aria-pressed="${!!cur&&cur.ch===h.chord}"><b>${esc(h.chord)}</b><small>${h.deg}</small></button>`).join('')}</div>
     <div class="otherrow"><input type="text" id="pk-other" placeholder="Outro: E7, D/F#, Bb" aria-label="Outro acorde"><button type="button" class="btn" data-act="pk-other">Pôr</button>
       <button type="button" class="btn ghost danger" data-act="pk-remove">Tirar</button>${S.undo&&S.undo.length?`<button type="button" class="btn ghost" data-act="pk-undo">${ic('left')} Desfazer</button>`:''}</div>
-    <p class="kbhint">Teclado: <kbd>←</kbd><kbd>→</kbd> palavra · <kbd>↑</kbd><kbd>↓</kbd> linha · <kbd>1</kbd>–<kbd>7</kbd> põe o acorde · <kbd>A</kbd>–<kbd>G</kbd> digita outro · <kbd>Del</kbd> tira · <kbd>Z</kbd> desfaz</p>
   </div></div>`;
 }
 function switchTab(t){
@@ -2099,6 +2100,8 @@ document.addEventListener('click',async ev=>{
     case 'pk-undo': undoPlacer();break;
     case 'pk-other':{const o=$('#pk-other');const v=o.value.trim().replace(/^\[|\]$/g,'');if(v){setChordAtSel(v)}break}
     case 'edit-song': sel=null;S.restored=false;S.edit={...S.song,mode:'edit'};S.etab='acordes';S.selW=null;go('edit');S.model=toModel(S.edit.content);renderPlacer();break;
+    case 'edit-letra': sel=null;S.restored=false;S.edit={...S.song,mode:'edit'};S.etab='letra';S.selW=null;go('edit');break;
+    case 'edit-from-list':{const so=S.songs.get(b.dataset.id);if(!so)break;sel=null;S.song={id:b.dataset.id,...so};S.ctx=null;S.restored=false;S.edit={...S.song,mode:'edit'};S.etab='acordes';S.selW=null;go('edit');S.model=toModel(S.edit.content);renderPlacer();break}
     case 'cancel-edit': if(S.edit&&S.edit.id&&S.songs.get(S.edit.id)){openSong(S.edit.id,keyName(S.target,parseKey(S.song.key).minor),S.ctx)}else go('songs');break;
     case 'del-song': S.pinFor={type:'song',id:S.edit.id,nome:(S.songs.get(S.edit.id)||{}).title};S.pinErr='';S.pinVal='';S.pinBusy=false;S.pinState=null;S.pinMsg='';if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();if(document.activeElement)document.activeElement.blur();break;
     case 'pk':{if(S.pinBusy)break;const k=b.dataset.k;S.pinVal=S.pinVal||'';
@@ -2154,18 +2157,6 @@ document.addEventListener('click',async ev=>{
     case 'live-stop': S.broadcast=null;pushLive({...(S.live||{}),active:false,at:Date.now(),by:S.uid||'anon'});render();break;
     case 'follow': S.follow=!S.follow;if(S.follow&&liveActive()) followLive(); else render();break;
   }
-});
-document.addEventListener('keydown',e=>{
-  if(S.view!=='edit'||S.etab!=='acordes'||S.sheet||e.ctrlKey||e.metaKey||e.altKey)return;
-  const t=e.target,typing=t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable);if(typing)return;
-  const k=e.key;
-  if(k==='ArrowLeft'||k==='ArrowRight'){e.preventDefault();if(!S.selW)nextLine(0);else nextWord(k==='ArrowLeft'?-1:1);return}
-  if(k==='ArrowUp'||k==='ArrowDown'){e.preventDefault();if(!S.selW)nextLine(0);else nextLine(k==='ArrowUp'?-1:1);return}
-  if(k==='z'||k==='Z'){e.preventDefault();undoPlacer();return}
-  if(!S.selW)return;
-  if(/^[1-7]$/.test(k)){const b=document.querySelectorAll('.pick .palette [data-chord]')[+k-1];if(b){e.preventDefault();setChordAtSel(b.dataset.chord)}return}
-  if(k==='Delete'||k==='Backspace'){e.preventDefault();removeChordAtSel();return}
-  if(/^[a-gA-G]$/.test(k)){const o=$('#pk-other');if(o){e.preventDefault();o.value=k.toUpperCase();o.focus();o.setSelectionRange(1,1)}return}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pk-other'){e.preventDefault();$('[data-act=pk-other]').click();return}if(e.key==='Escape'){if(S.sheet){S.sheet=null;renderOverlay();if(S.view==='culto')render()}else if(S.stage)setStage(false)}});
 document.addEventListener('input',ev=>{
