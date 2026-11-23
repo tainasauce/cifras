@@ -428,8 +428,15 @@ body.picking main{padding-bottom:330px}
 .pindots.shake{animation:shake .38s}@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 .pinpad{display:grid;grid-template-columns:repeat(3,74px);gap:12px 22px;margin-top:4px}
 .pinpad button{width:74px;height:74px;border-radius:50%;border:0;background:var(--soft);color:var(--ink);font:600 28px var(--f-body);box-shadow:var(--hl)}
-.pinpad button:active{background:var(--line)}.pinbox.busy .pinpad{opacity:.4;pointer-events:none}
-.pin-err.wait{color:var(--muted)}
+.pinpad button:active{background:var(--line)}
+.pinprog,.pinok{display:none}
+.pinbox.busy .pinpad,.pinbox.done .pinpad,.pinbox.busy .pindots,.pinbox.done .pindots,.pinbox.busy>.btn,.pinbox.done>.btn{display:none}
+.pinbox.busy .pinprog{display:block;width:220px;height:6px;border-radius:3px;background:var(--soft);overflow:hidden;position:relative;margin:26px 0 30px}
+.pinprog i{position:absolute;top:0;bottom:0;width:40%;border-radius:3px;background:var(--grad);animation:pinprog 1s ease-in-out infinite}
+@keyframes pinprog{0%{left:-40%}100%{left:100%}}
+.pinbox.done .pinok{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:var(--live);color:#fff;margin:14px 0 18px;animation:up .25s cubic-bezier(.2,.8,.2,1)}
+.pinok svg{width:32px;height:32px;stroke-width:3}
+.pin-err.wait{color:var(--muted)}.pinbox.done .pin-err{color:var(--live)}
 .pin-err{min-height:20px;margin:0;color:var(--danger);font-size:14px;font-weight:700}
 .choices{display:grid;gap:10px}
 .choice{display:flex;gap:14px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--raise);border-radius:var(--r);padding:16px}
@@ -765,7 +772,7 @@ const todayStr=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMo
 const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 function greet(){const h=new Date().getHours();return h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'}
 
-const DEL_PIN='0000'; /* só no modo demonstração; a senha de verdade fica no Firebase */
+const DEL_PIN='0001'; /* só no modo demonstração; a senha de verdade fica no Firebase */
 /* ================= Tela acesa ================= */
 let noSleep=null,awakeOn=false;
 (function(){const s=document.createElement('script');s.src='https://unpkg.com/nosleep.js@0.12.0/dist/NoSleep.min.js';s.onload=()=>{try{noSleep=new window.NoSleep()}catch{}};document.head.appendChild(s)})();
@@ -1481,12 +1488,13 @@ function renderOverlay(){
   } else if(S.sheet==='pessoas'){
     body=pessoasHTML();
   } else if(S.sheet==='pin'){
-    const f=S.pinFor||{};const nm=f.type==='song'?(S.songs.get(f.id)||{}).title:(S.cultos.get(f.id)||{}).name;
+    const f=S.pinFor||{};const nm=f.nome||(f.type==='song'?(S.songs.get(f.id)||{}).title:(S.cultos.get(f.id)||{}).name);
     body=`<h2>Excluir ${f.type==='song'?'cifra':'culto'}</h2>
       <p class="muted" style="margin:-6px 0 14px">Para excluir <b>${esc(nm||'')}</b>, digite a senha de exclusão do ministério.</p>
-      <div class="pinbox"><div class="pindots" id="pindots" role="img" aria-label="0 de 4 números">${'<i></i>'.repeat(4)}</div>
-      <p id="pin-err" class="pin-err" role="alert">${esc(S.pinErr||'')}</p>
+      <div class="pinbox${S.pinState?' '+S.pinState:''}"><div class="pindots" id="pindots" role="img" aria-label="0 de 4 números">${'<i></i>'.repeat(4)}</div>
+      <p id="pin-err" class="pin-err${S.pinState==='busy'?' wait':''}" role="alert">${esc(S.pinMsg||S.pinErr||'')}</p>
       <div class="pinpad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-act="pk" data-k="${n}">${n}</button>`).join('')}<span></span><button type="button" data-act="pk" data-k="0">0</button><button type="button" data-act="pk" data-k="del" aria-label="Apagar número">⌫</button></div>
+      <div class="pinprog" aria-hidden="true"><i></i></div><div class="pinok" aria-hidden="true">${ic('check')}</div>
       <button type="button" class="btn ghost" data-act="close-sheet" style="margin-top:6px">Cancelar</button></div>`;
   } else if(S.sheet==='newchoice'){
     body=`<h2>Adicionar cifra</h2><div class="choices">
@@ -1496,7 +1504,11 @@ function renderOverlay(){
     body=`<h2>${S.pickMode==='sug'?'Sugerir música':'Adicionar música'}</h2>${S.pickMode==='sug'?'<p class="muted" style="margin:-6px 0 10px">Escolha uma. Ela aparece no tom original.</p>':''}<div class="picker"><label class="search" for="pq" style="margin:0">${ic('search')}<input type="search" id="pq" placeholder="Buscar música" value="${esc(S.pq)}" aria-label="Buscar música para adicionar"></label><div class="res" id="pres"></div></div>
       <div style="margin-top:14px;text-align:center"><button class="btn primary" data-act="close-sheet">Pronto</button></div>`;
   }
-  o.innerHTML=`<div class="scrim" data-act="close-sheet"><div class="panel" role="dialog" aria-modal="true"><div class="grab"></div>${body}</div></div>`;
+  /* a mesma folha já aberta: troca só o conteúdo, sem repetir a animação (evitava o "abre e fecha") */
+  const pn0=o.querySelector('.panel');
+  if(pn0&&o.dataset.sheet===S.sheet){const st=pn0.scrollTop;pn0.innerHTML=`<div class="grab"></div>${body}`;pn0.scrollTop=st}
+  else{o.innerHTML=`<div class="scrim" data-act="close-sheet"><div class="panel" role="dialog" aria-modal="true"><div class="grab"></div>${body}</div></div>`;o.dataset.sheet=S.sheet}
+  if(S.sheet==='pin') pinDots();
   if(S.sheet==='picker') renderPicker();
 }
 function renderPicker(){
@@ -2026,7 +2038,7 @@ document.addEventListener('click',async ev=>{
     case 'pk-other':{const o=$('#pk-other');const v=o.value.trim().replace(/^\[|\]$/g,'');if(v){setChordAtSel(v)}break}
     case 'edit-song': sel=null;S.restored=false;S.edit={...S.song,mode:'edit'};S.etab='acordes';S.selW=null;go('edit');S.model=toModel(S.edit.content);renderPlacer();break;
     case 'cancel-edit': if(S.edit&&S.edit.id&&S.songs.get(S.edit.id)){openSong(S.edit.id,keyName(S.target,parseKey(S.song.key).minor),S.ctx)}else go('songs');break;
-    case 'del-song': S.pinFor={type:'song',id:S.edit.id};S.pinErr='';S.pinVal='';S.pinBusy=false;if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();break;
+    case 'del-song': S.pinFor={type:'song',id:S.edit.id,nome:(S.songs.get(S.edit.id)||{}).title};S.pinErr='';S.pinVal='';S.pinBusy=false;S.pinState=null;S.pinMsg='';if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();if(document.activeElement)document.activeElement.blur();break;
     case 'pk':{if(S.pinBusy)break;const k=b.dataset.k;S.pinVal=S.pinVal||'';
       S.pinVal=k==='del'?S.pinVal.slice(0,-1):(S.pinVal+k).slice(0,4);pinDots();
       if(navigator.vibrate)try{navigator.vibrate(8)}catch{}
@@ -2034,15 +2046,21 @@ document.addEventListener('click',async ev=>{
     case 'pin-ok':{if(S.pinBusy||S.sheet!=='pin')break;const pin=S.pinVal||'';
       const f=S.pinFor,er=$('#pin-err');
       if(!/^\d{4}$/.test(pin)){if(er)er.textContent='A senha tem 4 números.';break}
-      S.pinBusy=true;if(er){er.textContent='Conferindo…';er.classList.add('wait')}document.querySelector('.pinbox')?.classList.add('busy');
+      S.pinBusy=true;S.pinState='busy';S.pinMsg='Excluindo…';if(er){er.textContent='Excluindo…';er.classList.add('wait')}document.querySelector('.pinbox')?.classList.add('busy');
       try{await db.del(f.type==='song'?'songs':'cultos',f.id,pin)}
       catch(e){const m=e.code==='wrong-pin'?'Senha errada. Tente de novo.':e.code==='offline'?'Para excluir precisa de internet.':'Não foi possível excluir. Tente de novo.';
-        S.pinBusy=false;S.pinVal='';pinDots();document.querySelector('.pinbox')?.classList.remove('busy');
+        S.pinBusy=false;S.pinState=null;S.pinMsg='';S.pinErr=m;S.pinVal='';pinDots();document.querySelector('.pinbox')?.classList.remove('busy');
         if(er){er.classList.remove('wait');er.textContent=m}const d=$('#pindots');if(d){d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake')}break}
+      S.pinState='done';S.pinMsg=f.type==='song'?'Cifra excluída':'Culto excluído';
+      {const pb=document.querySelector('.pinbox');if(pb){pb.classList.remove('busy');pb.classList.add('done')}const e2=$('#pin-err');if(e2){e2.classList.remove('wait');e2.textContent=S.pinMsg}}
+      await new Promise(r=>setTimeout(r,450));
       S.pinBusy=false;
-      S.sheet=null;renderOverlay();
-      if(f.type==='song'){clearDraft();S.song=null;go('songs')}else go('cultos');
-      flash(f.type==='song'?'Cifra excluída.':'Culto excluído.');
+      const pn=document.querySelector('#overlay .panel');if(pn){pn.style.transition='transform .2s ease-in';pn.style.transform='translateY(110%)'}
+      await new Promise(r=>setTimeout(r,190));
+      S.pinState=null;S.pinMsg='';closeSheet();
+      if(f.type==='song'&&(S.view==='song'||S.view==='edit')){clearDraft();S.song=null;go('songs')}
+      else if(f.type==='culto'&&S.view==='culto')go('cultos');
+      toast(f.type==='song'?'Cifra excluída':'Culto excluído');
       break}
     case 'new-culto':{const id=db.newId('cultos');const t=new Date();
       if(await guard(db.setCulto(id,{name:'Culto de '+t.toLocaleDateString('pt-BR',{weekday:'long'}),date:todayStr(),items:[],updatedAt:Date.now(),criadoPor:S.uid||null}))){marcarVisto(id);S.cultoId=id;S.pq='';go('culto');setTimeout(()=>{const n=$('#c-name');if(n){n.focus();n.select()}},80)}break}
@@ -2053,7 +2071,7 @@ document.addEventListener('click',async ev=>{
       const d={...cur,draft:!fin,updatedAt:Date.now()};if(fin)d.finalizadaEm=Date.now();else delete d.finalizadaEm;delete d.id;
       S.songs.set(id,d);renderList();toast(fin?'Finalizada':'Voltou para Próximas canções');guard(db.setSong(id,d));break}
     case 'favtog': S.soFav=!S.soFav;render();break;
-    case 'swdel': S.pinFor={type:b.dataset.type,id:b.dataset.id};S.pinErr='';S.pinVal='';S.pinBusy=false;if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();break;
+    case 'swdel': S.pinFor={type:b.dataset.type,id:b.dataset.id,nome:b.dataset.type==='song'?(S.songs.get(b.dataset.id)||{}).title:(S.cultos.get(b.dataset.id)||{}).name};S.pinErr='';S.pinVal='';S.pinBusy=false;S.pinState=null;S.pinMsg='';if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();break;
     case 'open-item':{const c=S.cultos.get(S.cultoId);const i=+b.dataset.i;const it=c.items[i];if(S.songs.get(it.songId)) openSong(it.songId,it.key,{cultoId:S.cultoId,index:i});break}
     case 'organize': S.organize=!S.organize;render();break;
     case 'move':{const c=S.cultos.get(S.cultoId);const items=[...c.items];const i=+b.dataset.i,j=i+ +b.dataset.d;[items[i],items[j]]=[items[j],items[i]];guard(db.setCulto(S.cultoId,{...c,items,updatedAt:Date.now()}));break}
@@ -2068,7 +2086,7 @@ document.addEventListener('click',async ev=>{
       await guard(db.setCulto(S.cultoId,{...c,items:[...(c.items||[]),{songId:x.songId,key:x.key}],updatedAt:Date.now()}));toast('Música posta no culto');break}
     case 'add-item':{const c=S.cultos.get(S.cultoId);const s=S.songs.get(b.dataset.id);
       await guard(db.setCulto(S.cultoId,{...c,items:[...(c.items||[]),{songId:b.dataset.id,key:s.key}],updatedAt:Date.now()}));renderPicker();break}
-    case 'del-culto': S.pinFor={type:'culto',id:S.cultoId};S.pinErr='';S.pinVal='';S.pinBusy=false;if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();break;
+    case 'del-culto': S.pinFor={type:'culto',id:S.cultoId,nome:(S.cultos.get(S.cultoId)||{}).name};S.pinErr='';S.pinVal='';S.pinBusy=false;S.pinState=null;S.pinMsg='';if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();break;
     case 'live-start':{const c=S.cultos.get(S.cultoId);const it=c.items[0];S.broadcast=S.cultoId;S.follow=false;
       openSong(it.songId,it.key,{cultoId:S.cultoId,index:0});break}
     case 'live-stop': S.broadcast=null;pushLive({...(S.live||{}),active:false,at:Date.now(),by:S.uid||'anon'});render();break;
