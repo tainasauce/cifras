@@ -92,6 +92,13 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 .capa i{position:absolute;border-radius:50%;opacity:.92}
 .capa b{position:absolute;left:7px;bottom:5px;color:#fff;font:800 15px var(--f-display);letter-spacing:.02em;text-shadow:0 1px 6px rgba(0,0,0,.35)}
 .song .ktom{color:var(--honey);font-weight:800}
+.estudo{margin:0 0 22px;background:var(--raise);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-radius:var(--r);overflow:hidden}
+.esthead{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border:0;background:none;color:var(--ink);font-weight:800;font-size:16px}
+.esthead>span{display:flex;align-items:center;gap:8px}.esthead svg{width:20px;height:20px;color:var(--honey)}
+.esthead .cnt{font-style:normal;font-size:12px;background:var(--soft);color:var(--honey);border-radius:999px;padding:2px 8px}
+.estudo .cards{border-radius:0;box-shadow:none;border:0;border-top:1px solid var(--line)}
+.tag.semcifra{background:#3f3416;color:#fde68a}
+.swfin{background:#16a34a}.swest{background:#4a4b55}
 .song .fone{flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--honey);margin-left:auto}
 .song .fone svg{width:20px;height:20px}
 .refs{display:grid;gap:8px}
@@ -701,7 +708,7 @@ const I={
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
   cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
-  plus:'<path d="M12 5v14M5 12h14"/>', bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>', fone:'<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="5" height="7" rx="2"/><rect x="16" y="14" width="5" height="7" rx="2"/>', ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>', heart:'<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>', sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11M9 8h6"/>', bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>', fone:'<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="5" height="7" rx="2"/><rect x="16" y="14" width="5" height="7" rx="2"/>', ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>', heart:'<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>', sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
   cloudoff:'<path d="M3 3l18 18M8 7a5.5 5.5 0 0 1 9.6 3.2A4 4 0 0 1 20.5 17M17 19H7a4.5 4.5 0 0 1-1.6-8.7"/>', share:'<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>', minus:'<path d="M5 12h14"/>',
   left:'<path d="m15 18-6-6 6-6"/>', right:'<path d="m9 18 6-6-6-6"/>',
   play:'<path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/>',
@@ -1123,9 +1130,14 @@ function ouvirMusica(id){const s=S.songs.get(id);if(!s)return;const rs=s.refs||[
   if(!yt){if(rs[0])window.open(rs[0].url,'_blank','noopener');return}
   openSong(id);playRef(yt.url,s.title)}
 function songRow(s){
-  const fav=isFav(s.id);
-  return `<li class="swipe" style="--sw:${S.canWrite?184:92}px"><span class="swacts"><button class="swfav${fav?' on':''}" data-act="fav" data-id="${esc(s.id)}" tabindex="-1">${ic('heart',fav?'i fill':'i')}${fav?'Tirar':'Favoritar'}</button>${S.canWrite?`<button class="swdel" data-act="swdel" data-type="song" data-id="${esc(s.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}</span><button class="song" data-act="open-song" data-id="${esc(s.id)}">${capa(s)}
-    <div><div class="t">${esc(s.title)}${fav?`<span class="favmark" aria-label="Favorita">${ic('heart','i fill')}</span>`:''}${s.draft?'<span class="tag">Rascunho</span>':''}</div><div class="a">${esc(s.artist||'Sem artista')} · <b class="ktom" aria-label="Tom ${esc(s.key)}">${esc(s.key)}</b></div></div>${(s.refs||[]).length?`<span class="fone" role="button" tabindex="0" data-act="ouvir" data-id="${esc(s.id)}" aria-label="Ouvir referência de ${esc(s.title)}">${ic('fone')}</span>`:ic('right','i chev')}</button></li>`;
+  const fav=isFav(s.id),w=S.canWrite,est=!!s.draft,recente=!est&&s.finalizadaEm&&Date.now()-s.finalizadaEm<72*3600e3;
+  const acts=[];
+  if(est&&w)acts.push(`<button class="swfin" data-act="finalizar" data-id="${esc(s.id)}" tabindex="-1">${ic('check')}Finalizada</button>`);
+  else acts.push(`<button class="swfav${fav?' on':''}" data-act="fav" data-id="${esc(s.id)}" tabindex="-1">${ic('heart',fav?'i fill':'i')}${fav?'Tirar':'Favoritar'}</button>`);
+  if(recente&&w)acts.push(`<button class="swest" data-act="estudar" data-id="${esc(s.id)}" tabindex="-1">${ic('left')}Voltar</button>`);
+  if(w)acts.push(`<button class="swdel" data-act="swdel" data-type="song" data-id="${esc(s.id)}" tabindex="-1">${ic('trash')}Excluir</button>`);
+  return `<li class="swipe" style="--sw:${acts.length*92}px"><span class="swacts">${acts.join('')}</span><button class="song" data-act="open-song" data-id="${esc(s.id)}">${capa(s)}
+    <div><div class="t">${esc(s.title)}${fav?`<span class="favmark" aria-label="Favorita">${ic('heart','i fill')}</span>`:''}${est&&!String(s.content||'').trim()?'<span class="tag semcifra">sem cifra</span>':''}${est&&(S.q||S.soFav)?'<span class="tag">Próxima</span>':''}</div><div class="a">${esc(s.artist||'Sem artista')} · <b class="ktom" aria-label="Tom ${esc(s.key)}">${esc(s.key)}</b></div></div>${(s.refs||[]).length?`<span class="fone" role="button" tabindex="0" data-act="ouvir" data-id="${esc(s.id)}" aria-label="Ouvir referência de ${esc(s.title)}">${ic('fone')}</span>`:ic('right','i chev')}</button></li>`;
 }
 function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
 let deferredInstall=null;
@@ -1157,9 +1169,12 @@ function renderList(){
   if(S.soFav&&!rows.length){el.innerHTML=`<p class="empty">${S.q?'Nenhuma favorita com esse nome.':'Nenhuma favorita ainda. Arraste uma música para a esquerda e toque no coração.'}</p>`;return}
   if(!rows.length){el.innerHTML=`<p class="empty">${S.songs.size?'Nenhuma música encontrada com esse nome.':'Ainda não há cifras. Toque no botão + para cadastrar a primeira.'}</p>`;return}
   if(S.q||S.soFav){el.innerHTML=`<ul class="cards">${rows.map(songRow).join('')}</ul>`;return}
+  const est=rows.filter(s=>s.draft),normais=rows.filter(s=>!s.draft),aberto=P.estOpen!==false;
+  const balao=est.length?`<section class="estudo${aberto?' open':''}"><button class="esthead" data-act="est-toggle" aria-expanded="${aberto}"><span>${ic('book')} Próximas canções <i class="cnt">${est.length}</i></span>${ic(aberto?'up':'down')}</button>
+    ${aberto?`<ul class="cards">${est.map(songRow).join('')}</ul>`:''}</section>`:'';
   const groups=new Map();
-  for(const s of rows){const L=(norm(s.title)[0]||'#').toUpperCase();const k=/[A-Z]/.test(L)?L:'#';if(!groups.has(k))groups.set(k,[]);groups.get(k).push(s)}
-  el.innerHTML=[...groups].map(([L,arr])=>`<section class="group"><h2 class="letter">${L}</h2><ul class="cards">${arr.map(songRow).join('')}</ul></section>`).join('');
+  for(const s of normais){const L=(norm(s.title)[0]||'#').toUpperCase();const k=/[A-Z]/.test(L)?L:'#';if(!groups.has(k))groups.set(k,[]);groups.get(k).push(s)}
+  el.innerHTML=balao+[...groups].map(([L,arr])=>`<section class="group"><h2 class="letter">${L}</h2><ul class="cards">${arr.map(songRow).join('')}</ul></section>`).join('');
 }
 function songCalc(){
   const s=S.song,o=parseKey(s.key);
@@ -1519,7 +1534,7 @@ function viewEdit(){
       <label class="f" for="f-bpm">BPM <span class="h">opcional</span><input type="number" id="f-bpm" min="30" max="240" value="${esc(e.bpm||'')}"></label>
       <label class="f" for="f-refs">Links de referência <span class="h">opcional · um por linha</span><textarea id="f-refs" rows="2" placeholder="https://youtu.be/...  ao vivo" style="min-height:0">${esc((e.refs||[]).map(r=>r.url+(r.label?'  '+r.label:'')).join('\n'))}</textarea></label>
     </div>
-    <label class="check" for="f-draft" style="font-size:14px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="f-draft"${e.draft?' checked':''}> Ainda estou tirando (marcar como rascunho)</label>
+    <label class="check" for="f-draft" style="font-size:14px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="f-draft"${e.draft?' checked':''}> Vamos tirar ainda <span class="muted" style="font-size:12px">· fica em Próximas canções</span></label>
     <div class="actions">
       <button type="submit" class="btn primary">${ic('check')} Salvar cifra</button>
       <button type="button" class="btn ghost" data-act="cancel-edit">Cancelar</button>
@@ -2029,6 +2044,10 @@ document.addEventListener('click',async ev=>{
       if(await guard(db.setCulto(id,{name:'Culto de '+t.toLocaleDateString('pt-BR',{weekday:'long'}),date:todayStr(),items:[],updatedAt:Date.now(),criadoPor:S.uid||null}))){marcarVisto(id);S.cultoId=id;S.pq='';go('culto');setTimeout(()=>{const n=$('#c-name');if(n){n.focus();n.select()}},80)}break}
     case 'open-culto': marcarVisto(b.dataset.id);S.cultoId=b.dataset.id;go('culto');break;
     case 'fav': toggleFav(b.dataset.id);break;
+    case 'est-toggle': P.estOpen=!(P.estOpen!==false);saveP();renderList();break;
+    case 'finalizar': case 'estudar':{const id=b.dataset.id,cur=S.songs.get(id);if(!cur)break;const fin=act==='finalizar';
+      const d={...cur,draft:!fin,updatedAt:Date.now()};if(fin)d.finalizadaEm=Date.now();else delete d.finalizadaEm;delete d.id;
+      S.songs.set(id,d);renderList();toast(fin?'Finalizada':'Voltou para Próximas canções');guard(db.setSong(id,d));break}
     case 'favtog': S.soFav=!S.soFav;render();break;
     case 'swdel': S.pinFor={type:b.dataset.type,id:b.dataset.id};S.pinErr='';S.pinVal='';S.pinBusy=false;if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();break;
     case 'open-item':{const c=S.cultos.get(S.cultoId);const i=+b.dataset.i;const it=c.items[i];if(S.songs.get(it.songId)) openSong(it.songId,it.key,{cultoId:S.cultoId,index:i});break}
