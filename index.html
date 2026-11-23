@@ -394,6 +394,30 @@ textarea{resize:vertical}
 .pc b{font:600 14px/1.3 var(--f-mono);color:var(--honey);white-space:pre;min-height:1.3em;padding-right:4px}
 .pc>span{font-size:18px;line-height:1.35}
 .pc.cur>span{box-shadow:inset 0 -2px 0 var(--accent)}
+.palette .kn{display:none}
+.kbhint{display:none;margin:0;font-size:12px;color:var(--muted);line-height:1.9}
+.kbhint kbd{display:inline-block;min-width:22px;padding:0 5px;margin:0 1px;border-radius:6px;background:var(--soft);border:1px solid var(--line);font:700 12px var(--f-mono);text-align:center;color:var(--text,inherit)}
+@media (hover:hover) and (pointer:fine){.kbhint{display:block}}
+body.facil{font-size:18px}
+body.facil .btn{min-height:52px;font-size:17px;padding:12px 20px}
+body.facil .icon{min-width:48px;min-height:48px}
+body.facil input[type=text],body.facil input[type=number],body.facil input[type=email],body.facil select,body.facil textarea{font-size:18px;min-height:52px}
+body.facil textarea#content{font-size:19px;line-height:1.6}
+body.facil .steps button{min-height:56px;font-size:18px}
+body.facil .w{padding:7px 8px;border-radius:10px}
+body.facil .pc b{font-size:18px}body.facil .pc>span{font-size:24px}
+body.facil .pl-line{margin-bottom:14px;row-gap:6px}
+body.facil .palette{gap:10px}
+body.facil .palette button{min-width:84px;padding:10px 14px;position:relative;border-radius:14px}
+body.facil .palette button b{font-size:21px}
+body.facil .palette .kn{display:block;position:absolute;top:4px;left:7px;font:800 11px var(--f-mono);font-style:normal;color:var(--muted)}
+body.facil .letters button{min-width:44px;min-height:48px;font-size:20px}
+body.facil .pick .icon{min-width:52px;min-height:52px}
+body.facil .kbhint{display:block;font-size:14px}
+body.facil .kbhint kbd{font-size:14px;min-width:28px}
+body.facil .swipe>.song,body.facil .swipe>.culto{transform:none!important;width:calc(100% - var(--sw,92px))!important;margin-right:var(--sw,92px);transition:none;border-radius:var(--r) 0 0 var(--r)}
+body.facil .swacts>button{font-size:15px}
+body.facil .song .t{font-size:18px}
 body.picking main#app{padding-bottom:calc(330px + env(safe-area-inset-top))}
 .pick{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 30px rgba(20,24,31,.12);border-radius:20px 20px 0 0}
 .wrap{padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
@@ -842,10 +866,11 @@ function demoSeed(){
   S.cultos=new Map([['exemplo-domingo',{name:'Culto de domingo (exemplo)',date:todayStr(),items:[{songId:'exemplo-graca',key:'A'},{songId:'exemplo-rocha',key:'Ab'}],updatedAt:Date.now()}]]);
 }
 /* ===== Acesso: só entra quem o responsável aceitar ===== */
-const PAPEL={dev:'Responsável',editor:'Editor',leitor:'Pode ver'};
+const PAPEL={dev:'Responsável',editor:'Editor',mod2:'Mod2',leitor:'Pode ver'};
 function setMember(m){
   S.member=m;S.role=m?m.papel:null;
-  S.canWrite=S.role==='editor'||S.role==='dev';S.isDev=S.role==='dev';
+  S.canWrite=S.role==='editor'||S.role==='mod2'||S.role==='dev';S.isDev=S.role==='dev';
+  document.body.classList.toggle('facil',S.role==='mod2');
 }
 function unsubData(){B.unsubs.forEach(u=>{try{u()}catch{}});B.unsubs=[];B.subscribed=false}
 function unsubPeople(){(B.peopleUnsubs||[]).forEach(u=>{try{u()}catch{}});B.peopleUnsubs=[]}
@@ -973,9 +998,9 @@ function pessoasHTML(){
       :'<p class="muted" style="margin:0 0 6px">Nenhum pedido agora. Quem criar conta no app aparece aqui.</p>'}
     <div class="eyebrow" style="margin:18px 0 8px">Quem tem acesso (${mem.length})</div>
     <ul class="people">${mem.map(m=>`<li>${avaP(m)}<div class="pp"><b>${esc(m.nome||m.email||'')}${m.id===S.uid?' (você)':''}</b><span>${esc(m.email||'')}</span></div>
-      ${m.papel==='dev'?'<span class="tag">Responsável</span>':`<div class="pa"><div class="seg">${['leitor','editor'].map(r=>`<button data-act="papel" data-id="${esc(m.id)}" data-p="${r}" aria-pressed="${m.papel===r}">${r==='leitor'?'Pode ver':'Editor'}</button>`).join('')}</div>
+      ${m.papel==='dev'?'<span class="tag">Responsável</span>':`<div class="pa"><div class="seg">${['leitor','editor','mod2'].map(r=>`<button data-act="papel" data-id="${esc(m.id)}" data-p="${r}" aria-pressed="${m.papel===r}">${PAPEL[r]}</button>`).join('')}</div>
         <button class="icon" data-act="remover" data-id="${esc(m.id)}" aria-label="Tirar o acesso de ${esc(m.nome||m.email||'')}">${ic('x')}</button></div>`}</li>`).join('')}</ul>
-    <p class="hint">Editores cadastram, editam e excluem cifras. Quem "pode ver" só abre as cifras e os cultos. Só você aceita pessoas.</p>`;
+    <p class="hint">Editores cadastram, editam e excluem cifras. Mod2 pode o mesmo que o Editor, com botões maiores, ações sempre à vista e atalhos de teclado. Quem "pode ver" só abre as cifras e os cultos. Só você aceita pessoas.</p>`;
 }
 window.addEventListener('online',()=>{S.offline=false;render()});
 window.addEventListener('offline',()=>{S.offline=true;render()});
@@ -1737,14 +1762,19 @@ function nextWord(d){
   const i=all.findIndex(b=>+b.dataset.pl===W.li&&+b.dataset.ws===W.ws);
   const n=all[i+d];if(n) selectWord(+n.dataset.pl,+n.dataset.ws,+n.dataset.we);
 }
+function pushUndo(){const ta=$('#content');if(!ta)return;if(S.undoFor!==S.edit){S.undo=[];S.undoFor=S.edit}S.undo.push(ta.value);if(S.undo.length>60)S.undo.shift()}
+function undoPlacer(){if(S.undoFor!==S.edit||!S.undo||!S.undo.length)return;const ta=$('#content');if(!ta)return;ta.value=S.undo.pop();saveDraft();S.model=toModel(ta.value);renderPlacer();renderPickPanel();toast('Desfeito')}
+function nextLine(d){const W=S.selW;const lines=[...document.querySelectorAll('.pl-line')];if(!lines.length)return;
+  let i=W?lines.findIndex(l=>l.querySelector(`.w[data-pl="${W.li}"]`)):-1;i=i<0?0:i+d;const L=lines[i];if(!L)return;const b=L.querySelector('.w[data-pl]');if(b)selectWord(+b.dataset.pl,+b.dataset.ws,+b.dataset.we)}
 function setChordAtSel(ch){
-  const W=S.selW;if(!W)return;const L=S.model[W.li];
+  const W=S.selW;if(!W)return;const L=S.model[W.li];pushUndo();
   if(W.pos>=L.text.length) L.chords.push({pos:L.text.length,ch});
   else L.chords=L.chords.filter(c=>c.pos!==W.pos).concat({pos:W.pos,ch}).sort((a,b)=>a.pos-b.pos);
   commitModel();renderPlacer();renderPickPanel();
 }
 function removeChordAtSel(){
   const W=S.selW;if(!W)return;const L=S.model[W.li];
+  if(!L.chords.some(c=>W.pos>=L.text.length?c.pos>=L.text.length:c.pos===W.pos))return;pushUndo();
   if(W.pos>=L.text.length){const i=L.chords.map(c=>c.pos>=L.text.length).lastIndexOf(true);if(i>=0)L.chords.splice(i,1)}
   else L.chords=L.chords.filter(c=>c.pos!==W.pos);
   commitModel();renderPlacer();renderPickPanel();
@@ -1763,9 +1793,10 @@ function renderPickPanel(){
       <button type="button" class="icon" data-act="pk-next" aria-label="Próxima palavra">${ic('right')}</button>
       <button type="button" class="icon" data-act="pk-close" aria-label="Fechar">${ic('x')}</button></div>
     ${word.length>1?`<div class="letters" aria-label="Em qual letra o acorde começa">${letters}</div>`:''}
-    <div class="palette">${harmonicField({idx:r,minor:mi}).map(h=>`<button type="button" data-chord="${esc(h.chord)}" aria-pressed="${!!cur&&cur.ch===h.chord}"><b>${esc(h.chord)}</b><small>${h.deg}</small></button>`).join('')}</div>
+    <div class="palette">${harmonicField({idx:r,minor:mi}).map((h,k)=>`<button type="button" data-chord="${esc(h.chord)}" aria-pressed="${!!cur&&cur.ch===h.chord}" aria-keyshortcuts="${k+1}"><i class="kn" aria-hidden="true">${k+1}</i><b>${esc(h.chord)}</b><small>${h.deg}</small></button>`).join('')}</div>
     <div class="otherrow"><input type="text" id="pk-other" placeholder="Outro: E7, D/F#, Bb" aria-label="Outro acorde"><button type="button" class="btn" data-act="pk-other">Pôr</button>
-      <button type="button" class="btn ghost danger" data-act="pk-remove">Tirar</button></div>
+      <button type="button" class="btn ghost danger" data-act="pk-remove">Tirar</button>${S.undo&&S.undo.length?`<button type="button" class="btn ghost" data-act="pk-undo">${ic('left')} Desfazer</button>`:''}</div>
+    <p class="kbhint">Teclado: <kbd>←</kbd><kbd>→</kbd> palavra · <kbd>↑</kbd><kbd>↓</kbd> linha · <kbd>1</kbd>–<kbd>7</kbd> põe o acorde · <kbd>A</kbd>–<kbd>G</kbd> digita outro · <kbd>Del</kbd> tira · <kbd>Z</kbd> desfaz</p>
   </div></div>`;
 }
 function switchTab(t){
@@ -2065,6 +2096,7 @@ document.addEventListener('click',async ev=>{
     case 'pk-next': nextWord(1);break;
     case 'pk-close': S.selW=null;renderPlacer();renderPickPanel();break;
     case 'pk-remove': removeChordAtSel();break;
+    case 'pk-undo': undoPlacer();break;
     case 'pk-other':{const o=$('#pk-other');const v=o.value.trim().replace(/^\[|\]$/g,'');if(v){setChordAtSel(v)}break}
     case 'edit-song': sel=null;S.restored=false;S.edit={...S.song,mode:'edit'};S.etab='acordes';S.selW=null;go('edit');S.model=toModel(S.edit.content);renderPlacer();break;
     case 'cancel-edit': if(S.edit&&S.edit.id&&S.songs.get(S.edit.id)){openSong(S.edit.id,keyName(S.target,parseKey(S.song.key).minor),S.ctx)}else go('songs');break;
@@ -2122,6 +2154,18 @@ document.addEventListener('click',async ev=>{
     case 'live-stop': S.broadcast=null;pushLive({...(S.live||{}),active:false,at:Date.now(),by:S.uid||'anon'});render();break;
     case 'follow': S.follow=!S.follow;if(S.follow&&liveActive()) followLive(); else render();break;
   }
+});
+document.addEventListener('keydown',e=>{
+  if(S.view!=='edit'||S.etab!=='acordes'||S.sheet||e.ctrlKey||e.metaKey||e.altKey)return;
+  const t=e.target,typing=t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable);if(typing)return;
+  const k=e.key;
+  if(k==='ArrowLeft'||k==='ArrowRight'){e.preventDefault();if(!S.selW)nextLine(0);else nextWord(k==='ArrowLeft'?-1:1);return}
+  if(k==='ArrowUp'||k==='ArrowDown'){e.preventDefault();if(!S.selW)nextLine(0);else nextLine(k==='ArrowUp'?-1:1);return}
+  if(k==='z'||k==='Z'){e.preventDefault();undoPlacer();return}
+  if(!S.selW)return;
+  if(/^[1-7]$/.test(k)){const b=document.querySelectorAll('.pick .palette [data-chord]')[+k-1];if(b){e.preventDefault();setChordAtSel(b.dataset.chord)}return}
+  if(k==='Delete'||k==='Backspace'){e.preventDefault();removeChordAtSel();return}
+  if(/^[a-gA-G]$/.test(k)){const o=$('#pk-other');if(o){e.preventDefault();o.value=k.toUpperCase();o.focus();o.setSelectionRange(1,1)}return}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pk-other'){e.preventDefault();$('[data-act=pk-other]').click();return}if(e.key==='Escape'){if(S.sheet){S.sheet=null;renderOverlay();if(S.view==='culto')render()}else if(S.stage)setStage(false)}});
 document.addEventListener('input',ev=>{
