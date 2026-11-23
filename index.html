@@ -430,7 +430,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .search:focus-within{border-color:var(--accent)}
 .tabbar,.dock,.pick{background:var(--glass);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-top-color:rgba(255,255,255,.06)}
 .tabbar button[aria-current="page"]{background:var(--soft);color:var(--ink)}
-.tabbar button[aria-current="page"] svg{stroke:url(#gradStroke)}
+.tabbar button[aria-current="page"] svg{stroke:var(--gstroke,url(#gradStroke))}
 .panel{background:rgba(29,30,36,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 -10px 40px rgba(0,0,0,.5),var(--hl)}
 .scrim{background:rgba(5,5,8,.55)}
 .note{background:var(--raise)}
@@ -700,7 +700,10 @@ function temaCustom(){
 function applyTema(){
   const t=P.tema==='custom'?temaCustom():(TEMAS[P.tema]||TEMAS.oceano),r=document.documentElement.style;
   r.setProperty('--grad',t.grad);r.setProperty('--accent',t.a);r.setProperty('--honey',t.c);r.setProperty('--chord-sol',mixHex(t.a,'#000000',.28));
-  const a=document.getElementById('gs1'),b=document.getElementById('gs2');if(a){a.setAttribute('stop-color',t.s[0]);b.setAttribute('stop-color',t.s[1])}
+  /* o iPhone não repinta o ícone quando só a cor do gradiente muda: cria um gradiente novo e troca a referência */
+  const old=document.getElementById('gradStroke');if(old){const id='gs'+Date.now().toString(36);const g=old.cloneNode(true);g.id=id;
+    g.children[0].setAttribute('stop-color',t.s[0]);g.children[1].setAttribute('stop-color',t.s[1]);
+    const defs=old.parentNode;[...defs.querySelectorAll('linearGradient[id^="gs"]')].forEach(x=>x.remove());defs.appendChild(g);r.setProperty('--gstroke',`url(#${id})`)}
 }
 const $=s=>document.querySelector(s);
 const MESES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
