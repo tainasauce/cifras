@@ -186,6 +186,22 @@ body.stage .dock::after{display:none}
 .sp-hint{font-size:12px;color:var(--muted);text-align:center}
 .swipe{position:relative;overflow:hidden}
 .cultos .swipe{border-radius:var(--r)}
+.cultos.tlist{gap:0}
+.tl{display:flex;gap:12px}
+.tl .rail{width:14px;flex:0 0 auto;display:flex;flex-direction:column;align-items:center}
+.tl .rail i{width:12px;height:12px;border-radius:50%;border:2px solid var(--muted);background:var(--bg);margin-top:24px;flex:0 0 auto}
+.tl .rail::after{content:'';flex:1;width:2px;background:var(--line);margin-top:4px}
+.tl:last-child .rail::after{background:linear-gradient(var(--line),transparent)}
+.tl.on .rail i{border:0;background:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 28%,transparent)}
+.tl.on .rail::after{background:linear-gradient(var(--accent),var(--line))}
+.tl.soon .rail i{border-color:var(--accent)}
+.tl.old .rail i{border-color:var(--line)}
+.tl .tlc{flex:1;min-width:0;margin-bottom:12px;border-radius:var(--r)}
+.tl .when{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--honey);margin-bottom:2px}
+.tl .culto.next .when{color:#fff}
+.tl.old .when{color:var(--muted)}
+.tl .culto>div{flex:1;min-width:0}.tl .culto .chev{flex:0 0 auto}
+.tl .culto.past{opacity:1}.tl.old .culto>*{opacity:.6}
 .cultos,.cards,.list,.items{grid-template-columns:minmax(0,1fr)}
 .cultos>li,.cards>li{min-width:0}
 html,body{overflow-x:hidden;max-width:100%;touch-action:pan-x pan-y}
@@ -1512,10 +1528,13 @@ function viewEdit(){
   </form>`;
 }
 function updatePreview(){ if(S.etab==='acordes'){S.model=toModel($('#content').value);renderPlacer()} }
-function cultoRow(c,destaque){
-  const d=dParts(c.date);const names=(c.items||[]).map(it=>S.songs.get(it.songId)).filter(Boolean).map(s=>s.title);
-  return `<li class="${S.canWrite?'swipe':''}">${S.canWrite?`<button class="swdel" data-act="swdel" data-type="culto" data-id="${esc(c.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}<button class="culto${destaque?' next':''}${c.date<todayStr()?' past':''}" data-act="open-culto" data-id="${esc(c.id)}"><span class="datebox">${dateboxIn(c,d)}</span>
-    <div>${destaque?`<div class="k">${c.date===todayStr()?'Hoje':'Próximo culto'}</div>`:''}<h3>${esc(c.name)}${isNovo(c.id)?'<span class="tag novo">Novo</span>':''}</h3>${c.showDate?`<div class="cdate">${esc(fmtDate(c.date))}</div>`:''}<p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right','i chev')}</button></li>`;
+const DIAS=['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+function quando(c){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(c.date||'');if(!m)return '';const dt=new Date(+m[1],+m[2]-1,+m[3]);
+  const t=todayStr(),base=`${DIAS[dt.getDay()]} ${+m[3]} ${MESES[+m[2]-1].toUpperCase()}`;return c.date===t?'HOJE · '+base:base}
+function cultoRow(c,destaque,pos){
+  const names=(c.items||[]).map(it=>S.songs.get(it.songId)).filter(Boolean).map(s=>s.title);const past=c.date<todayStr();
+  return `<li class="tl${destaque?' on':''}${pos===1?' soon':''}${past?' old':''}"><span class="rail" aria-hidden="true"><i></i></span><div class="tlc${S.canWrite?' swipe':''}">${S.canWrite?`<button class="swdel" data-act="swdel" data-type="culto" data-id="${esc(c.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}<button class="culto${destaque?' next':''}${past?' past':''}" data-act="open-culto" data-id="${esc(c.id)}">
+    <div><div class="when">${esc(quando(c))}${destaque&&c.date!==todayStr()?' · PRÓXIMO':''}</div><h3>${esc(c.name)}${isNovo(c.id)?'<span class="tag novo">Novo</span>':''}</h3><p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right','i chev')}</button></div></li>`;
 }
 function viewCultos(){
   const all=cultosSorted(),t=todayStr();
@@ -1523,8 +1542,8 @@ function viewCultos(){
   if(!S.loaded) return `<div class="pagehead"><h1>Cultos</h1></div><p class="empty">Carregando…</p>`;
   return `<div class="pagehead"><div><div class="eyebrow">Repertórios</div><h1>Cultos</h1></div></div>
   ${!all.length?`<p class="empty">Nenhum culto montado ainda.${S.canWrite?' Toque no + para montar o próximo.':''}</p>`:''}
-  ${fut.length?`<ul class="cultos">${fut.map((c,i)=>cultoRow(c,i===0)).join('')}</ul>`:''}
-  ${past.length?`<h2 class="letter" style="margin:26px 0 10px 6px">Anteriores</h2><ul class="cultos">${past.map(c=>cultoRow(c)).join('')}</ul>`:''}`;
+  ${fut.length?`<ul class="cultos tlist">${fut.map((c,i)=>cultoRow(c,i===0,i)).join('')}</ul>`:''}
+  ${past.length?`<h2 class="letter" style="margin:26px 0 10px 6px">Anteriores</h2><ul class="cultos tlist">${past.map(c=>cultoRow(c)).join('')}</ul>`:''}`;
 }
 /* sem "mostrar data", o quadradinho do culto mostra uma cruz branca */
 function dateboxIn(c,d){return c&&c.showDate?`<b>${d.day}</b><span>${d.mon}</span>`:`<b class="pray" aria-label="Culto"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M7 8.5h10"/></svg></b>`}
