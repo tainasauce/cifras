@@ -265,7 +265,16 @@ body.stage .dock button{pointer-events:auto;box-shadow:0 8px 24px -8px rgba(0,0,
 .scrim{position:fixed;inset:0;z-index:40;background:rgba(10,16,12,.42);display:flex;align-items:flex-end;justify-content:center;animation:fade .18s ease}
 .panel{width:100%;max-width:560px;background:var(--surface);border-radius:24px 24px 0 0;padding:10px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.2);animation:up .22s cubic-bezier(.2,.8,.2,1);max-height:88%;overflow:auto}
 .panel .grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 14px}
-.panel{overscroll-behavior:contain}
+.panel{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+/* folhas: altura pela área visível de verdade do celular, para o fim (Excluir/Cancelar) sempre aparecer */
+.scrim{bottom:auto;height:100vh;height:100dvh}
+.panel{max-height:calc(100vh - env(safe-area-inset-top) - 24px);max-height:calc(100dvh - env(safe-area-inset-top) - 24px);position:relative}
+.panel::-webkit-scrollbar{width:5px}.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:9px}
+.panel.more::after{content:'';position:sticky;display:block;bottom:calc(-22px - env(safe-area-inset-bottom));height:48px;margin:-48px -20px 0;background:linear-gradient(transparent,var(--surface) 85%);pointer-events:none}
+.morehint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));z-index:41;display:none;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--soft);color:var(--ink);font-size:12px;font-weight:800;box-shadow:0 6px 20px rgba(0,0,0,.4);pointer-events:none}
+.morehint svg{width:16px;height:16px}
+.scrim.more .morehint{display:flex}
+@media (max-height:760px){.pinpad{gap:10px 18px}.pinpad button{width:62px;height:62px;font-size:24px}}
 .people .pava{width:38px;height:38px;border-radius:50%;flex:0 0 auto;background:var(--soft);display:grid;place-items:center;font-weight:800;color:var(--muted);overflow:hidden;align-self:center}.people .pava img{width:100%;height:100%;object-fit:cover}
 .acct .ava{position:absolute;inset:2px;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:cover;border-radius:50%}
 .fotorow{display:flex;align-items:center;gap:12px;margin-top:8px;background:var(--raise);border-radius:16px;padding:10px 12px;box-shadow:var(--hl)}
@@ -1440,6 +1449,12 @@ function closeSheet(){if(NAV.has&&S.view==='songs'&&!S.stage)history.back();else
   };
   document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchcancel',end,{passive:true});
 })();
+/* mostra "role para ver mais" quando a folha tem mais conteúdo embaixo */
+function painelMais(){const pn=document.querySelector('#overlay .panel'),sc=pn&&pn.parentElement;if(!pn)return;
+  if(!sc.querySelector('.morehint'))sc.insertAdjacentHTML('beforeend',`<div class="morehint" aria-hidden="true">${ic('down')} Role para ver mais</div>`);
+  const upd=()=>{const m=pn.scrollHeight-pn.clientHeight-pn.scrollTop>24;pn.classList.toggle('more',m);sc.classList.toggle('more',m)};
+  if(!pn.dataset.mh){pn.dataset.mh='1';pn.addEventListener('scroll',upd,{passive:true})}
+  upd();setTimeout(upd,260)}
 function renderOverlay(){
   const o=$('#overlay');
   setTimeout(syncHistory,0);
@@ -1509,6 +1524,7 @@ function renderOverlay(){
   if(pn0&&o.dataset.sheet===S.sheet){const st=pn0.scrollTop;pn0.innerHTML=`<div class="grab"></div>${body}`;pn0.scrollTop=st}
   else{o.innerHTML=`<div class="scrim" data-act="close-sheet"><div class="panel" role="dialog" aria-modal="true"><div class="grab"></div>${body}</div></div>`;o.dataset.sheet=S.sheet}
   if(S.sheet==='pin') pinDots();
+  painelMais();
   if(S.sheet==='picker') renderPicker();
 }
 function renderPicker(){
