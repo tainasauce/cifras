@@ -8,11 +8,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Cifras">
+<meta name="apple-mobile-web-app-title" content="Clave">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>Cifras do Ministério</title>
+<title>Clave</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -860,7 +860,7 @@ function gateHTML(){
       <button class="btn ghost" data-act="logout" style="margin-top:8px">Sair</button></div>`;
   }
   const su=S.gateTab==='signup';
-  return `<div class="gate"><div class="gate-logo">${LOGO}</div><h1>Cifras do Ministério</h1>
+  return `<div class="gate"><div class="gate-logo">${LOGO}</div><h1>Clave</h1>
     <p class="muted">${su?'Crie sua conta. O responsável do ministério vai aceitar seu acesso.':'Entre com seu e-mail e senha.'}</p>
     <div class="seg gate-seg"><button data-act="gtab" data-t="login" aria-pressed="${!su}">Entrar</button><button data-act="gtab" data-t="signup" aria-pressed="${su}">Criar conta</button></div>
     <form id="gateform" class="form" style="gap:10px;width:100%" autocomplete="on">
