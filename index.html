@@ -383,6 +383,9 @@ body{background:radial-gradient(140% 50% at 50% -12%,color-mix(in srgb,var(--acc
 .next{background:var(--grad);color:#fff;box-shadow:0 14px 34px -16px color-mix(in srgb,var(--accent) 80%,transparent)}
 .datebox{background:rgba(255,255,255,.18)}
 .culto .datebox,.chead .datebox{background:var(--soft)!important;color:var(--honey)!important}
+.culto.next,.swipe>.culto.next{background:var(--grad);color:#fff;border:0;margin:0}
+.culto.next .datebox{background:rgba(255,255,255,.18)!important;color:#fff!important}
+.culto.next h3{font-size:20px}.culto.next p{color:rgba(255,255,255,.85)}.culto.next .chev{color:#fff}
 .btn{background:var(--soft);border-color:transparent;box-shadow:var(--hl)}
 .btn.ghost{background:transparent;box-shadow:none}
 .btn.primary,.fab,.gate-logo,.chip2[aria-pressed="true"],.tile:active{background:var(--grad);border-color:transparent;color:#fff}
@@ -1397,10 +1400,10 @@ function viewEdit(){
   </form>`;
 }
 function updatePreview(){ if(S.etab==='acordes'){S.model=toModel($('#content').value);renderPlacer()} }
-function cultoRow(c){
+function cultoRow(c,destaque){
   const d=dParts(c.date);const names=(c.items||[]).map(it=>S.songs.get(it.songId)).filter(Boolean).map(s=>s.title);
-  return `<li class="${S.canWrite?'swipe':''}">${S.canWrite?`<button class="swdel" data-act="swdel" data-type="culto" data-id="${esc(c.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}<button class="culto${c.date<todayStr()?' past':''}" data-act="open-culto" data-id="${esc(c.id)}"><span class="datebox"><b>${d.day}</b><span>${d.mon}</span></span>
-    <div><h3>${esc(c.name)}${isNovo(c.id)?'<span class="tag novo">Novo</span>':''}</h3><p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right','i chev')}</button></li>`;
+  return `<li class="${S.canWrite?'swipe':''}">${S.canWrite?`<button class="swdel" data-act="swdel" data-type="culto" data-id="${esc(c.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}<button class="culto${destaque?' next':''}${c.date<todayStr()?' past':''}" data-act="open-culto" data-id="${esc(c.id)}"><span class="datebox"><b>${d.day}</b><span>${d.mon}</span></span>
+    <div>${destaque?`<div class="k">${c.date===todayStr()?'Hoje':'Próximo culto'}</div>`:''}<h3>${esc(c.name)}${isNovo(c.id)?'<span class="tag novo">Novo</span>':''}</h3><p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right','i chev')}</button></li>`;
 }
 function viewCultos(){
   const all=cultosSorted(),t=todayStr();
@@ -1408,8 +1411,8 @@ function viewCultos(){
   if(!S.loaded) return `<div class="pagehead"><h1>Cultos</h1></div><p class="empty">Carregando…</p>`;
   return `<div class="pagehead"><div><div class="eyebrow">Repertórios</div><h1>Cultos</h1></div></div>
   ${!all.length?`<p class="empty">Nenhum culto montado ainda.${S.canWrite?' Toque no + para montar o próximo.':''}</p>`:''}
-  ${fut.length?`<ul class="cultos">${fut.map(cultoRow).join('')}</ul>`:''}
-  ${past.length?`<h2 class="letter" style="margin:26px 0 10px 6px">Anteriores</h2><ul class="cultos">${past.map(cultoRow).join('')}</ul>`:''}`;
+  ${fut.length?`<ul class="cultos">${fut.map((c,i)=>cultoRow(c,i===0)).join('')}</ul>`:''}
+  ${past.length?`<h2 class="letter" style="margin:26px 0 10px 6px">Anteriores</h2><ul class="cultos">${past.map(c=>cultoRow(c)).join('')}</ul>`:''}`;
 }
 function viewCulto(){
   const c=S.cultos.get(S.cultoId); if(!c) return `<button class="back" data-act="tab" data-tab="cultos">${ic('left')} Cultos</button><p class="empty">Esse culto foi excluído.</p>`;
