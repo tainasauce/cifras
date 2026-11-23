@@ -115,7 +115,7 @@ body.mini:not(.songmode) main#app{padding-bottom:200px}
 .btn.danger{color:var(--danger)}
 .btn.live{background:var(--live);border-color:var(--live);color:#fff}
 .btn.save{background:var(--live);border-color:var(--live);color:#fff;font-weight:800}
-.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--live);color:#fff;font-weight:800;padding:10px 18px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.4);display:flex;gap:8px;align-items:center;animation:up .22s cubic-bezier(.2,.8,.2,1)}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--live);color:#fff;font-weight:800;padding:10px 18px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.4);display:flex;gap:8px;align-items:center;white-space:nowrap;animation:up .22s cubic-bezier(.2,.8,.2,1)}
 .toast .i{width:18px;height:18px}
 .btn:disabled{opacity:.4;cursor:default}
 .back{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:var(--muted);padding:4px 0;font-weight:700;font-size:15px;margin-bottom:12px}
@@ -305,6 +305,19 @@ textarea{resize:vertical}
 .chead input{font:700 22px var(--f-display);border-color:transparent;background:transparent;padding:4px 8px;margin-left:-8px}
 .chead input[type=date]{font:600 14px var(--f-body);color:var(--muted);width:auto;padding:2px 8px}
 .chead input:hover{border-color:var(--line)}
+.datebox .pray{font-size:24px;line-height:1}
+.sug{margin-top:18px;background:var(--raise);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.sughead{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border:0;background:none;color:var(--ink);font-weight:800;font-size:16px}
+.sughead>span{display:flex;align-items:center;gap:8px}.sughead svg{width:20px;height:20px;color:var(--honey)}
+.sughead .cnt{font-style:normal;font-size:12px;background:var(--soft);color:var(--honey);border-radius:999px;padding:2px 8px}
+.sugbody{padding:0 12px 12px}
+.suglist{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:8px}
+.suglist li{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:8px 10px}
+.sava{width:40px;height:40px;border-radius:50%;flex:0 0 auto;overflow:hidden;display:grid;place-items:center;background:var(--tint);color:var(--honey);font-weight:800}
+.sava img{width:100%;height:100%;object-fit:cover}
+.sm{flex:1;min-width:0;display:grid;line-height:1.25}.sm .who{font-size:12px;font-weight:800;color:var(--honey)}.sm b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sm .muted{font-size:12px}
+.suglist .sk{width:38px;height:38px;font-size:14px}
+.suglist .icon{width:34px;height:34px}.suglist .icon.ok{color:var(--live);border-color:transparent;background:none}
 .showdate{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-top:6px;cursor:pointer}
 .chead .showdate input{width:18px;height:18px;margin:0;padding:0;accent-color:var(--accent);flex:0 0 auto}
 .cdate{font-size:13px;font-weight:600;opacity:.8;margin-top:1px}.cdate::first-letter{text-transform:uppercase}
@@ -672,7 +685,7 @@ const I={
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
   cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
-  plus:'<path d="M12 5v14M5 12h14"/>', fone:'<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="5" height="7" rx="2"/><rect x="16" y="14" width="5" height="7" rx="2"/>', ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>', heart:'<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>', sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>', fone:'<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="5" height="7" rx="2"/><rect x="16" y="14" width="5" height="7" rx="2"/>', ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>', heart:'<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>', sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
   cloudoff:'<path d="M3 3l18 18M8 7a5.5 5.5 0 0 1 9.6 3.2A4 4 0 0 1 20.5 17M17 19H7a4.5 4.5 0 0 1-1.6-8.7"/>', share:'<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>', minus:'<path d="M5 12h14"/>',
   left:'<path d="m15 18-6-6 6-6"/>', right:'<path d="m9 18 6-6-6-6"/>',
   play:'<path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/>',
@@ -778,6 +791,7 @@ const db={
 function clean(o){return JSON.parse(JSON.stringify(o))}
 function demoSave(){if(B.mode==='demo')store.set('cifras:demo',{songs:Object.fromEntries(S.songs),cultos:Object.fromEntries(S.cultos)})}
 function demoSeed(){
+  S.sug=store.get('cifras:demo-sug',[]);
   const d=store.get('cifras:demo',null);if(d){S.songs=new Map(Object.entries(d.songs||{}));S.cultos=new Map(Object.entries(d.cultos||{}));return}
   S.songs=new Map([
     ['exemplo-rocha',{title:'Rocha da Manhã (exemplo)',artist:'Exemplo',key:'C',bpm:72,content:'[Intro] C  G/B  Am  F\n\n[Verso]\n[C]Quando o dia ama[G/B]nhece\n[Am]Eu levanto meus [F]olhos\n[C]Teu amor me sus[G]tenta, Se[Am]nhor  [F]\n\n[Refrão]\n[F]Rocha da ma[G]nhã és [C]Tu  [Am]\n[F]Firme quando [G]tudo [C]passa',notes:'',updatedAt:Date.now()}],
@@ -801,6 +815,7 @@ function subscribe(){
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'songs'),s=>{S.songs=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'cultos'),s=>{S.cultos=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
   if(S.uid)B.unsubs.push(ff.onSnapshot(ff.doc(fs,'favs',S.uid),s=>{if(s.metadata.hasPendingWrites)return;const ids=s.exists()?(s.data().ids||[]):store.get(favKey(),[]);S.favs=new Set(ids);store.set(favKey(),ids);if(S.view==='songs')renderList()},()=>{}));
+  B.unsubs.push(ff.onSnapshot(ff.collection(fs,'sugestoes'),s=>{S.sug=s.docs.map(d=>({id:d.id,...d.data()}));sugMudou()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'fotos'),s=>{S.fotos=Object.fromEntries(s.docs.map(d=>[d.id,d.data().img||'']));fotosMudaram()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.doc(fs,'live','atual'),s=>{
     const prev=S.live;S.live=s.exists()?s.data():null;
@@ -1110,7 +1125,7 @@ function viewSongs(){
   const nc=nextCulto();
   let card='';
   if(nc){const d=dParts(nc.date);const names=(nc.items||[]).map(it=>S.songs.get(it.songId)).filter(Boolean).map(s=>s.title);
-    card=`<button class="next" data-act="open-culto" data-id="${esc(nc.id)}"><span class="datebox"><b>${d.day}</b><span>${d.mon}</span></span>
+    card=`<button class="next" data-act="open-culto" data-id="${esc(nc.id)}"><span class="datebox">${dateboxIn(nc,d)}</span>
       <div><div class="k">${nc.date===todayStr()?'Hoje':'Próximo culto'}${isNovo(nc.id)?' · Novo':''}</div><h3>${esc(nc.name)}</h3>${nc.showDate?`<div class="cdate">${esc(fmtDate(nc.date))}</div>`:''}<p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right')}</button>`;}
   return `${installHint()}<div class="hello"><div><div class="eyebrow">${greet()}, ministério</div><h1>Nossas <em>cifras</em></h1></div>
     <button class="acct${S.canWrite?' on':''}" data-act="sheet" data-s="conta" aria-label="Sua conta${S.isDev&&(S.pedidos||[]).length?', há pedidos de acesso':''}">${fotoAtual()?`<img class="ava" src="${fotoAtual()}" alt="">`:ic('user')}${S.isDev&&(S.pedidos||[]).length?`<i class="badge">${S.pedidos.length}</i>`:''}</button></div>
@@ -1443,7 +1458,7 @@ function renderOverlay(){
       <button class="choice" data-act="new-song" data-mode="paste"><span class="ci">${ic('clip')}</span><span><b>Cifra existente</b><span>Escolher o arquivo (PDF, Word, foto ou print) e o app monta a cifra</span></span></button>
       <button class="choice" data-act="new-song" data-mode="write"><span class="ci">${ic('edit')}</span><span><b>Nova cifra</b><span>Escrever a letra e pôr os acordes, para tirar de ouvido</span></span></button></div>`;
   } else if(S.sheet==='picker'){
-    body=`<h2>Adicionar música</h2><div class="picker"><label class="search" for="pq" style="margin:0">${ic('search')}<input type="search" id="pq" placeholder="Buscar música" value="${esc(S.pq)}" aria-label="Buscar música para adicionar"></label><div class="res" id="pres"></div></div>
+    body=`<h2>${S.pickMode==='sug'?'Sugerir música':'Adicionar música'}</h2>${S.pickMode==='sug'?'<p class="muted" style="margin:-6px 0 10px">Escolha uma. Ela aparece no tom original.</p>':''}<div class="picker"><label class="search" for="pq" style="margin:0">${ic('search')}<input type="search" id="pq" placeholder="Buscar música" value="${esc(S.pq)}" aria-label="Buscar música para adicionar"></label><div class="res" id="pres"></div></div>
       <div style="margin-top:14px;text-align:center"><button class="btn primary" data-act="close-sheet">Pronto</button></div>`;
   }
   o.innerHTML=`<div class="scrim" data-act="close-sheet"><div class="panel" role="dialog" aria-modal="true"><div class="grab"></div>${body}</div></div>`;
@@ -1453,7 +1468,7 @@ function renderPicker(){
   const r=$('#pres'); if(!r) return;
   const c=S.cultos.get(S.cultoId); const inC=new Set((c&&c.items||[]).map(i=>i.songId));
   const res=songsSorted(S.pq).slice(0,50);
-  r.innerHTML=res.length?res.map(s=>`<button data-act="add-item" data-id="${esc(s.id)}" class="${inC.has(s.id)?'added':''}"><span class="keyb">${esc(s.key)}</span><span style="flex:1;min-width:0"><b>${esc(s.title)}</b><br><span class="muted" style="font-size:13px">${inC.has(s.id)?'Já está no culto · toque para repetir':esc(s.artist||'')}</span></span>${ic('plus')}</button>`).join(''):'<p class="muted" style="margin:6px">Nada encontrado.</p>';
+  r.innerHTML=res.length?res.map(s=>`<button data-act="${S.pickMode==='sug'?'sug-add':'add-item'}" data-id="${esc(s.id)}" class="${S.pickMode!=='sug'&&inC.has(s.id)?'added':''}"><span class="keyb">${esc(s.key)}</span><span style="flex:1;min-width:0"><b>${esc(s.title)}</b><br><span class="muted" style="font-size:13px">${S.pickMode!=='sug'&&inC.has(s.id)?'Já está no culto · toque para repetir':esc(s.artist||'')}</span></span>${ic('plus')}</button>`).join(''):'<p class="muted" style="margin:6px">Nada encontrado.</p>';
 }
 function viewEdit(){
   const e=S.edit,o=parseKey(e.key);
@@ -1499,7 +1514,7 @@ function viewEdit(){
 function updatePreview(){ if(S.etab==='acordes'){S.model=toModel($('#content').value);renderPlacer()} }
 function cultoRow(c,destaque){
   const d=dParts(c.date);const names=(c.items||[]).map(it=>S.songs.get(it.songId)).filter(Boolean).map(s=>s.title);
-  return `<li class="${S.canWrite?'swipe':''}">${S.canWrite?`<button class="swdel" data-act="swdel" data-type="culto" data-id="${esc(c.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}<button class="culto${destaque?' next':''}${c.date<todayStr()?' past':''}" data-act="open-culto" data-id="${esc(c.id)}"><span class="datebox"><b>${d.day}</b><span>${d.mon}</span></span>
+  return `<li class="${S.canWrite?'swipe':''}">${S.canWrite?`<button class="swdel" data-act="swdel" data-type="culto" data-id="${esc(c.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}<button class="culto${destaque?' next':''}${c.date<todayStr()?' past':''}" data-act="open-culto" data-id="${esc(c.id)}"><span class="datebox">${dateboxIn(c,d)}</span>
     <div>${destaque?`<div class="k">${c.date===todayStr()?'Hoje':'Próximo culto'}</div>`:''}<h3>${esc(c.name)}${isNovo(c.id)?'<span class="tag novo">Novo</span>':''}</h3>${c.showDate?`<div class="cdate">${esc(fmtDate(c.date))}</div>`:''}<p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right','i chev')}</button></li>`;
 }
 function viewCultos(){
@@ -1511,13 +1526,36 @@ function viewCultos(){
   ${fut.length?`<ul class="cultos">${fut.map((c,i)=>cultoRow(c,i===0)).join('')}</ul>`:''}
   ${past.length?`<h2 class="letter" style="margin:26px 0 10px 6px">Anteriores</h2><ul class="cultos">${past.map(c=>cultoRow(c)).join('')}</ul>`:''}`;
 }
+/* sem "mostrar data", o quadradinho do culto mostra as mãos em oração */
+function dateboxIn(c,d){return c&&c.showDate?`<b>${d.day}</b><span>${d.mon}</span>`:`<b class="pray" aria-label="Culto">🙏</b>`}
+/* ===== Sugestões de músicas: cada pessoa sugere 1 por culto ===== */
+function sugDo(cid){return (S.sug||[]).filter(x=>x.cultoId===cid).sort((a,b)=>(a.at||0)-(b.at||0))}
+function sugMudou(){if(S.view==='culto'){const a=document.activeElement;if(a&&a.matches&&a.matches('input,textarea,select'))return;const y=scrollY;render();scrollTo(0,y)}}
+function primeiroNome(){const n=(S.member&&S.member.nome)||S.email||'Alguém';return String(n).trim().split(/[\s@]+/)[0]}
+async function sugerir(songId){const s=S.songs.get(songId);if(!s||!S.cultoId)return;
+  const uid=S.uid||'eu',id=S.cultoId+'_'+uid,d={cultoId:S.cultoId,uid,nome:primeiroNome(),songId,key:s.key,at:Date.now()};
+  if(B.mode==='fb'){S.sug=[...(S.sug||[]).filter(x=>x.id!==id),{id,...d}];await guard(fire(B.ff.setDoc(B.ff.doc(B.fs,'sugestoes',id),d)),'Não foi possível enviar a sugestão')}
+  else{S.sug=[...(S.sug||[]).filter(x=>x.id!==id),{id,...d}];store.set('cifras:demo-sug',S.sug)}
+  S.sheet=null;S.pickMode=null;S.sugOpen=true;renderOverlay();render();toast('Sugestão enviada')}
+async function tirarSug(id){S.sug=(S.sug||[]).filter(x=>x.id!==id);
+  if(B.mode==='fb')await guard(fire(B.ff.deleteDoc(B.ff.doc(B.fs,'sugestoes',id))),'Não foi possível tirar');else store.set('cifras:demo-sug',S.sug);render()}
+function sugHTML(c){const L=sugDo(S.cultoId),open=S.sugOpen!==false,minha=L.find(x=>x.uid===(S.uid||'eu'));const inC=new Set((c.items||[]).map(i=>i.songId));
+  return `<div class="sug"><button class="sughead" data-act="sug-toggle" aria-expanded="${open}"><span>${ic('bulb')} Sugestões de músicas${L.length?` <i class="cnt">${L.length}</i>`:''}</span>${ic(open?'up':'down')}</button>
+  ${open?`<div class="sugbody">${L.length?`<ul class="suglist">${L.map(x=>{const s=S.songs.get(x.songId);const f=fotoDe(x.uid);const meu=x.uid===(S.uid||'eu');
+    return `<li><span class="sava">${f?`<img src="${f}" alt="">`:esc(String(x.nome||'?').charAt(0).toUpperCase())}</span>
+      <div class="sm"><span class="who">${esc(x.nome||'Alguém')}</span><b>${esc(s?s.title:'(música removida)')}</b><span class="muted">${esc(s?s.artist||'':'')}</span></div>
+      <span class="keyb sk">${esc(x.key||(s&&s.key)||'')}</span>
+      ${S.canWrite&&s?(inC.has(x.songId)?`<span class="icon ok" aria-label="Já está no culto">${ic('check')}</span>`:`<button class="icon" data-act="sug-usar" data-id="${esc(x.id)}" aria-label="Pôr ${esc(s.title)} no culto">${ic('plus')}</button>`):''}
+      ${meu||S.canWrite?`<button class="icon" data-act="sug-tirar" data-id="${esc(x.id)}" aria-label="Tirar a sugestão">${ic('x')}</button>`:''}</li>`}).join('')}</ul>`
+    :'<p class="muted" style="margin:4px 2px 10px">Ninguém sugeriu ainda. Cada pessoa pode sugerir uma música.</p>'}
+    <button class="btn" data-act="sug-pick" style="width:100%">${ic('plus')} ${minha?'Trocar minha sugestão':'Sugerir uma música'}</button></div>`:''}</div>`}
 function viewCulto(){
   const c=S.cultos.get(S.cultoId); if(!c) return `<button class="back" data-act="tab" data-tab="cultos">${ic('left')} Cultos</button><p class="empty">Esse culto foi excluído.</p>`;
   const items=c.items||[];const w=S.canWrite;const d=dParts(c.date);
   const isLive=liveActive()&&S.live.cultoId===S.cultoId;
   const mineLive=isLive&&S.broadcast===S.cultoId;
   return `<button class="back" data-act="tab" data-tab="cultos">${ic('left')} Cultos</button>
-  <div class="chead"><span class="datebox" style="background:var(--tint);color:var(--accent)"><b>${d.day}</b><span>${d.mon}</span></span>
+  <div class="chead"><span class="datebox" style="background:var(--tint);color:var(--accent)">${dateboxIn(c,d)}</span>
     <div style="flex:1;min-width:0">${w?`<input type="text" id="c-name" value="${esc(c.name)}" aria-label="Nome do culto"><br><input type="date" id="c-date" value="${esc(c.date)}" aria-label="Data do culto"><label class="showdate"><input type="checkbox" id="c-showdate"${c.showDate?' checked':''}> Mostrar data abaixo do nome</label>`
       :`<h1>${esc(c.name)}</h1><div class="muted" style="font-size:14px">${esc(fmtDate(c.date))}</div>`}</div></div>
   ${items.length?`<div style="margin-bottom:16px">${mineLive?`<button class="btn" data-act="live-stop" style="width:100%">Encerrar ao vivo</button>`:`<button class="btn live" data-act="live-start" style="width:100%">● Conduzir ao vivo</button>`}</div>`:''}
@@ -1532,6 +1570,7 @@ function viewCulto(){
       :`<span class="keyb">${esc(it.key)}</span>`}</li>`}).join('')}</ol>`:`<p class="empty">Nenhuma música neste culto ainda.</p>`}
   ${w?`<div style="margin-top:14px"><button class="btn" data-act="picker-open" style="width:100%">${ic('plus')} Adicionar música</button></div>
   <div style="margin-top:10px"><button class="btn save" data-act="save-culto" style="width:100%">${ic('check')} Salvar</button></div>`:''}
+  ${sugHTML(c)}
   <p class="hint">Em “Conduzir ao vivo”, a música e o tom que você abrir aparecem para quem tocar em Seguir. O capotraste continua sendo de cada um.</p>
   ${w?`<div style="margin-top:26px;text-align:center"><button class="btn ghost danger" data-act="del-culto">Excluir este culto</button></div>`:''}`;
 }
@@ -1978,7 +2017,13 @@ document.addEventListener('click',async ev=>{
     case 'move':{const c=S.cultos.get(S.cultoId);const items=[...c.items];const i=+b.dataset.i,j=i+ +b.dataset.d;[items[i],items[j]]=[items[j],items[i]];guard(db.setCulto(S.cultoId,{...c,items,updatedAt:Date.now()}));break}
     case 'rm-item':{const c=S.cultos.get(S.cultoId);const items=c.items.filter((_,k)=>k!==+b.dataset.i);guard(db.setCulto(S.cultoId,{...c,items,updatedAt:Date.now()}));break}
     case 'save-culto': salvarCulto();break;
-    case 'picker-open': S.sheet='picker';S.pq='';renderOverlay();break;
+    case 'picker-open': S.pickMode=null;S.sheet='picker';S.pq='';renderOverlay();break;
+    case 'sug-pick': S.pickMode='sug';S.sheet='picker';S.pq='';renderOverlay();break;
+    case 'sug-add': sugerir(b.dataset.id);break;
+    case 'sug-toggle': S.sugOpen=!(S.sugOpen!==false);render();break;
+    case 'sug-tirar': tirarSug(b.dataset.id);break;
+    case 'sug-usar':{const x=(S.sug||[]).find(y=>y.id===b.dataset.id);const c=S.cultos.get(S.cultoId);if(!x||!c)break;
+      await guard(db.setCulto(S.cultoId,{...c,items:[...(c.items||[]),{songId:x.songId,key:x.key}],updatedAt:Date.now()}));toast('Música posta no culto');break}
     case 'add-item':{const c=S.cultos.get(S.cultoId);const s=S.songs.get(b.dataset.id);
       await guard(db.setCulto(S.cultoId,{...c,items:[...(c.items||[]),{songId:b.dataset.id,key:s.key}],updatedAt:Date.now()}));renderPicker();break}
     case 'del-culto': S.pinFor={type:'culto',id:S.cultoId};S.pinErr='';S.pinVal='';S.pinBusy=false;if(document.activeElement)document.activeElement.blur();S.sheet='pin';renderOverlay();break;
