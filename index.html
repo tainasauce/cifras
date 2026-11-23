@@ -88,6 +88,10 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 .song .a{font-size:14px;color:var(--muted)}
 .song>div{flex:1;min-width:0}
 .song .chev{color:var(--muted)}
+.capa{flex:0 0 auto;width:52px;height:52px;border-radius:13px;position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.capa i{position:absolute;border-radius:50%;opacity:.92}
+.capa b{position:absolute;left:7px;bottom:5px;color:#fff;font:800 15px var(--f-display);letter-spacing:.02em;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.song .ktom{color:var(--honey);font-weight:800}
 .empty{text-align:center;padding:36px 18px;color:var(--muted);background:var(--surface);border:1.5px dashed var(--line);border-radius:var(--r)}
 .note{background:var(--soft);border-radius:14px;padding:11px 15px;font-size:14px;margin:0 0 16px}
 .note.err{background:color-mix(in srgb,var(--danger) 15%,var(--surface))}
@@ -699,7 +703,7 @@ function temaCustom(){
 }
 function applyTema(){
   const t=P.tema==='custom'?temaCustom():(TEMAS[P.tema]||TEMAS.oceano),r=document.documentElement.style;
-  r.setProperty('--grad',t.grad);r.setProperty('--accent',t.a);r.setProperty('--honey',t.c);r.setProperty('--chord-sol',mixHex(t.a,'#000000',.28));
+  r.setProperty('--grad',t.grad);r.setProperty('--s1',t.s[0]);r.setProperty('--s2',t.s[1]);r.setProperty('--accent',t.a);r.setProperty('--honey',t.c);r.setProperty('--chord-sol',mixHex(t.a,'#000000',.28));
   /* o iPhone não repinta o ícone quando só a cor do gradiente muda: cria um gradiente novo e troca a referência */
   const old=document.getElementById('gradStroke');if(old){const id='gs'+Date.now().toString(36);const g=old.cloneNode(true);g.id=id;
     g.children[0].setAttribute('stop-color',t.s[0]);g.children[1].setAttribute('stop-color',t.s[1]);
@@ -1041,10 +1045,26 @@ function toggleFav(id){
   const y=window.scrollY;render();window.scrollTo(0,y);
   if(B.mode!=='demo'&&B.ff&&S.uid)B.ff.setDoc(B.ff.doc(B.fs,'favs',S.uid),{ids,at:Date.now()}).catch(()=>flash('Não consegui salvar a favorita agora. Tente de novo.'));
 }
+/* ===== Capa de cada música: desenhada a partir do nome, só com as cores do tema ===== */
+function hashStr(t){let h=2166136261;for(const ch of String(t||''))h=Math.imul(h^ch.charCodeAt(0),16777619);return h>>>0}
+function capa(s){
+  const h=hashStr(s.title),v=h%6,j=(h>>>3)%3;
+  const pal=['var(--s1)','var(--s2)','color-mix(in srgb,var(--s1) 55%,var(--s2))','color-mix(in srgb,var(--s2) 70%,#101018)'];
+  const bg=pal[[0,1,2,0,3,1][v]],fg=pal[[1,0,1,1,0,0][v]];
+  const shapes=[
+    `<i style="width:58px;height:58px;right:${-18+j*4}px;top:${-24+j*3}px;background:${fg}"></i>`,
+    `<i style="width:44px;height:44px;left:${-14+j*3}px;bottom:${-14+j*2}px;background:${fg}"></i>`,
+    `<i style="width:28px;height:28px;right:${6+j*3}px;top:${8+j*2}px;background:${fg}"></i><i style="width:14px;height:14px;right:${30-j*2}px;top:${4+j*3}px;background:${fg};opacity:.6"></i>`,
+    `<i style="width:66px;height:26px;border-radius:13px;left:-10px;top:${4+j*3}px;background:${fg}"></i>`,
+    `<i style="width:36px;height:36px;right:-10px;bottom:-10px;background:${fg}"></i><i style="width:22px;height:22px;left:4px;top:4px;background:${fg};opacity:.7"></i>`,
+    `<i style="width:80px;height:18px;border-radius:0;left:-14px;top:${16+j*4}px;transform:rotate(-35deg);background:${fg}"></i>`][v];
+  const ini=String(s.title||'?').trim().split(/\s+/).filter(w=>w.length>1||/^[A-ZÀ-Ú]$/i.test(w)).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'♪';
+  return `<span class="capa" aria-hidden="true" style="background:${bg}">${shapes}<b>${esc(ini)}</b></span>`;
+}
 function songRow(s){
   const fav=isFav(s.id);
-  return `<li class="swipe" style="--sw:${S.canWrite?184:92}px"><span class="swacts"><button class="swfav${fav?' on':''}" data-act="fav" data-id="${esc(s.id)}" tabindex="-1">${ic('heart',fav?'i fill':'i')}${fav?'Tirar':'Favoritar'}</button>${S.canWrite?`<button class="swdel" data-act="swdel" data-type="song" data-id="${esc(s.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}</span><button class="song" data-act="open-song" data-id="${esc(s.id)}"><span class="keyb">${esc(s.key)}</span>
-    <div><div class="t">${esc(s.title)}${fav?`<span class="favmark" aria-label="Favorita">${ic('heart','i fill')}</span>`:''}${s.draft?'<span class="tag">Rascunho</span>':''}</div><div class="a">${esc(s.artist||'Sem artista')}</div></div>${ic('right','i chev')}</button></li>`;
+  return `<li class="swipe" style="--sw:${S.canWrite?184:92}px"><span class="swacts"><button class="swfav${fav?' on':''}" data-act="fav" data-id="${esc(s.id)}" tabindex="-1">${ic('heart',fav?'i fill':'i')}${fav?'Tirar':'Favoritar'}</button>${S.canWrite?`<button class="swdel" data-act="swdel" data-type="song" data-id="${esc(s.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}</span><button class="song" data-act="open-song" data-id="${esc(s.id)}">${capa(s)}
+    <div><div class="t">${esc(s.title)}${fav?`<span class="favmark" aria-label="Favorita">${ic('heart','i fill')}</span>`:''}${s.draft?'<span class="tag">Rascunho</span>':''}</div><div class="a">${esc(s.artist||'Sem artista')} · <b class="ktom" aria-label="Tom ${esc(s.key)}">${esc(s.key)}</b></div></div>${ic('right','i chev')}</button></li>`;
 }
 function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
 let deferredInstall=null;
