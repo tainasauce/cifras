@@ -412,6 +412,7 @@ body.facil .pick .icon{min-width:52px;min-height:52px}
 .facilsave{position:fixed;top:calc(var(--st,0px) + 4px);left:0;right:0;margin:0 auto;width:calc(100% - 36px);max-width:724px;box-sizing:border-box;z-index:30;display:flex;gap:10px;padding:10px;border-radius:var(--r);background:var(--raise);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .facilsave .btn{flex:1;justify-content:center}
 .swedit{background:#7a5cff}
+body.editview:not(.picking) main#app{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 body.picking main#app{padding-bottom:calc(330px + env(safe-area-inset-top))}
 .pick{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 30px rgba(20,24,31,.12);border-radius:20px 20px 0 0}
 .wrap{padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
@@ -1108,7 +1109,7 @@ function render(){
   const v={songs:viewSongs,song:viewSong,edit:viewEdit,cultos:viewCultos,culto:viewCulto}[S.view]||viewSongs;
   if(S.mini&&(S.view!=='song'||!S.song||S.song.id!==S.mini.song))closeMini();
   const sb0=$('.sheetbox'),keep=sb0&&S.view==='song'&&S.song&&S.song.id===S.lastSong?sb0.scrollTop:0;
-  document.body.classList.toggle('songmode',S.view==='song');
+  document.body.classList.toggle('songmode',S.view==='song');document.body.classList.toggle('editview',S.view==='edit');
   $('#app').innerHTML=notesHTML()+v();
   S.lastSong=S.view==='song'&&S.song?S.song.id:null;
   const sb1=$('.sheetbox');if(sb1&&keep) sb1.scrollTop=keep;
@@ -1614,7 +1615,6 @@ function viewEdit(){
     <div class="actions">
       <button type="submit" class="btn primary">${ic('check')} Salvar cifra</button>
       <button type="button" class="btn ghost" data-act="cancel-edit">Cancelar</button>
-      ${e.id?`<button type="button" class="btn ghost danger" data-act="del-song" style="margin-left:auto">Excluir</button>`:''}
     </div>
   </form>`;
 }
