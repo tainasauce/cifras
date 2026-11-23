@@ -382,6 +382,12 @@ textarea{resize:vertical}
 .steps button[aria-selected="true"]{background:var(--raise);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .steps button[aria-selected="true"] span{background:var(--accent);color:var(--accent-ink)}
 .placer{background:var(--raise);border:1px solid var(--line);border-radius:var(--r);padding:14px 12px;box-shadow:var(--shadow)}
+.placer.min{max-height:150px;overflow:hidden;position:relative;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+.placer-more{display:none;margin:-6px auto 0;align-items:center;gap:6px}
+.placer.min+.placer-more{display:flex}
+#recolher{position:fixed;right:max(8px,calc(50% - 380px - 4px));top:50%;transform:translateY(-50%);z-index:25;display:none;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:64px;height:60px;border-radius:20px;border:0;background:var(--grad,var(--accent));color:#fff;font-size:10px;font-weight:800;line-height:1;letter-spacing:-.2px;padding:0;box-shadow:0 8px 22px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.15);opacity:.94}
+#recolher svg{width:22px;height:22px}
+#recolher.on{display:flex}
 .pl-line{display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:2px;row-gap:2px;margin-bottom:8px}
 .pl-gap{height:10px}
 .pl-sec{font:700 12px var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:10px 0 4px}
@@ -1117,7 +1123,7 @@ function render(){
   renderBottom();
   renderOverlay();
   if(S.view==='edit'){if(S.etab==='acordes'){S.model=toModel($('#content').value);renderPlacer()}renderPickPanel()}
-  syncHistory();placeMini();
+  syncHistory();placeMini();posRecolher();
 }
 function songsSorted(q){
   const nq=norm(q);
@@ -1605,7 +1611,7 @@ function viewEdit(){
     </div>
     <div id="pane-acordes" ${S.etab==='acordes'?'':'hidden'}>
       <p class="hint" style="margin:0 0 10px">Toque numa palavra e escolha o acorde. Para pôr no meio da palavra, escolha a sílaba.</p>
-      <div class="placer" id="placer"></div>
+      <div class="placer" id="placer"></div><button type="button" class="btn ghost placer-more" data-act="cifra-max">${ic('down')} Mostrar a cifra inteira</button>
     </div>
     <div class="grid2">
       <label class="f" for="f-notes">Observações <span class="h">opcional</span><input type="text" id="f-notes" value="${esc(e.notes||'')}" placeholder="Ex.: repetir o refrão 2x no final"></label>
@@ -1757,8 +1763,15 @@ function commitModel(){
   ta.value=S.model.map(L=>L.type==='lyric'?lyricToInline(L):L.text).join('\n');
   saveDraft();
 }
+function cifraMin(){if(S.minFor!==S.edit){S.minFor=S.edit;S.cifraMin=false}return !!S.cifraMin}
+function posRecolher(){let b=document.getElementById('recolher');const el=$('#placer');
+  const show=S.view==='edit'&&S.etab==='acordes'&&el&&!cifraMin()&&!S.sheet&&(()=>{const r=el.getBoundingClientRect(),m=innerHeight/2;return r.top<m-40&&r.bottom>m+40&&r.height>innerHeight*.6})();
+  if(!b){if(!show)return;b=document.createElement('button');b.id='recolher';b.type='button';b.dataset.act='cifra-min';b.setAttribute('aria-label','Recolher a cifra');b.innerHTML=ic('up')+'<span>Recolher</span>';document.body.appendChild(b)}
+  b.classList.toggle('on',!!show)}
+document.addEventListener('scroll',()=>posRecolher(),true);window.addEventListener('resize',()=>posRecolher());
 function renderPlacer(){
   const el=$('#placer');if(!el)return;
+  el.classList.toggle('min',cifraMin());requestAnimationFrame(posRecolher);
   const M=S.model||[];const W=S.selW;
   if(!M.some(L=>L.type==='lyric')){el.innerHTML='<p class="muted" style="margin:0">Escreva a letra primeiro na etapa <b>Letra</b>.</p>';return}
   el.innerHTML=M.map((L,li)=>{
@@ -1842,6 +1855,7 @@ function switchTab(t){
   $('#et-letra').setAttribute('aria-selected',t==='letra');$('#et-acordes').setAttribute('aria-selected',t==='acordes');
   if(t==='acordes'){S.model=toModel($('#content').value);S.selW=null;renderPlacer()}
   else{S.selW=null;refreshLyr()}
+  requestAnimationFrame(posRecolher);
   renderPickPanel();
 }
 let sel=null;
@@ -2135,6 +2149,8 @@ document.addEventListener('click',async ev=>{
     case 'pk-close': S.selW=null;renderPlacer();renderPickPanel();break;
     case 'pk-remove': removeChordAtSel();break;
     case 'pk-undo': undoPlacer();break;
+    case 'cifra-min':{cifraMin();S.cifraMin=true;S.selW=null;renderPlacer();renderPickPanel();const p=$('#pane-acordes');if(p){const y=p.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--st'))||0)-90;scrollTo({top:Math.max(0,y),behavior:'smooth'})}posRecolher();break}
+    case 'cifra-max': cifraMin();S.cifraMin=false;renderPlacer();break;
     case 'pk-other':{const o=$('#pk-other');const v=o.value.trim().replace(/^\[|\]$/g,'');if(v){setChordAtSel(v)}break}
     case 'edit-song': sel=null;S.restored=false;S.edit={...S.song,mode:'edit'};S.etab='acordes';S.selW=null;go('edit');S.model=toModel(S.edit.content);renderPlacer();break;
     case 'edit-letra': sel=null;S.restored=false;S.edit={...S.song,mode:'edit'};S.etab='letra';S.selW=null;go('edit');break;
