@@ -33,7 +33,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-:root{--st:calc(env(safe-area-inset-top) + 12px)}
+:root{--st:calc(env(safe-area-inset-top) + 30px)}
 html{min-height:calc(100% + env(safe-area-inset-top))}
 body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body);-webkit-font-smoothing:antialiased;padding-top:var(--st);-webkit-text-size-adjust:100%}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -152,7 +152,7 @@ body.stage .dock::after{display:none}
 .titlebox{text-align:center;margin:22px 0 16px}
 .titlebox h1{font-size:28px;line-height:1.1}
 .titlebox p{margin:6px 0 0;color:var(--muted);font-size:14px}
-.songmode main#app{position:fixed;top:calc(var(--top,0px) + var(--st));bottom:var(--bot,80px);left:0;right:0;margin:0 auto;padding-top:14px;padding-bottom:12px;display:flex;flex-direction:column;overflow:hidden}
+.songmode main#app{position:fixed;top:calc(var(--top,0px) + env(safe-area-inset-top) + 14px);bottom:var(--bot,80px);left:0;right:0;margin:0 auto;padding-top:14px;padding-bottom:12px;display:flex;flex-direction:column;overflow:hidden}
 .songmode main#app>*{flex:0 0 auto}
 .songmode main#app>.back{align-self:flex-start;margin-bottom:8px}
 .songmode main#app>.sheetbox{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
@@ -193,7 +193,7 @@ button,a,input,select,textarea,label{touch-action:manipulation}
 .nav.full{width:46px;height:46px}
 body.stage #livebar,body.stage .songmode main#app>.back{display:none!important}
 body.stage main#app>.back,body.stage main#app>.ctl,body.stage main#app>.titlebox,body.stage main#app>.note,body.stage .upnext,body.stage .dock .ctl,body.stage .dock .nav:not(.full):not(.sol){display:none!important}
-body.stage.songmode main#app{top:var(--st);padding-top:8px;max-width:none}
+body.stage.songmode main#app{top:calc(env(safe-area-inset-top) + 14px);padding-top:8px;max-width:none}
 body.stage .sheetbox{border-radius:14px;padding-bottom:96px}
 body.stage.songmode main#app{bottom:0!important}
 body.stage .dock{background:transparent;border-top:0;backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none}
@@ -698,7 +698,7 @@ function temaCustom(){
   return {nome:'A minha',grad:`linear-gradient(120deg,${c1},${c2})`,a:main,c:mixHex(main,'#ffffff',.42),s:[c1,c2]};
 }
 function applyTema(){
-  const t=P.tema==='custom'?temaCustom():(TEMAS[P.tema]||TEMAS.aurora),r=document.documentElement.style;
+  const t=P.tema==='custom'?temaCustom():(TEMAS[P.tema]||TEMAS.oceano),r=document.documentElement.style;
   r.setProperty('--grad',t.grad);r.setProperty('--accent',t.a);r.setProperty('--honey',t.c);r.setProperty('--chord-sol',mixHex(t.a,'#000000',.28));
   const a=document.getElementById('gs1'),b=document.getElementById('gs2');if(a){a.setAttribute('stop-color',t.s[0]);b.setAttribute('stop-color',t.s[1])}
 }
@@ -1356,7 +1356,7 @@ function renderOverlay(){
     ${S.demo?`<p class="muted" style="margin-top:-6px">Modo demonstração: o app ainda não foi ligado ao Firebase.</p>`:
       `<p style="margin:-6px 0 2px"><b>${esc(m.nome||S.email||'')}</b></p><p class="muted" style="margin:0 0 14px">${esc(S.email||'')} · ${PAPEL[S.role]||''}</p>`}
     <div class="eyebrow" style="margin-top:4px">Cor do app</div>
-    <div class="colors" role="group" aria-label="Cor do app">${Object.entries(TEMAS).map(([k,t])=>`<button data-act="tema" data-t="${k}" aria-pressed="${(P.tema||'aurora')===k}"><i style="background:${t.grad}"></i>${t.nome}</button>`).join('')}</div>
+    <div class="colors" role="group" aria-label="Cor do app">${Object.entries(TEMAS).map(([k,t])=>`<button data-act="tema" data-t="${k}" aria-pressed="${(P.tema||'oceano')===k}"><i style="background:${t.grad}"></i>${t.nome}</button>`).join('')}</div>
     <div class="eyebrow" style="margin-top:14px">Criar a minha</div>
     <div class="mix${P.tema==='custom'?' on':''}">
       <label for="c1">Cor 1<input type="color" id="c1" value="${esc(P.c1||'#22d3ee')}"></label>
