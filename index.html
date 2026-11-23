@@ -106,24 +106,24 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 .refs{display:grid;gap:8px}
 .ref{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;background:var(--soft);border:0;color:var(--ink);font-weight:700;text-decoration:none;text-align:left;width:100%}
 .ref svg{width:18px;height:18px;color:var(--honey);flex:0 0 auto}
-#mini{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:22;max-width:520px;margin:0 auto;padding:10px;border-radius:20px;background:color-mix(in srgb,var(--surface) 96%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.07);animation:miniUp .32s cubic-bezier(.2,.9,.3,1)}
+#mini{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:22;max-width:520px;margin:0 auto;padding:8px;display:grid;grid-template-columns:200px minmax(0,1fr);grid-template-rows:auto 1fr auto;column-gap:10px;border-radius:20px;background:color-mix(in srgb,var(--surface) 96%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.07);animation:miniUp .32s cubic-bezier(.2,.9,.3,1)}
 @keyframes miniUp{from{transform:translateY(110%);opacity:0}to{transform:none;opacity:1}}
-#mini .mv{position:relative;width:100%;height:200px;min-width:200px;border-radius:14px;overflow:hidden;background:#000}
+#mini .mv{grid-row:1/4;position:relative;width:200px;height:200px;border-radius:14px;overflow:hidden;background:#000}
 #mini .mv iframe,#mini .mv>div{position:absolute;inset:0;width:100%;height:100%;border:0}
-#mini .mh{display:flex;align-items:center;gap:8px;margin:8px 2px 2px}
-#mini .mh b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
-#mini .icon{width:34px;height:34px;flex:0 0 auto}
-#mini .mc{display:flex;align-items:center;gap:10px;margin:4px 2px 0}
-#mini .mpp{width:48px;height:48px;border-radius:50%;border:0;flex:0 0 auto;display:grid;place-items:center;background:var(--grad,var(--accent));color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+#mini .mh{display:flex;align-items:flex-start;gap:4px;min-width:0}
+#mini .mh b{flex:1;min-width:0;font-size:13px;line-height:1.25;padding-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#mini .icon{width:30px;height:30px;flex:0 0 auto}
+#mini .mc{grid-row:2/4;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:6px;min-width:0}
+#mini .mpp{align-self:center;width:52px;height:52px;border-radius:50%;border:0;flex:0 0 auto;display:grid;place-items:center;background:var(--grad,var(--accent));color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.35)}
 #mini .mpp svg{width:24px;height:24px}
-#mini .ms{flex:1;min-width:0;display:grid;gap:3px}
+#mini .ms{min-width:0;display:grid;gap:1px}
 #mini input[type=range]{width:100%;height:28px;margin:0;background:transparent;-webkit-appearance:none;appearance:none;accent-color:var(--accent)}
 #mini input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--p,0%),rgba(255,255,255,.18) var(--p,0%))}
 #mini input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;margin-top:-6.5px;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 #mini .mtm{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 body.songmode #mini{bottom:calc(var(--bot,80px) + 8px)}
-body.mini.songmode main#app{bottom:calc(var(--bot,80px) + 318px)}
-body.mini:not(.songmode) main#app{padding-bottom:calc(420px + env(safe-area-inset-bottom) + env(safe-area-inset-top))}
+body.mini.songmode main#app{bottom:calc(var(--bot,80px) + 226px)}
+body.mini:not(.songmode) main#app{padding-bottom:calc(330px + env(safe-area-inset-bottom) + env(safe-area-inset-top))}
 .empty{text-align:center;padding:36px 18px;color:var(--muted);background:var(--surface);border:1.5px dashed var(--line);border-radius:var(--r)}
 .note{background:var(--soft);border-radius:14px;padding:11px 15px;font-size:14px;margin:0 0 16px}
 .note.err{background:color-mix(in srgb,var(--danger) 15%,var(--surface))}
