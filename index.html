@@ -96,6 +96,9 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 .btn.ghost{background:transparent;border-color:transparent}
 .btn.danger{color:var(--danger)}
 .btn.live{background:var(--live);border-color:var(--live);color:#fff}
+.btn.save{background:var(--live);border-color:var(--live);color:#fff;font-weight:800}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--live);color:#fff;font-weight:800;padding:10px 18px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.4);display:flex;gap:8px;align-items:center;animation:up .22s cubic-bezier(.2,.8,.2,1)}
+.toast .i{width:18px;height:18px}
 .btn:disabled{opacity:.4;cursor:default}
 .back{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:var(--muted);padding:4px 0;font-weight:700;font-size:15px;margin-bottom:12px}
 .fab{color:#fff!important;position:fixed;right:max(18px,calc(50% - 362px));bottom:96px;z-index:16;width:58px;height:58px;border-radius:50%;border:0;background:var(--accent);box-shadow:var(--shadow);display:grid;place-items:center}
@@ -900,6 +903,12 @@ async function pushLive(data){
   liveWriting=false;
 }
 async function guard(p,msg){try{await p;return true}catch(e){flash((msg||'Não foi possível salvar')+'. Tente de novo.');return false}}
+function salvarCulto(){const c=S.cultos.get(S.cultoId);if(!c)return;const n=$('#c-name'),dt=$('#c-date');
+  const patch={name:(n&&n.value.trim())||c.name,date:(dt&&dt.value)||c.date,updatedAt:Date.now()};
+  guard(db.setCulto(S.cultoId,{...c,...patch}));toast('Culto salvo');go('cultos')}
+/* o toque no Salvar não pode ser perdido quando o campo do nome perde o foco e a tela redesenha */
+document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('[data-act=save-culto]');if(b){e.preventDefault();salvarCulto()}});
+function toast(t){document.querySelectorAll('.toast').forEach(x=>x.remove());const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.innerHTML=ic('check')+' '+esc(t);document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
 function flash(t){S.err=t;render();setTimeout(()=>{if(S.err===t){S.err='';render()}},6000)}
 
 function onData(){
@@ -1421,7 +1430,8 @@ function viewCulto(){
         <button class="icon" data-act="rm-item" data-i="${i}" aria-label="Tirar do culto">${ic('x')}</button>`
       :w?`<select class="k" data-act="item-key" data-i="${i}" aria-label="Tom da música ${i+1}">${KEY_LABELS.map((l,k)=>`<option value="${keyName(k,mi)}"${k===parseKey(it.key).idx?' selected':''}>${keyName(k,mi)}</option>`).join('')}</select>`
       :`<span class="keyb">${esc(it.key)}</span>`}</li>`}).join('')}</ol>`:`<p class="empty">Nenhuma música neste culto ainda.</p>`}
-  ${w?`<div style="margin-top:14px"><button class="btn" data-act="picker-open" style="width:100%">${ic('plus')} Adicionar música</button></div>`:''}
+  ${w?`<div style="margin-top:14px"><button class="btn" data-act="picker-open" style="width:100%">${ic('plus')} Adicionar música</button></div>
+  <div style="margin-top:10px"><button class="btn save" data-act="save-culto" style="width:100%">${ic('check')} Salvar</button></div>`:''}
   <p class="hint">Em “Conduzir ao vivo”, a música e o tom que você abrir aparecem para quem tocar em Seguir. O capotraste continua sendo de cada um.</p>
   ${w?`<div style="margin-top:26px;text-align:center"><button class="btn ghost danger" data-act="del-culto">Excluir este culto</button></div>`:''}`;
 }
@@ -1856,6 +1866,7 @@ document.addEventListener('click',async ev=>{
     case 'organize': S.organize=!S.organize;render();break;
     case 'move':{const c=S.cultos.get(S.cultoId);const items=[...c.items];const i=+b.dataset.i,j=i+ +b.dataset.d;[items[i],items[j]]=[items[j],items[i]];guard(db.setCulto(S.cultoId,{...c,items,updatedAt:Date.now()}));break}
     case 'rm-item':{const c=S.cultos.get(S.cultoId);const items=c.items.filter((_,k)=>k!==+b.dataset.i);guard(db.setCulto(S.cultoId,{...c,items,updatedAt:Date.now()}));break}
+    case 'save-culto': salvarCulto();break;
     case 'picker-open': S.sheet='picker';S.pq='';renderOverlay();break;
     case 'add-item':{const c=S.cultos.get(S.cultoId);const s=S.songs.get(b.dataset.id);
       await guard(db.setCulto(S.cultoId,{...c,items:[...(c.items||[]),{songId:b.dataset.id,key:s.key}],updatedAt:Date.now()}));renderPicker();break}
