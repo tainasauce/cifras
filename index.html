@@ -106,24 +106,14 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 .refs{display:grid;gap:8px}
 .ref{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;background:var(--soft);border:0;color:var(--ink);font-weight:700;text-decoration:none;text-align:left;width:100%}
 .ref svg{width:18px;height:18px;color:var(--honey);flex:0 0 auto}
-#mini{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:22;max-width:520px;margin:0 auto;padding:8px;display:grid;grid-template-columns:200px minmax(0,1fr);grid-template-rows:auto 1fr auto;column-gap:10px;border-radius:20px;background:color-mix(in srgb,var(--surface) 96%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.07);animation:miniUp .32s cubic-bezier(.2,.9,.3,1)}
-@keyframes miniUp{from{transform:translateY(110%);opacity:0}to{transform:none;opacity:1}}
-#mini .mv{grid-row:1/4;position:relative;width:200px;height:200px;border-radius:14px;overflow:hidden;background:#000}
-#mini .mv iframe,#mini .mv>div{position:absolute;inset:0;width:100%;height:100%;border:0}
-#mini .mh{display:flex;align-items:flex-start;gap:4px;min-width:0}
-#mini .mh b{flex:1;min-width:0;font-size:13px;line-height:1.25;padding-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-#mini .icon{width:30px;height:30px;flex:0 0 auto}
-#mini .mc{grid-row:2/4;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:6px;min-width:0}
-#mini .mpp{align-self:center;width:52px;height:52px;border-radius:50%;border:0;flex:0 0 auto;display:grid;place-items:center;background:var(--grad,var(--accent));color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.35)}
-#mini .mpp svg{width:24px;height:24px}
-#mini .ms{min-width:0;display:grid;gap:1px}
-#mini input[type=range]{width:100%;height:28px;margin:0;background:transparent;-webkit-appearance:none;appearance:none;accent-color:var(--accent)}
-#mini input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--p,0%),rgba(255,255,255,.18) var(--p,0%))}
-#mini input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;margin-top:-6.5px;box-shadow:0 1px 4px rgba(0,0,0,.4)}
-#mini .mtm{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
-body.songmode #mini{bottom:calc(var(--bot,80px) + 8px)}
-body.mini.songmode main#app{bottom:calc(var(--bot,80px) + 226px)}
-body.mini:not(.songmode) main#app{padding-bottom:calc(330px + env(safe-area-inset-bottom) + env(safe-area-inset-top))}
+#mini{position:fixed;z-index:20;border-radius:12px;overflow:hidden;background:#000;visibility:hidden}
+#mini iframe{display:block;width:100%;height:100%;border:0}
+.vslot{margin:-4px 0 16px}
+.vslot .vh{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-family:var(--sans,inherit)}
+.vslot .vh>svg{width:16px;height:16px;color:var(--accent);flex:0 0 auto}
+.vslot .vh b{flex:1;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vslot .vh .icon{width:30px;height:30px;flex:0 0 auto}
+.vslot .vv{height:200px;min-width:200px;border-radius:12px;background:#000}
 .empty{text-align:center;padding:36px 18px;color:var(--muted);background:var(--surface);border:1.5px dashed var(--line);border-radius:var(--r)}
 .note{background:var(--soft);border-radius:14px;padding:11px 15px;font-size:14px;margin:0 0 16px}
 .note.err{background:color-mix(in srgb,var(--danger) 15%,var(--surface))}
@@ -1096,6 +1086,7 @@ function render(){
     if(S.sheet!=='none')S.sheet=null;renderOverlay();return;
   }
   const v={songs:viewSongs,song:viewSong,edit:viewEdit,cultos:viewCultos,culto:viewCulto}[S.view]||viewSongs;
+  if(S.mini&&(S.view!=='song'||!S.song||S.song.id!==S.mini.song))closeMini();
   const sb0=$('.sheetbox'),keep=sb0&&S.view==='song'&&S.song&&S.song.id===S.lastSong?sb0.scrollTop:0;
   document.body.classList.toggle('songmode',S.view==='song');
   $('#app').innerHTML=notesHTML()+v();
@@ -1105,7 +1096,7 @@ function render(){
   renderBottom();
   renderOverlay();
   if(S.view==='edit'){if(S.etab==='acordes'){S.model=toModel($('#content').value);renderPlacer()}renderPickPanel()}
-  syncHistory();
+  syncHistory();placeMini();
 }
 function songsSorted(q){
   const nq=norm(q);
@@ -1152,32 +1143,24 @@ function refsHTML(song){const rs=(song&&song.refs)||[];if(!rs.length)return '';
   return `<div class="setrow" style="display:block"><div class="l" style="margin-bottom:8px"><b>Ouvir referência</b><span>YouTube toca aqui mesmo, com a cifra aberta</span></div><div class="refs">${rs.map(r=>{const k=refKind(r.url);const nome=k+(r.label?' · '+esc(r.label):'');
     return ytId(r.url)?`<button class="ref" data-act="play-ref" data-u="${esc(r.url)}" data-t="${esc(song.title)}">${ic('play')}<span>${nome}</span></button>`
     :`<a class="ref" href="${esc(r.url)}" target="_blank" rel="noopener">${ic('ext')}<span>${nome}</span></a>`}).join('')}</div></div>`}
-let YTP=null,YTT=0,YTseek=false,ytApi=null;
-function loadYT(){if(window.YT&&YT.Player)return Promise.resolve();if(ytApi)return ytApi;
-  ytApi=new Promise(r=>{const prev=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=()=>{prev&&prev();r()};const t=document.createElement('script');t.src='https://www.youtube.com/iframe_api';t.async=true;t.onerror=()=>{ytApi=null};document.head.appendChild(t)});return ytApi}
-function fmtT(x){x=Math.max(0,Math.floor(x||0));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')}
-function miniUI(){const m=document.getElementById('mini');if(!m||!YTP||!YTP.getDuration)return;
-  const d=YTP.getDuration()||0,c=YTP.getCurrentTime?YTP.getCurrentTime()||0:0,st=YTP.getPlayerState?YTP.getPlayerState():-1;
-  const r=m.querySelector('input[type=range]');if(r&&!YTseek){r.max=Math.max(1,Math.floor(d));r.value=Math.floor(c);r.style.setProperty('--p',(d?c/d*100:0)+'%');m.querySelector('.mtc').textContent=fmtT(c)}
-  m.querySelector('.mtd').textContent=fmtT(d);
-  const pp=m.querySelector('.mpp');const playing=st===1||st===3;if(pp.dataset.s!==String(playing)){pp.dataset.s=String(playing);pp.innerHTML=ic(playing?'pause':'play');pp.setAttribute('aria-label',playing?'Pausar':'Tocar')}}
+function vslotHTML(s){const m=S.mini;if(!m||!s||m.song!==s.id)return'';
+  return `<div class="vslot"><div class="vh">${ic('play')}<b>${esc(m.title||'Referência')}</b><a class="icon" href="https://youtu.be/${m.id}" target="_blank" rel="noopener" aria-label="Abrir no YouTube">${ic('ext')}</a><button class="icon" data-act="mini-close" aria-label="Fechar o vídeo">${ic('x')}</button></div><div class="vv"></div></div>`}
+function placeMini(){const m=document.getElementById('mini');if(!m)return;const v=document.querySelector('.vslot .vv'),bx=document.querySelector('.sheetbox');
+  if(!v||!bx){m.style.visibility='hidden';return}
+  const r=v.getBoundingClientRect(),b=bx.getBoundingClientRect();
+  m.style.left=r.left+'px';m.style.top=r.top+'px';m.style.width=r.width+'px';m.style.height=r.height+'px';
+  const ct=Math.max(0,b.top-r.top),cb=Math.max(0,r.bottom-b.bottom);
+  if(ct+cb>=r.height-1){m.style.visibility='hidden';return}
+  m.style.clipPath=`inset(${ct}px 0 ${cb}px 0 round 12px)`;m.style.visibility='visible'}
 function playRef(url,title){const id=ytId(url);if(!id){window.open(url,'_blank','noopener');return}
-  closeMini();const m=document.createElement('div');m.id='mini';m.setAttribute('role','region');m.setAttribute('aria-label','Player da referência');
-  m.innerHTML=`<div class="mv"><div id="ytp"></div></div>
-    <div class="mh"><b>${esc(title||'Referência')}</b><a class="icon" href="https://youtu.be/${id}" target="_blank" rel="noopener" aria-label="Abrir no YouTube">${ic('ext')}</a><button class="icon" data-act="mini-close" aria-label="Fechar o player">${ic('x')}</button></div>
-    <div class="mc"><button class="mpp" data-act="mini-pp" data-s="false" aria-label="Tocar">${ic('play')}</button>
-      <div class="ms"><input type="range" min="0" max="1" step="1" value="0" aria-label="Posição da música"><div class="mtm"><span class="mtc">0:00</span><span class="mtd">0:00</span></div></div></div>`;
-  document.body.appendChild(m);document.body.classList.add('mini');
-  const r=m.querySelector('input[type=range]');
-  r.addEventListener('input',()=>{YTseek=true;const d=+r.max||1;r.style.setProperty('--p',(r.value/d*100)+'%');m.querySelector('.mtc').textContent=fmtT(+r.value)});
-  r.addEventListener('change',()=>{YTseek=false;if(YTP&&YTP.seekTo)YTP.seekTo(+r.value,true);miniUI()});
-  loadYT().then(()=>{if(!document.getElementById('ytp'))return;
-    YTP=new YT.Player('ytp',{videoId:id,host:'https://www.youtube-nocookie.com',playerVars:{autoplay:1,playsinline:1,rel:0,modestbranding:1},
-      events:{onReady:e=>{try{e.target.playVideo()}catch(_){}miniUI()},onStateChange:miniUI}});
-    clearInterval(YTT);YTT=setInterval(miniUI,500)}).catch(()=>{});
-}
-function miniPP(){if(!YTP||!YTP.getPlayerState)return;const st=YTP.getPlayerState();if(st===1||st===3)YTP.pauseVideo();else YTP.playVideo();setTimeout(miniUI,80)}
-function closeMini(){clearInterval(YTT);YTT=0;try{YTP&&YTP.destroy&&YTP.destroy()}catch(_){}YTP=null;YTseek=false;const m=document.getElementById('mini');if(m)m.remove();document.body.classList.remove('mini')}
+  if(S.view!=='song'||!S.song){window.open('https://youtu.be/'+id,'_blank','noopener');return}
+  closeMini();S.mini={song:S.song.id,id,title:title||S.song.title};
+  const m=document.createElement('div');m.id='mini';
+  m.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1" title="Referência: ${esc(title||'')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+  document.body.appendChild(m);render();const sb=$('.sheetbox');if(sb)sb.scrollTop=0;placeMini()}
+function closeMini(){const had=!!S.mini;S.mini=null;const m=document.getElementById('mini');if(m)m.remove();
+  if(had){const v=document.querySelector('.vslot');if(v)v.remove()}}
+document.addEventListener('scroll',placeMini,true);window.addEventListener('resize',placeMini);
 function ouvirMusica(id){const s=S.songs.get(id);if(!s)return;const rs=s.refs||[];const yt=rs.find(r=>ytId(r.url));
   if(!yt){if(rs[0])window.open(rs[0].url,'_blank','noopener');return}
   openSong(id);playRef(yt.url,s.title)}
@@ -1265,7 +1248,7 @@ function viewSong(){
     <h1>${esc(s.title)}</h1>${meta?`<p>${meta}</p>`:''}
     ${!open?`<button class="ctl-tog solo" data-act="ctl-toggle" aria-expanded="false" aria-label="Mostrar controles">${ic('down')}</button>`:''}
   </div>
-  <div class="sheetbox${P.sol?' sol':''}" tabindex="0" aria-label="Cifra"><div class="sheet" style="--sz:${P.font}px">${renderSheet(s.content,shift,spell,P.lyrics,P.degree?o:null)}</div>
+  <div class="sheetbox${P.sol?' sol':''}" tabindex="0" aria-label="Cifra">${vslotHTML(s)}<div class="sheet" style="--sz:${P.font}px">${renderSheet(s.content,shift,spell,P.lyrics,P.degree?o:null)}</div>
   ${s.notes?`<p class="note" style="margin:16px 0 0">${esc(s.notes)}</p>`:''}
   ${S.canWrite?`<div style="margin-top:14px;text-align:center"><button class="btn ghost" data-act="edit-song">${ic('edit')} Editar esta cifra</button></div>`:''}</div>`;
 }
@@ -2041,7 +2024,6 @@ document.addEventListener('click',async ev=>{
     case 'ouvir': ouvirMusica(b.dataset.id);break;
     case 'play-ref': S.sheet=null;renderOverlay();playRef(b.dataset.u,b.dataset.t);break;
     case 'mini-close': closeMini();break;
-    case 'mini-pp': miniPP();break;
     case 'back': if(NAV.has)history.back();else{if(S.ctx){S.cultoId=S.ctx.cultoId;go('culto')}else go('songs')}break;
     case 'stage': setStage(!S.stage);break;
     case 'sol': P.sol=!P.sol;saveP();render();break;
