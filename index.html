@@ -991,6 +991,10 @@ async function pushLive(data){
 async function guard(p,msg){try{await p;return true}catch(e){flash((msg||'Não foi possível salvar')+'. Tente de novo.');return false}}
 function pinDots(){const d=$('#pindots');if(!d)return;const n=(S.pinVal||'').length;[...d.children].forEach((x,i)=>x.classList.toggle('on',i<n));d.setAttribute('aria-label',n+' de 4 números')}
 addEventListener('scroll',()=>document.body.classList.toggle('scrolled',scrollY>4),{passive:true});
+/* no computador: botão direito do mouse abre as mesmas opções do arrastar */
+document.addEventListener('contextmenu',e=>{const r=e.target.closest&&e.target.closest('.swipe>.song,.swipe>.culto');if(!r)return;e.preventDefault();
+  document.querySelectorAll('.swipe>.open').forEach(x=>{if(x!==r)x.classList.remove('open')});r.classList.add('open');S.swipedAt=Date.now()});
+document.addEventListener('mousedown',e=>{if(e.button!==0)return;if(e.target.closest&&e.target.closest('.swacts,.swdel,.swipe>.open'))return;document.querySelectorAll('.swipe>.open').forEach(x=>x.classList.remove('open'))});
 function salvarCulto(){const c=S.cultos.get(S.cultoId);if(!c)return;const n=$('#c-name'),dt=$('#c-date');
   const patch={name:(n&&n.value.trim())||c.name,date:(dt&&dt.value)||c.date,updatedAt:Date.now()};
   guard(db.setCulto(S.cultoId,{...c,...patch}));toast('Culto salvo');go('cultos')}
