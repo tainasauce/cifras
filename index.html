@@ -92,6 +92,18 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 .capa i{position:absolute;border-radius:50%;opacity:.92}
 .capa b{position:absolute;left:7px;bottom:5px;color:#fff;font:800 15px var(--f-display);letter-spacing:.02em;text-shadow:0 1px 6px rgba(0,0,0,.35)}
 .song .ktom{color:var(--honey);font-weight:800}
+.song .fone{flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--honey);margin-left:auto}
+.song .fone svg{width:20px;height:20px}
+.refs{display:grid;gap:8px}
+.ref{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;background:var(--soft);border:0;color:var(--ink);font-weight:700;text-decoration:none;text-align:left;width:100%}
+.ref svg{width:18px;height:18px;color:var(--honey);flex:0 0 auto}
+#mini{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:22;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:8px;border-radius:16px;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.07)}
+#mini iframe{width:136px;height:77px;border:0;border-radius:10px;flex:0 0 auto;background:#000}
+#mini .mt{flex:1;min-width:0;display:grid;gap:2px}#mini .mt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}#mini .mt span{font-size:11px;color:var(--muted)}
+#mini .icon{width:34px;height:34px;flex:0 0 auto}
+body.songmode #mini{bottom:calc(var(--bot,80px) + 8px)}
+body.mini.songmode main#app{bottom:calc(var(--bot,80px) + 101px)}
+body.mini:not(.songmode) main#app{padding-bottom:200px}
 .empty{text-align:center;padding:36px 18px;color:var(--muted);background:var(--surface);border:1.5px dashed var(--line);border-radius:var(--r)}
 .note{background:var(--soft);border-radius:14px;padding:11px 15px;font-size:14px;margin:0 0 16px}
 .note.err{background:color-mix(in srgb,var(--danger) 15%,var(--surface))}
@@ -660,7 +672,7 @@ const I={
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
   cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
-  plus:'<path d="M12 5v14M5 12h14"/>', heart:'<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>', sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', fone:'<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="5" height="7" rx="2"/><rect x="16" y="14" width="5" height="7" rx="2"/>', ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>', heart:'<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>', sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
   cloudoff:'<path d="M3 3l18 18M8 7a5.5 5.5 0 0 1 9.6 3.2A4 4 0 0 1 20.5 17M17 19H7a4.5 4.5 0 0 1-1.6-8.7"/>', share:'<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>', minus:'<path d="M5 12h14"/>',
   left:'<path d="m15 18-6-6 6-6"/>', right:'<path d="m9 18 6-6-6-6"/>',
   play:'<path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/>',
@@ -1061,10 +1073,28 @@ function capa(s){
   const ini=String(s.title||'?').trim().split(/\s+/).filter(w=>w.length>1||/^[A-ZÀ-Ú]$/i.test(w)).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'♪';
   return `<span class="capa" aria-hidden="true" style="background:${bg}">${shapes}<b>${esc(ini)}</b></span>`;
 }
+/* ===== Links de referência + mini player do YouTube ===== */
+function parseRefs(t){return String(t).split('\n').map(l=>{const m=/(https?:\/\/\S+)/.exec(l);return m?{url:m[1],label:l.replace(m[1],'').trim().slice(0,40)}:null}).filter(Boolean).slice(0,6)}
+function ytId(u){const m=/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/.exec(u||'');return m?m[1]:''}
+function refKind(u){u=u||'';return ytId(u)?'YouTube':/spotify\.com/.test(u)?'Spotify':/deezer\./.test(u)?'Deezer':/music\.apple\.com/.test(u)?'Apple Music':'Link'}
+function refsHTML(song){const rs=(song&&song.refs)||[];if(!rs.length)return '';
+  return `<div class="setrow" style="display:block"><div class="l" style="margin-bottom:8px"><b>Ouvir referência</b><span>YouTube toca aqui mesmo, com a cifra aberta</span></div><div class="refs">${rs.map(r=>{const k=refKind(r.url);const nome=k+(r.label?' · '+esc(r.label):'');
+    return ytId(r.url)?`<button class="ref" data-act="play-ref" data-u="${esc(r.url)}" data-t="${esc(song.title)}">${ic('play')}<span>${nome}</span></button>`
+    :`<a class="ref" href="${esc(r.url)}" target="_blank" rel="noopener">${ic('ext')}<span>${nome}</span></a>`}).join('')}</div></div>`}
+function playRef(url,title){const id=ytId(url);if(!id){window.open(url,'_blank','noopener');return}
+  let m=document.getElementById('mini');if(!m){m=document.createElement('div');m.id='mini';m.setAttribute('role','region');m.setAttribute('aria-label','Player da referência');document.body.appendChild(m)}
+  m.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1" title="Referência: ${esc(title||'')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    <div class="mt"><b>${esc(title||'Referência')}</b><span>YouTube · toque no vídeo se não começar</span></div>
+    <a class="icon" href="https://youtu.be/${id}" target="_blank" rel="noopener" aria-label="Abrir no YouTube">${ic('ext')}</a><button class="icon" data-act="mini-close" aria-label="Fechar o player">${ic('x')}</button>`;
+  document.body.classList.add('mini')}
+function closeMini(){const m=document.getElementById('mini');if(m)m.remove();document.body.classList.remove('mini')}
+function ouvirMusica(id){const s=S.songs.get(id);if(!s)return;const rs=s.refs||[];const yt=rs.find(r=>ytId(r.url));
+  if(!yt){if(rs[0])window.open(rs[0].url,'_blank','noopener');return}
+  openSong(id);playRef(yt.url,s.title)}
 function songRow(s){
   const fav=isFav(s.id);
   return `<li class="swipe" style="--sw:${S.canWrite?184:92}px"><span class="swacts"><button class="swfav${fav?' on':''}" data-act="fav" data-id="${esc(s.id)}" tabindex="-1">${ic('heart',fav?'i fill':'i')}${fav?'Tirar':'Favoritar'}</button>${S.canWrite?`<button class="swdel" data-act="swdel" data-type="song" data-id="${esc(s.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}</span><button class="song" data-act="open-song" data-id="${esc(s.id)}">${capa(s)}
-    <div><div class="t">${esc(s.title)}${fav?`<span class="favmark" aria-label="Favorita">${ic('heart','i fill')}</span>`:''}${s.draft?'<span class="tag">Rascunho</span>':''}</div><div class="a">${esc(s.artist||'Sem artista')} · <b class="ktom" aria-label="Tom ${esc(s.key)}">${esc(s.key)}</b></div></div>${ic('right','i chev')}</button></li>`;
+    <div><div class="t">${esc(s.title)}${fav?`<span class="favmark" aria-label="Favorita">${ic('heart','i fill')}</span>`:''}${s.draft?'<span class="tag">Rascunho</span>':''}</div><div class="a">${esc(s.artist||'Sem artista')} · <b class="ktom" aria-label="Tom ${esc(s.key)}">${esc(s.key)}</b></div></div>${(s.refs||[]).length?`<span class="fone" role="button" tabindex="0" data-act="ouvir" data-id="${esc(s.id)}" aria-label="Ouvir referência de ${esc(s.title)}">${ic('fone')}</span>`:ic('right','i chev')}</button></li>`;
 }
 function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
 let deferredInstall=null;
@@ -1364,7 +1394,7 @@ function renderOverlay(){
       return `<button data-act="key" data-k="${i}" aria-pressed="${i===S.target}">${a}${k.minor?'m':''}<small>${b?b+(k.minor?'m':''):(i===k.idx?'original':'')}${b&&i===k.idx?' · orig.':''}</small></button>`}).join('')}</div>`;
   } else if(S.sheet==='adjust'&&S.song){
     const {capo,o:k,shapes}=songCalc();
-    body=`<h2>Ajustes</h2><div class="set">
+    body=`<h2>Ajustes</h2><div class="set">${refsHTML(S.song)}
       <div class="setrow"><div class="l"><b>Capotraste</b><span>${capo?`Soa em ${keyName(S.target,k.minor)}, você toca formas de ${keyName(shapes,k.minor)}`:'Só no seu aparelho'}</span></div>
         <div class="capo"><button class="round" data-act="capo" data-d="-1" aria-label="Tirar uma casa">−</button><b>${capo?capo+'ª':'—'}</b><button class="round" data-act="capo" data-d="1" aria-label="Pôr uma casa">+</button></div></div>
       <div class="setrow"><div class="l"><b>Modo grau</b><span>C vira I, Am vira VIm, C/E vira I/III</span></div><button class="switch" role="switch" aria-checked="${P.degree}" data-act="degree" aria-label="Modo grau"></button></div>
@@ -1456,6 +1486,7 @@ function viewEdit(){
     <div class="grid2">
       <label class="f" for="f-notes">Observações <span class="h">opcional</span><input type="text" id="f-notes" value="${esc(e.notes||'')}" placeholder="Ex.: repetir o refrão 2x no final"></label>
       <label class="f" for="f-bpm">BPM <span class="h">opcional</span><input type="number" id="f-bpm" min="30" max="240" value="${esc(e.bpm||'')}"></label>
+      <label class="f" for="f-refs">Links de referência <span class="h">opcional · um por linha</span><textarea id="f-refs" rows="2" placeholder="https://youtu.be/...  ao vivo" style="min-height:0">${esc((e.refs||[]).map(r=>r.url+(r.label?'  '+r.label:'')).join('\n'))}</textarea></label>
     </div>
     <label class="check" for="f-draft" style="font-size:14px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="f-draft"${e.draft?' checked':''}> Ainda estou tirando (marcar como rascunho)</label>
     <div class="actions">
@@ -1509,7 +1540,7 @@ function viewCulto(){
 function collectForm(){
   const r=+$('#f-root').value,mi=$('#f-minor').value==='m';
   return {title:$('#f-title').value.trim(),artist:$('#f-artist').value.trim(),key:keyName(r,mi),bpm:$('#f-bpm').value?+$('#f-bpm').value:null,
-    content:$('#content').value.replace(/\s+$/,''),notes:$('#f-notes').value.trim(),draft:$('#f-draft').checked};
+    content:$('#content').value.replace(/\s+$/,''),notes:$('#f-notes').value.trim(),refs:parseRefs(($('#f-refs')||{}).value||''),draft:$('#f-draft').checked};
 }
 const draftKey=()=>'cifras:draft:'+(S.edit&&S.edit.id||'new');
 function saveDraft(){clearTimeout(saveDraft.t);saveDraft.t=setTimeout(()=>{if(S.view==='edit'&&$('#songform'))store.set(draftKey(),{...collectForm(),mode:S.edit.mode,savedAt:Date.now()})},400)}
@@ -1871,6 +1902,9 @@ document.addEventListener('click',async ev=>{
   switch(act){
     case 'tab': go(b.dataset.tab);break;
     case 'open-song': openSong(b.dataset.id);break;
+    case 'ouvir': ouvirMusica(b.dataset.id);break;
+    case 'play-ref': S.sheet=null;renderOverlay();playRef(b.dataset.u,b.dataset.t);break;
+    case 'mini-close': closeMini();break;
     case 'back': if(NAV.has)history.back();else{if(S.ctx){S.cultoId=S.ctx.cultoId;go('culto')}else go('songs')}break;
     case 'stage': setStage(!S.stage);break;
     case 'sol': P.sol=!P.sol;saveP();render();break;
