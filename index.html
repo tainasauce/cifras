@@ -174,7 +174,15 @@ button,a,input,select,textarea,label{touch-action:manipulation}
 .swdel{position:absolute;top:0;right:0;bottom:0;width:92px;border:0;background:var(--danger);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;align-content:center;gap:2px}
 .swdel svg{width:20px;height:20px}
 .swipe>.song,.swipe>.culto{position:relative;background:var(--raise);transition:transform .22s cubic-bezier(.2,.9,.25,1);touch-action:pan-y}
-.swipe>.open{transform:translateX(-92px)}
+.swipe>.open{transform:translateX(calc(-1 * var(--sw,92px)))}
+.swacts{position:absolute;top:0;right:0;bottom:0;display:flex}
+.swacts>button{position:static;width:92px;border:0;color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;align-content:center;gap:2px}
+.swfav{background:var(--accent)}.swfav.on{background:#4a4b55}.swacts svg{width:20px;height:20px}
+.i.fill path{fill:currentColor}
+.favmark{display:inline-grid;margin-left:6px;vertical-align:-2px;color:var(--honey)}.favmark svg{width:14px;height:14px}
+.searchrow{display:flex;gap:10px;align-items:center;margin-bottom:20px}.searchrow .search{flex:1;min-width:0;margin-bottom:0}
+.favtog{width:50px;height:50px;flex:0 0 auto;border-radius:50%;border:1px solid var(--line);background:var(--soft);box-shadow:var(--hl);display:grid;place-items:center;color:var(--muted)}
+.favtog[aria-pressed="true"]{background:var(--grad);color:#fff;border-color:transparent}
 .tag.novo{background:var(--grad);color:#fff}
 .tabic{position:relative;display:inline-grid}
 .tabic .badge{position:absolute;top:-4px;right:-10px;min-width:16px;height:16px;border-radius:8px;background:var(--danger);color:#fff;font:800 10px/16px var(--f-body);font-style:normal;padding:0 4px}
@@ -338,7 +346,8 @@ body.picking main{padding-bottom:330px}
 .gate h1{font-size:26px}
 .gate p{margin:0}
 .gate-logo{width:76px;height:76px;border-radius:22px;background:var(--accent);color:#fff;display:grid;place-items:center;font:800 40px/1 var(--f-display);position:relative;margin-bottom:6px}
-.gate-logo sup{position:absolute;top:14px;right:12px;font-size:18px;color:#ffd666}
+.gate-logo svg{width:64px;height:64px}
+.gate-logo{background:#000!important;color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
 .gate-seg{margin:6px 0 4px}
 .people{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .people li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--raise);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
@@ -388,7 +397,7 @@ body{background:radial-gradient(140% 50% at 50% -12%,color-mix(in srgb,var(--acc
 .culto.next h3{font-size:20px}.culto.next p{color:rgba(255,255,255,.85)}.culto.next .chev{color:#fff}
 .btn{background:var(--soft);border-color:transparent;box-shadow:var(--hl)}
 .btn.ghost{background:transparent;box-shadow:none}
-.btn.primary,.fab,.gate-logo,.chip2[aria-pressed="true"],.tile:active{background:var(--grad);border-color:transparent;color:#fff}
+.btn.primary,.fab,.chip2[aria-pressed="true"],.tile:active{background:var(--grad);border-color:transparent;color:#fff}
 .fab{box-shadow:0 12px 30px -10px color-mix(in srgb,var(--accent) 80%,transparent)}
 .kbig,.tone .big{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hello h1 em{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -632,7 +641,7 @@ const I={
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
   cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
-  plus:'<path d="M12 5v14M5 12h14"/>', sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', heart:'<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>', sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
   cloudoff:'<path d="M3 3l18 18M8 7a5.5 5.5 0 0 1 9.6 3.2A4 4 0 0 1 20.5 17M17 19H7a4.5 4.5 0 0 1-1.6-8.7"/>', share:'<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>', minus:'<path d="M5 12h14"/>',
   left:'<path d="m15 18-6-6 6-6"/>', right:'<path d="m9 18 6-6-6-6"/>',
   play:'<path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/>',
@@ -757,6 +766,7 @@ function subscribe(){
   const ok=()=>{S.loaded=true;S.slow=false};
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'songs'),s=>{S.songs=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'cultos'),s=>{S.cultos=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
+  if(S.uid)B.unsubs.push(ff.onSnapshot(ff.doc(fs,'favs',S.uid),s=>{if(s.metadata.hasPendingWrites)return;const ids=s.exists()?(s.data().ids||[]):store.get(favKey(),[]);S.favs=new Set(ids);store.set(favKey(),ids);if(S.view==='songs')renderList()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'fotos'),s=>{S.fotos=Object.fromEntries(s.docs.map(d=>[d.id,d.data().img||'']));fotosMudaram()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.doc(fs,'live','atual'),s=>{
     const prev=S.live;S.live=s.exists()?s.data():null;
@@ -802,7 +812,7 @@ function watchUser(u){
       clearTimeout(timer);
       if(!u||u.isAnonymous){
         if(u&&u.isAnonymous){au.signOut(B.auth).catch(()=>{});return}
-        S.uid=null;S.email=null;S.fotos=null;setMember(null);S.pedido=null;unsubData();unsubPeople();(B.userUnsubs||[]).forEach(x=>{try{x()}catch{}});
+        S.uid=null;S.email=null;S.fotos=null;S.favs=null;S.soFav=false;setMember(null);S.pedido=null;unsubData();unsubPeople();(B.userUnsubs||[]).forEach(x=>{try{x()}catch{}});
         S.authReady=true;S.loaded=true;render();return;
       }
       S.uid=u.uid;S.email=u.email;S.authReady=!!store.get('cifras:membro:'+u.uid,null);S.loaded=true;
@@ -840,16 +850,17 @@ async function aceitar(p,papel){
 async function recusar(id){try{await B.ff.deleteDoc(B.ff.doc(B.fs,'pedidos',id))}catch{flash('Não consegui recusar. Tente de novo.')}}
 async function mudarPapel(id,papel){try{await B.ff.updateDoc(B.ff.doc(B.fs,'membros',id),{papel})}catch{flash('Não consegui mudar. Tente de novo.')}}
 async function removerMembro(id){try{await B.ff.deleteDoc(B.ff.doc(B.fs,'membros',id))}catch{flash('Não consegui remover. Tente de novo.')}}
+const LOGO='<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M10 52 C11.7 52.0 17.0 53.7 20 52 C23.0 50.3 25.3 40.7 28 42 C30.7 43.3 33.2 63.3 36 60 C38.8 56.7 42.0 18.7 45 22 C48.0 25.3 51.0 77.7 54 80 C57.0 82.3 60.2 39.7 63 36 C65.8 32.3 68.3 56.2 71 58 C73.7 59.8 75.8 48.0 79 47 C82.2 46.0 88.2 51.2 90 52" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function gateHTML(){
-  if(!S.authReady) return `<div class="gate"><div class="gate-logo">C<sup>♯</sup></div><p class="muted">Carregando…</p></div>`;
+  if(!S.authReady) return `<div class="gate"><div class="gate-logo">${LOGO}</div><p class="muted">Carregando…</p></div>`;
   if(S.uid&&!S.member){
-    return `<div class="gate"><div class="gate-logo">C<sup>♯</sup></div>
+    return `<div class="gate"><div class="gate-logo">${LOGO}</div>
       ${S.pedido?`<h1>Pedido enviado</h1><p class="muted">Assim que o responsável do ministério aceitar, as cifras aparecem aqui sozinhas.</p>`
         :`<h1>Sem acesso ainda</h1><p class="muted">Sua conta (${esc(S.email)}) ainda não foi aceita pelo responsável.</p><button class="btn primary" data-act="pedir" style="width:100%">Pedir acesso</button>`}
       <button class="btn ghost" data-act="logout" style="margin-top:8px">Sair</button></div>`;
   }
   const su=S.gateTab==='signup';
-  return `<div class="gate"><div class="gate-logo">C<sup>♯</sup></div><h1>Cifras do Ministério</h1>
+  return `<div class="gate"><div class="gate-logo">${LOGO}</div><h1>Cifras do Ministério</h1>
     <p class="muted">${su?'Crie sua conta. O responsável do ministério vai aceitar seu acesso.':'Entre com seu e-mail e senha.'}</p>
     <div class="seg gate-seg"><button data-act="gtab" data-t="login" aria-pressed="${!su}">Entrar</button><button data-act="gtab" data-t="signup" aria-pressed="${su}">Criar conta</button></div>
     <form id="gateform" class="form" style="gap:10px;width:100%" autocomplete="on">
@@ -1001,9 +1012,19 @@ function nextCulto(){
   const fut=all.filter(c=>c.date>=t).sort((a,b)=>a.date.localeCompare(b.date));
   return fut[0]||null;
 }
+/* ===== Favoritas: cada pessoa tem as suas, guardadas no cadastro ===== */
+const favKey=()=>'cifras:favs:'+(S.uid||'eu');
+function favSet(){if(!S.favs)S.favs=new Set(store.get(favKey(),[]));return S.favs}
+function isFav(id){return favSet().has(id)}
+function toggleFav(id){
+  const f=new Set(favSet());f.has(id)?f.delete(id):f.add(id);S.favs=f;const ids=[...f];store.set(favKey(),ids);
+  const y=window.scrollY;render();window.scrollTo(0,y);
+  if(B.mode!=='demo'&&B.ff&&S.uid)B.ff.setDoc(B.ff.doc(B.fs,'favs',S.uid),{ids,at:Date.now()}).catch(()=>flash('Não consegui salvar a favorita agora. Tente de novo.'));
+}
 function songRow(s){
-  return `<li class="${S.canWrite?'swipe':''}">${S.canWrite?`<button class="swdel" data-act="swdel" data-type="song" data-id="${esc(s.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}<button class="song" data-act="open-song" data-id="${esc(s.id)}"><span class="keyb">${esc(s.key)}</span>
-    <div><div class="t">${esc(s.title)}${s.draft?'<span class="tag">Rascunho</span>':''}</div><div class="a">${esc(s.artist||'Sem artista')}</div></div>${ic('right','i chev')}</button></li>`;
+  const fav=isFav(s.id);
+  return `<li class="swipe" style="--sw:${S.canWrite?184:92}px"><span class="swacts"><button class="swfav${fav?' on':''}" data-act="fav" data-id="${esc(s.id)}" tabindex="-1">${ic('heart',fav?'i fill':'i')}${fav?'Tirar':'Favoritar'}</button>${S.canWrite?`<button class="swdel" data-act="swdel" data-type="song" data-id="${esc(s.id)}" tabindex="-1">${ic('trash')}Excluir</button>`:''}</span><button class="song" data-act="open-song" data-id="${esc(s.id)}"><span class="keyb">${esc(s.key)}</span>
+    <div><div class="t">${esc(s.title)}${fav?`<span class="favmark" aria-label="Favorita">${ic('heart','i fill')}</span>`:''}${s.draft?'<span class="tag">Rascunho</span>':''}</div><div class="a">${esc(s.artist||'Sem artista')}</div></div>${ic('right','i chev')}</button></li>`;
 }
 function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
 let deferredInstall=null;
@@ -1023,16 +1044,18 @@ function viewSongs(){
       <div><div class="k">${nc.date===todayStr()?'Hoje':'Próximo culto'}${isNovo(nc.id)?' · Novo':''}</div><h3>${esc(nc.name)}</h3><p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right')}</button>`;}
   return `${installHint()}<div class="hello"><div><div class="eyebrow">${greet()}, ministério</div><h1>Nossas <em>cifras</em></h1></div>
     <button class="acct${S.canWrite?' on':''}" data-act="sheet" data-s="conta" aria-label="Sua conta${S.isDev&&(S.pedidos||[]).length?', há pedidos de acesso':''}">${fotoAtual()?`<img class="ava" src="${fotoAtual()}" alt="">`:ic('user')}${S.isDev&&(S.pedidos||[]).length?`<i class="badge">${S.pedidos.length}</i>`:''}</button></div>
-  <label class="search" for="q">${ic('search')}<input type="search" id="q" placeholder="Buscar música ou artista" value="${esc(S.q)}" aria-label="Buscar música ou artista"></label>
-  ${S.q?'':card}
+  <div class="searchrow"><label class="search" for="q">${ic('search')}<input type="search" id="q" placeholder="Buscar música ou artista" value="${esc(S.q)}" aria-label="Buscar música ou artista"></label>
+    <button class="favtog" data-act="favtog" aria-pressed="${!!S.soFav}" aria-label="${S.soFav?'Mostrar todas as músicas':'Mostrar só as favoritas'}">${ic('heart',S.soFav?'i fill':'i')}</button></div>
+  ${S.q||S.soFav?'':card}
   <div id="list"></div>`;
 }
 function renderList(){
   const el=$('#list'); if(!el) return;
   if(!S.loaded){el.innerHTML='<p class="empty">Carregando as cifras…</p>';return}
-  const rows=songsSorted(S.q);
+  const rows=songsSorted(S.q).filter(x=>!S.soFav||isFav(x.id));
+  if(S.soFav&&!rows.length){el.innerHTML=`<p class="empty">${S.q?'Nenhuma favorita com esse nome.':'Nenhuma favorita ainda. Arraste uma música para a esquerda e toque no coração.'}</p>`;return}
   if(!rows.length){el.innerHTML=`<p class="empty">${S.songs.size?'Nenhuma música encontrada com esse nome.':'Ainda não há cifras. Toque no botão + para cadastrar a primeira.'}</p>`;return}
-  if(S.q){el.innerHTML=`<ul class="cards">${rows.map(songRow).join('')}</ul>`;return}
+  if(S.q||S.soFav){el.innerHTML=`<ul class="cards">${rows.map(songRow).join('')}</ul>`;return}
   const groups=new Map();
   for(const s of rows){const L=(norm(s.title)[0]||'#').toUpperCase();const k=/[A-Z]/.test(L)?L:'#';if(!groups.has(k))groups.set(k,[]);groups.get(k).push(s)}
   el.innerHTML=[...groups].map(([L,arr])=>`<section class="group"><h2 class="letter">${L}</h2><ul class="cards">${arr.map(songRow).join('')}</ul></section>`).join('');
@@ -1095,24 +1118,25 @@ function novos(){let n=0;for(const id of S.cultos.keys())if(isNovo(id))n++;retur
 function marcarVisto(id){const v=vistos();if(!v.has(id)){v.add(id);store.set('cifras:vistos',[...v])}}
 /* ===== Arrastar a linha para a esquerda mostra "Excluir" (igual ao iPhone) ===== */
 (function(){
-  let sw=null;const W=92;
+  let sw=null;
   const closeAll=ex=>document.querySelectorAll('.swipe>.open').forEach(el=>{if(el!==ex)el.classList.remove('open')});
   document.addEventListener('touchstart',e=>{
     const r=e.target.closest('.swipe>.song,.swipe>.culto');if(!r){closeAll();sw=null;return}
     const t=e.touches[0];if(t.clientX<=24){sw=null;return}
-    sw={el:r,x:t.clientX,y:t.clientY,base:r.classList.contains('open')?-W:0,dx:0,lock:null};
+    const w=parseFloat(getComputedStyle(r.parentElement).getPropertyValue('--sw'))||92;
+    sw={el:r,w,x:t.clientX,y:t.clientY,base:r.classList.contains('open')?-w:0,dx:0,lock:null};
   },{passive:true});
   document.addEventListener('touchmove',e=>{
     if(!sw)return;const t=e.touches[0];const dx=t.clientX-sw.x,dy=t.clientY-sw.y;
     if(!sw.lock&&(Math.abs(dx)>8||Math.abs(dy)>8))sw.lock=Math.abs(dx)>Math.abs(dy)?'h':'v';
     if(sw.lock!=='h')return;
     e.preventDefault();sw.dx=dx;sw.el.style.transition='none';
-    sw.el.style.transform=`translateX(${Math.min(0,Math.max(-W-30,sw.base+dx))}px)`;
+    sw.el.style.transform=`translateX(${Math.min(0,Math.max(-sw.w-30,sw.base+dx))}px)`;
   },{passive:false});
   document.addEventListener('touchend',()=>{
     if(!sw)return;const s=sw;sw=null;if(s.lock!=='h')return;
     s.el.style.transition='';s.el.style.transform='';
-    const open=s.base+s.dx<-W/2;closeAll(s.el);s.el.classList.toggle('open',open);S.swipedAt=Date.now();
+    const open=s.base+s.dx<-s.w/2;closeAll(s.el);s.el.classList.toggle('open',open);S.swipedAt=Date.now();
   },{passive:true});
   document.addEventListener('click',e=>{
     if(Date.now()-(S.swipedAt||0)<400){e.stopImmediatePropagation();e.preventDefault();return}
@@ -1864,6 +1888,8 @@ document.addEventListener('click',async ev=>{
     case 'new-culto':{const id=db.newId('cultos');const t=new Date();
       if(await guard(db.setCulto(id,{name:'Culto de '+t.toLocaleDateString('pt-BR',{weekday:'long'}),date:todayStr(),items:[],updatedAt:Date.now(),criadoPor:S.uid||null}))){marcarVisto(id);S.cultoId=id;S.pq='';go('culto');setTimeout(()=>{const n=$('#c-name');if(n){n.focus();n.select()}},80)}break}
     case 'open-culto': marcarVisto(b.dataset.id);S.cultoId=b.dataset.id;go('culto');break;
+    case 'fav': toggleFav(b.dataset.id);break;
+    case 'favtog': S.soFav=!S.soFav;render();break;
     case 'swdel': S.pinFor={type:b.dataset.type,id:b.dataset.id};S.pinErr='';S.sheet='pin';renderOverlay();setTimeout(()=>{const p=$('#pin');p&&p.focus()},50);break;
     case 'open-item':{const c=S.cultos.get(S.cultoId);const i=+b.dataset.i;const it=c.items[i];if(S.songs.get(it.songId)) openSong(it.songId,it.key,{cultoId:S.cultoId,index:i});break}
     case 'organize': S.organize=!S.organize;render();break;
