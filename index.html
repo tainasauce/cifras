@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-24e">
+<meta name="clave-build" content="2026-11-24f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -490,6 +490,9 @@ body.picking main#app{padding-bottom:calc(330px + env(safe-area-inset-top))}
 .writer .lbl{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em}
 .palette{display:flex;flex-wrap:wrap;gap:6px}
 .ditar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+.tiraok{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;padding:12px;border-radius:var(--r);background:var(--raise);border:1px solid var(--line)}
+.tiraok span{flex:1 1 100%;font-size:14px}
+.tiraok[hidden]{display:none}
 .ditar span{font-size:13px;color:var(--muted)}
 #upd{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 14px;border-radius:999px;background:var(--raise);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:14px;font-weight:600;white-space:nowrap}
 #upd button{border:0;border-radius:999px;padding:7px 14px;font-weight:700;background:var(--grad,var(--accent));color:#fff}
@@ -636,7 +639,7 @@ function transChord(t,shift,spell){
   if(m[4]){const bpc=mod(IDX[m[4]+m[5]]+shift);out+='/'+(smart?bassByRoot(bpc,root,spell):spell[bpc])}
   return out;
 }
-const NEUTRAL=/^(\|+|x\d+|\d+x|-+|\.+|%|\/|:|→|>|\*+|\(|\))$/i;
+const NEUTRAL=/^(\|+|x\d+|\d+x|-+|\.+|%|\/|:|→|>|\*+|\(|\)|n\.?c\.?)$/i;
 function splitTok(t){const m=/^([(]*)(.*?)([)*,.]*)$/.exec(t);return m?[m[1],m[2],m[3]]:['',t,'']}
 function isChordTok(t){return !!parseChord(splitTok(t)[1])}
 function isChordLine(s){
@@ -644,7 +647,7 @@ function isChordLine(s){
   let n=0;
   for(const t of toks){
     if(isChordTok(t)) n++;
-    else if(!(NEUTRAL.test(t)||/:$/.test(t))) return false;
+    else if(!(NEUTRAL.test(t)||NEUTRAL.test(splitTok(t)[1])||/:$/.test(t))) return false;
   }
   return n>0;
 }
@@ -1654,6 +1657,7 @@ function viewEdit(){
       ${paste?'<p class="hint" style="margin:0 0 10px">Ou cole aqui o texto da cifra, do site ou do WhatsApp. Depois confira em <b>Acordes</b>.</p>':''}
       ${S.role==='mod2'&&('webkitSpeechRecognition' in window||'SpeechRecognition' in window)?`<div class="ditar"><button type="button" class="btn ${S.ditando?'primary':'ghost'}" data-act="ditar" aria-pressed="${!!S.ditando}">${ic('mic')} ${S.ditando?'Parar de ditar':'Ditar a letra'}</button><span id="ditar-ao" aria-live="polite">${S.ditando?'Pode falar ou cantar. Cada frase vira uma linha.':''}</span></div>`:''}
       <div class="ditar"><button type="button" class="btn ghost" data-act="tirar-acordes">${ic('x')} Tirar os acordes</button></div>
+      <div class="tiraok" id="tiraok" hidden><span>Tirar <b>todos</b> os acordes desta música? A letra fica.</span><button type="button" class="btn primary" data-act="tirar-sim">Sim, tirar</button><button type="button" class="btn ghost" data-act="tirar-nao">Não</button></div>
       <div class="palette secs" style="margin-bottom:10px">${['Intro','Verso','Pré-refrão','Refrão','Ponte','Final'].map(p=>`<button type="button" data-ins-sec="${p}">+ ${p}</button>`).join('')}</div>
       <textarea id="lyr" spellcheck="false" aria-label="Letra da música" placeholder="${paste?'Cole a cifra aqui':'[Verso]&#10;Primeira frase da letra&#10;Segunda frase da letra'}">${esc(plainOf(normFull(e.content)))}</textarea>
       <textarea id="content" hidden aria-hidden="true">${esc(normFull(e.content||''))}</textarea>
@@ -1822,11 +1826,14 @@ function toggleDitar(){
   S.ditando=true;try{REC.start()}catch{}ditarBtn();const ly=$('#lyr');if(ly){const n=ly.value.length;if(document.activeElement!==ly){try{ly.setSelectionRange(n,n)}catch{}}}
 }
 /* tira todos os acordes e deixa só a letra (para quem colou uma cifra pronta e quer pôr os próprios acordes) */
-function semAcordes(full){return String(full||'').split('\n').filter(l=>!(l.trim()&&classify(l).type==='chords')).map(plainLine).join('\n')}
-function tirarAcordes(b){const ta=$('#content'),ly=$('#lyr');if(!ta||!ly)return;syncLyr();
-  const limpo=semAcordes(normFull(ta.value));if(limpo===ta.value&&!/\[[^\]]+\]/.test(ta.value)){toast('Essa letra já está sem acordes');return}
-  if(!b.dataset.ok){b.dataset.ok='1';b.innerHTML=ic('x')+' Tirar todos? Toque de novo';b.classList.add('danger');clearTimeout(b._t);b._t=setTimeout(()=>{delete b.dataset.ok;b.innerHTML=ic('x')+' Tirar os acordes';b.classList.remove('danger')},3500);return}
-  pushUndo();ta.value=limpo;ly.value=plainOf(limpo);saveDraft();delete b.dataset.ok;b.innerHTML=ic('x')+' Tirar os acordes';b.classList.remove('danger');toast('Pronto, ficou só a letra')}
+function semAcordes(full){return String(full||'').split('\n').filter(l=>!(l.trim()&&classify(l).type==='chords')).map(plainLine).filter(l=>!/^\s*[A-Ga-g]?\s*\|[-\d|hpbrx\/~\s]+$/.test(l)).join('\n')}
+function contaAcordes(full){let n=0;for(const l of String(full||'').split('\n')){const c=classify(l).type;if(c==='inline')n+=(l.match(/\[[^\]]+\]/g)||[]).length;else if(c==='chords')n+=(l.match(/\S+/g)||[]).filter(isChordTok).length;else{const sc=secChords(l);if(sc)n+=(sc.rest.match(/\S+/g)||[]).filter(isChordTok).length}}return n}
+function tirarAcordes(){const ta=$('#content'),ok=$('#tiraok');if(!ta)return;syncLyr();
+  if(!contaAcordes(normFull(ta.value))){toast('Essa letra já está sem acordes');return}
+  if(ok){ok.hidden=false;ok.scrollIntoView({block:'nearest',behavior:'smooth'})}}
+function tirarSim(){const ta=$('#content'),ly=$('#lyr'),ok=$('#tiraok');if(!ta||!ly)return;syncLyr();
+  const full=normFull(ta.value),n=contaAcordes(full),limpo=semAcordes(full);
+  pushUndo();ta.value=limpo;ly.value=plainOf(limpo);saveDraft();if(ok)ok.hidden=true;toast(n===1?'Tirei 1 acorde':'Tirei '+n+' acordes')}
 function syncLyr(){const ta=$('#content'),ly=$('#lyr');if(ta&&ly){ta.value=mergeLyr(ta.value,ly.value);saveDraft()}}
 function refreshLyr(){const ta=$('#content'),ly=$('#lyr');if(ta&&ly){ta.value=normFull(ta.value);ly.value=plainOf(ta.value)}}
 function lyricToInline(L){let out='',last=0;for(const c of L.chords){out+=L.text.slice(last,c.pos)+'['+c.ch+']';last=c.pos}return out+L.text.slice(last)}
@@ -2236,7 +2243,9 @@ document.addEventListener('click',async ev=>{
     case 'upd-go': location.reload();break;
     case 'upd-no':{const u=document.getElementById('upd');if(u)u.remove();break}
     case 'ditar': toggleDitar();break;
-    case 'tirar-acordes': tirarAcordes(b);break;
+    case 'tirar-acordes': tirarAcordes();break;
+    case 'tirar-sim': tirarSim();break;
+    case 'tirar-nao':{const ok=$('#tiraok');if(ok)ok.hidden=true;break}
     case 'cifra-min':{cifraMin();S.cifraMin=true;S.selW=null;renderPlacer();renderPickPanel();const p=$('#pane-acordes');if(p){const y=p.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--st'))||0)-90;scrollTo({top:Math.max(0,y),behavior:'smooth'})}posRecolher();break}
     case 'cifra-max': cifraMin();S.cifraMin=false;renderPlacer();break;
     case 'pk-other':{const o=$('#pk-other');const v=o.value.trim().replace(/^\[|\]$/g,'');if(v){setChordAtSel(v)}break}
