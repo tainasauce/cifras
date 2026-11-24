@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-24f">
+<meta name="clave-build" content="2026-11-24g">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -291,7 +291,26 @@ body.stage .dock button{pointer-events:auto;box-shadow:0 8px 24px -8px rgba(0,0,
 .panel h2{font-size:22px;margin-bottom:14px}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
 @keyframes fade{from{opacity:0}}
-@media (prefers-reduced-motion:reduce){.scrim,.panel,.livebar .dot{animation:none}}
+/* movimento suave: entrada de tela, toque nos botões, carregando e respiração */
+@keyframes viewIn{from{opacity:0;transform:translateY(10px)}}
+#app.enter>*:not(.facilsave):not(.fab):not(.facilsp){animation:viewIn .32s cubic-bezier(.2,.8,.2,1) both}
+#app.enter>*:nth-child(2){animation-delay:.03s}#app.enter>*:nth-child(3){animation-delay:.06s}#app.enter>*:nth-child(n+4){animation-delay:.09s}
+.btn,.chip2,.fab,.nav,.icon,.kbig,.palette button,.steps button,.colors button,.acct,.back,.ref{transition:transform .14s cubic-bezier(.2,.8,.2,1),filter .14s,background-color .2s,box-shadow .2s}
+.btn:active,.chip2:active,.nav:active,.icon:active,.kbig:active,.palette button:active,.steps button:active,.colors button:active,.acct:active,.back:active,.ref:active{transform:scale(.96);filter:brightness(1.12)}
+.fab:active{transform:scale(.92)}
+@keyframes breathe{0%,100%{box-shadow:0 10px 26px -8px color-mix(in srgb,var(--accent) 65%,transparent)}50%{box-shadow:0 14px 38px -6px color-mix(in srgb,var(--accent) 95%,transparent)}}
+.fab{animation:breathe 3.6s ease-in-out infinite}
+@keyframes breatheCard{0%,100%{box-shadow:0 14px 34px -16px color-mix(in srgb,var(--accent) 70%,transparent)}50%{box-shadow:0 18px 44px -12px color-mix(in srgb,var(--accent) 100%,transparent)}}
+.next{animation:breatheCard 4.5s ease-in-out infinite}
+@keyframes logoBreath{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:.82}}
+.gate .gate-logo.loading{animation:logoBreath 1.8s ease-in-out infinite}
+@keyframes shimmer{0%{background-position:120% 0}100%{background-position:-20% 0}}
+.skel{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.skel li{display:flex;gap:14px;align-items:center;padding:12px 14px;border-radius:var(--r);background:var(--surface)}
+.skel i,.skel b,.skel em{display:block;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.13) 45%,rgba(255,255,255,.05) 90%);background-size:220% 100%;animation:shimmer 1.4s ease-in-out infinite}
+.skel i{width:46px;height:46px;border-radius:12px;flex:0 0 auto}.skel span{flex:1;display:grid;gap:8px}.skel b{height:13px;width:62%}.skel em{height:10px;width:38%}
+.toast{animation:toastIn .28s cubic-bezier(.2,.8,.2,1)}@keyframes toastIn{from{opacity:0;transform:translate(-50%,12px)}}
+@media (prefers-reduced-motion:reduce){.scrim,.panel,.livebar .dot,#app.enter>*,.fab,.next,.gate-logo,.skel *,.toast{animation:none!important}.btn,.chip2,.fab{transition:none}}
 .keygrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .keygrid button{border:1px solid var(--line);background:var(--raise);border-radius:14px;padding:12px 0;font:800 20px var(--f-display);position:relative}
 .keygrid button small{display:block;font:600 11px var(--f-body);color:var(--muted);margin-top:2px;min-height:14px}
@@ -490,9 +509,6 @@ body.picking main#app{padding-bottom:calc(330px + env(safe-area-inset-top))}
 .writer .lbl{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em}
 .palette{display:flex;flex-wrap:wrap;gap:6px}
 .ditar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
-.tiraok{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;padding:12px;border-radius:var(--r);background:var(--raise);border:1px solid var(--line)}
-.tiraok span{flex:1 1 100%;font-size:14px}
-.tiraok[hidden]{display:none}
 .ditar span{font-size:13px;color:var(--muted)}
 #upd{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 14px;border-radius:999px;background:var(--raise);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:14px;font-weight:600;white-space:nowrap}
 #upd button{border:0;border-radius:999px;padding:7px 14px;font-weight:700;background:var(--grad,var(--accent));color:#fff}
@@ -1007,7 +1023,7 @@ async function mudarPapel(id,papel){try{await B.ff.updateDoc(B.ff.doc(B.fs,'memb
 async function removerMembro(id){try{await B.ff.deleteDoc(B.ff.doc(B.fs,'membros',id))}catch{flash('Não consegui remover. Tente de novo.')}}
 const LOGO='<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M10 52 C11.7 52.0 17.0 53.7 20 52 C23.0 50.3 25.3 40.7 28 42 C30.7 43.3 33.2 63.3 36 60 C38.8 56.7 42.0 18.7 45 22 C48.0 25.3 51.0 77.7 54 80 C57.0 82.3 60.2 39.7 63 36 C65.8 32.3 68.3 56.2 71 58 C73.7 59.8 75.8 48.0 79 47 C82.2 46.0 88.2 51.2 90 52" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function gateHTML(){
-  if(!S.authReady) return `<div class="gate"><div class="gate-logo">${LOGO}</div><p class="muted">Carregando…</p></div>`;
+  if(!S.authReady) return `<div class="gate"><div class="gate-logo loading">${LOGO}</div><p class="muted">Carregando…</p></div>`;
   if(S.uid&&!S.member){
     return `<div class="gate"><div class="gate-logo">${LOGO}</div>
       ${S.pedido?`<h1>Pedido enviado</h1><p class="muted">Assim que o responsável do ministério aceitar, as cifras aparecem aqui sozinhas.</p>`
@@ -1151,6 +1167,7 @@ function notesHTML(){
   if(S.slow&&!S.loaded) n+=`<p class="note">Está demorando para carregar. Confira a internet; as músicas aparecem assim que conectar.</p>`;
   return n;
 }
+function skelHTML(n){return `<ul class="skel" aria-label="Carregando">${'<li><i></i><span><b></b><em></em></span></li>'.repeat(n)}</ul>`}
 function render(){
   renderLive();
   if(B.mode!=='demo'&&(!S.authReady||!S.member)){
@@ -1163,7 +1180,9 @@ function render(){
   if(S.ditando&&S.view!=='edit')toggleDitar();
   const sb0=$('.sheetbox'),keep=sb0&&S.view==='song'&&S.song&&S.song.id===S.lastSong?sb0.scrollTop:0;
   document.body.classList.toggle('songmode',S.view==='song');document.body.classList.toggle('editview',S.view==='edit');
+  const vkey=S.view+'|'+(S.view==='song'&&S.song?S.song.id:S.view==='culto'?S.cultoId||'':'')+'|'+(S.view==='edit'?(S.edit&&S.edit.id)||'novo':'');
   $('#app').innerHTML=notesHTML()+v();
+  if(vkey!==S.lastVkey){const a=$('#app');a.classList.remove('enter');void a.offsetWidth;a.classList.add('enter');clearTimeout(S.enterT);S.enterT=setTimeout(()=>a.classList.remove('enter'),700);S.lastVkey=vkey}
   S.lastSong=S.view==='song'&&S.song?S.song.id:null;
   const sb1=$('.sheetbox');if(sb1&&keep) sb1.scrollTop=keep;
   if(S.view==='songs') renderList();
@@ -1270,14 +1289,14 @@ function viewSongs(){
       <div><div class="k">${nc.date===todayStr()?'Hoje':'Próximo culto'}${isNovo(nc.id)?' · Novo':''}</div><h3>${esc(nc.name)}</h3>${nc.showDate?`<div class="cdate">${esc(fmtDate(nc.date))}</div>`:''}<p>${names.length?esc(names.join(' · ')):'Nenhuma música ainda'}</p></div>${ic('right')}</button>`;}
   return `${installHint()}<div class="hello"><div><div class="eyebrow">${greet()}, ministério</div><h1>Nossas <em>cifras</em></h1></div>
     <button class="acct${S.canWrite?' on':''}" data-act="sheet" data-s="conta" aria-label="Sua conta${S.isDev&&(S.pedidos||[]).length?', há pedidos de acesso':''}">${fotoAtual()?`<img class="ava" src="${fotoAtual()}" alt="">`:ic('user')}${S.isDev&&(S.pedidos||[]).length?`<i class="badge">${S.pedidos.length}</i>`:''}</button></div>
-  <div class="searchrow"><label class="search" for="q">${ic('search')}<input type="search" id="q" placeholder="Buscar música, artista ou letra" value="${esc(S.q)}" aria-label="Buscar música, artista ou letra"></label>
+  <div class="searchrow"><label class="search" for="q">${ic('search')}<input type="search" id="q" placeholder="Buscar música ou letra" value="${esc(S.q)}" aria-label="Buscar música, artista ou letra"></label>
     <button class="favtog" data-act="favtog" aria-pressed="${!!S.soFav}" aria-label="${S.soFav?'Mostrar todas as músicas':'Mostrar só as favoritas'}">${ic('heart',S.soFav?'i fill':'i')}</button></div>
   ${S.q||S.soFav?'':card}
   <div id="list"></div>`;
 }
 function renderList(){
   const el=$('#list'); if(!el) return;
-  if(!S.loaded){el.innerHTML='<p class="empty">Carregando as cifras…</p>';return}
+  if(!S.loaded){el.innerHTML=skelHTML(6);return}
   const rows=songsSorted(S.q).filter(x=>!S.soFav||isFav(x.id));
   if(S.soFav&&!rows.length){el.innerHTML=`<p class="empty">${S.q?'Nenhuma favorita com esse nome.':'Nenhuma favorita ainda. Arraste uma música para a esquerda e toque no coração.'}</p>`;return}
   if(!rows.length){el.innerHTML=`<p class="empty">${S.songs.size?'Nenhuma música encontrada com esse nome.':'Ainda não há cifras. Toque no botão + para cadastrar a primeira.'}</p>`;return}
@@ -1656,8 +1675,6 @@ function viewEdit(){
       ${paste?`<div class="importbox"><button type="button" class="btn primary" data-act="pick-file">${ic('clip')} Escolher arquivo da cifra</button><span>PDF, Word, texto, foto ou print</span></div>`:''}
       ${paste?'<p class="hint" style="margin:0 0 10px">Ou cole aqui o texto da cifra, do site ou do WhatsApp. Depois confira em <b>Acordes</b>.</p>':''}
       ${S.role==='mod2'&&('webkitSpeechRecognition' in window||'SpeechRecognition' in window)?`<div class="ditar"><button type="button" class="btn ${S.ditando?'primary':'ghost'}" data-act="ditar" aria-pressed="${!!S.ditando}">${ic('mic')} ${S.ditando?'Parar de ditar':'Ditar a letra'}</button><span id="ditar-ao" aria-live="polite">${S.ditando?'Pode falar ou cantar. Cada frase vira uma linha.':''}</span></div>`:''}
-      <div class="ditar"><button type="button" class="btn ghost" data-act="tirar-acordes">${ic('x')} Tirar os acordes</button></div>
-      <div class="tiraok" id="tiraok" hidden><span>Tirar <b>todos</b> os acordes desta música? A letra fica.</span><button type="button" class="btn primary" data-act="tirar-sim">Sim, tirar</button><button type="button" class="btn ghost" data-act="tirar-nao">Não</button></div>
       <div class="palette secs" style="margin-bottom:10px">${['Intro','Verso','Pré-refrão','Refrão','Ponte','Final'].map(p=>`<button type="button" data-ins-sec="${p}">+ ${p}</button>`).join('')}</div>
       <textarea id="lyr" spellcheck="false" aria-label="Letra da música" placeholder="${paste?'Cole a cifra aqui':'[Verso]&#10;Primeira frase da letra&#10;Segunda frase da letra'}">${esc(plainOf(normFull(e.content)))}</textarea>
       <textarea id="content" hidden aria-hidden="true">${esc(normFull(e.content||''))}</textarea>
@@ -1689,7 +1706,7 @@ function cultoRow(c,destaque,pos){
 function viewCultos(){
   const all=cultosSorted(),t=todayStr();
   const fut=all.filter(c=>c.date>=t).reverse(),past=all.filter(c=>c.date<t);
-  if(!S.loaded) return `<div class="pagehead"><h1>Cultos</h1></div><p class="empty">Carregando…</p>`;
+  if(!S.loaded) return `<div class="pagehead"><h1>Cultos</h1></div>${skelHTML(4)}`;
   return `<div class="pagehead"><div><div class="eyebrow">Repertórios</div><h1>Cultos</h1></div></div>
   ${!all.length?`<p class="empty">Nenhum culto montado ainda.${S.canWrite?' Toque no + para montar o próximo.':''}</p>`:''}
   ${fut.length?`<ul class="cultos tlist">${fut.map((c,i)=>cultoRow(c,i===0,i)).join('')}</ul>`:''}
@@ -1825,15 +1842,6 @@ function toggleDitar(){
   REC.onend=()=>{if(S.ditando&&S.view==='edit'&&S.etab==='letra'){try{REC.start()}catch{}}else{S.ditando=false;ditarBtn()}};
   S.ditando=true;try{REC.start()}catch{}ditarBtn();const ly=$('#lyr');if(ly){const n=ly.value.length;if(document.activeElement!==ly){try{ly.setSelectionRange(n,n)}catch{}}}
 }
-/* tira todos os acordes e deixa só a letra (para quem colou uma cifra pronta e quer pôr os próprios acordes) */
-function semAcordes(full){return String(full||'').split('\n').filter(l=>!(l.trim()&&classify(l).type==='chords')).map(plainLine).filter(l=>!/^\s*[A-Ga-g]?\s*\|[-\d|hpbrx\/~\s]+$/.test(l)).join('\n')}
-function contaAcordes(full){let n=0;for(const l of String(full||'').split('\n')){const c=classify(l).type;if(c==='inline')n+=(l.match(/\[[^\]]+\]/g)||[]).length;else if(c==='chords')n+=(l.match(/\S+/g)||[]).filter(isChordTok).length;else{const sc=secChords(l);if(sc)n+=(sc.rest.match(/\S+/g)||[]).filter(isChordTok).length}}return n}
-function tirarAcordes(){const ta=$('#content'),ok=$('#tiraok');if(!ta)return;syncLyr();
-  if(!contaAcordes(normFull(ta.value))){toast('Essa letra já está sem acordes');return}
-  if(ok){ok.hidden=false;ok.scrollIntoView({block:'nearest',behavior:'smooth'})}}
-function tirarSim(){const ta=$('#content'),ly=$('#lyr'),ok=$('#tiraok');if(!ta||!ly)return;syncLyr();
-  const full=normFull(ta.value),n=contaAcordes(full),limpo=semAcordes(full);
-  pushUndo();ta.value=limpo;ly.value=plainOf(limpo);saveDraft();if(ok)ok.hidden=true;toast(n===1?'Tirei 1 acorde':'Tirei '+n+' acordes')}
 function syncLyr(){const ta=$('#content'),ly=$('#lyr');if(ta&&ly){ta.value=mergeLyr(ta.value,ly.value);saveDraft()}}
 function refreshLyr(){const ta=$('#content'),ly=$('#lyr');if(ta&&ly){ta.value=normFull(ta.value);ly.value=plainOf(ta.value)}}
 function lyricToInline(L){let out='',last=0;for(const c of L.chords){out+=L.text.slice(last,c.pos)+'['+c.ch+']';last=c.pos}return out+L.text.slice(last)}
@@ -2243,9 +2251,6 @@ document.addEventListener('click',async ev=>{
     case 'upd-go': location.reload();break;
     case 'upd-no':{const u=document.getElementById('upd');if(u)u.remove();break}
     case 'ditar': toggleDitar();break;
-    case 'tirar-acordes': tirarAcordes();break;
-    case 'tirar-sim': tirarSim();break;
-    case 'tirar-nao':{const ok=$('#tiraok');if(ok)ok.hidden=true;break}
     case 'cifra-min':{cifraMin();S.cifraMin=true;S.selW=null;renderPlacer();renderPickPanel();const p=$('#pane-acordes');if(p){const y=p.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--st'))||0)-90;scrollTo({top:Math.max(0,y),behavior:'smooth'})}posRecolher();break}
     case 'cifra-max': cifraMin();S.cifraMin=false;renderPlacer();break;
     case 'pk-other':{const o=$('#pk-other');const v=o.value.trim().replace(/^\[|\]$/g,'');if(v){setChordAtSel(v)}break}
