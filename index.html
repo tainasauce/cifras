@@ -488,6 +488,8 @@ body.picking main#app{padding-bottom:calc(330px + env(safe-area-inset-top))}
 .writer{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:grid;gap:10px}
 .writer .lbl{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em}
 .palette{display:flex;flex-wrap:wrap;gap:6px}
+.palsep{align-self:center;color:var(--muted);font-size:20px;font-weight:700;padding:0 2px}
+.palette button.fora small{color:var(--muted)}
 .palette button{border:1px solid var(--line);background:var(--raise);border-radius:12px;padding:6px 10px;display:grid;justify-items:center;line-height:1.15;min-width:52px}
 .palette button b{font:600 16px var(--f-mono);color:var(--honey)}
 .palette button small{font-size:11px;color:var(--muted);font-weight:700}
@@ -1839,6 +1841,12 @@ function removeChordAtSel(){
   else L.chords=L.chords.filter(c=>c.pos!==W.pos);
   commitModel();renderPlacer();renderPickPanel();
 }
+/* acordes que a música já usa e que não são do campo harmônico do tom (empréstimo, dominante, inversão...) */
+function chordKey(c){const m=parseChord(c);if(!m)return null;let suf=m[3].replace(/m\(b5\)|dim|°/g,'º');return IDX[m[1]+m[2]]+'|'+suf+'|'+(m[4]?IDX[m[4]+(m[5]||'')]:'')}
+function chordsOutside(hf){const inF=new Set(hf.map(h=>chordKey(h.chord))),seen=new Set(),out=[];
+  const add=c=>{c=String(c||'').trim();const k=chordKey(c);if(!k||inF.has(k)||seen.has(k))return;seen.add(k);out.push(c)};
+  for(const L of S.model||[]){if(L.type==='lyric')L.chords.forEach(x=>add(x.ch));else if(L.type==='chords'||classify(L.text||'').type==='chords')String(L.text||'').split(/\s+/).forEach(add)}
+  return out.slice(0,10)}
 function renderPickPanel(){
   const d=$('#bottomroot');
   if(S.view!=='edit'||S.etab!=='acordes'||!S.selW){d.innerHTML='';document.body.classList.remove('picking');return}
@@ -1853,7 +1861,9 @@ function renderPickPanel(){
       <button type="button" class="icon" data-act="pk-next" aria-label="Próxima palavra">${ic('right')}</button>
       <button type="button" class="icon" data-act="pk-close" aria-label="Fechar">${ic('x')}</button></div>
     ${word.length>1?`<div class="letters" aria-label="Em qual letra o acorde começa">${letters}</div>`:''}
-    <div class="palette">${harmonicField({idx:r,minor:mi}).map(h=>`<button type="button" data-chord="${esc(h.chord)}" aria-pressed="${!!cur&&cur.ch===h.chord}"><b>${esc(h.chord)}</b><small>${h.deg}</small></button>`).join('')}</div>
+    <div class="palette">${(()=>{const hf=harmonicField({idx:r,minor:mi}),fora=chordsOutside(hf);
+      return hf.map(h=>`<button type="button" data-chord="${esc(h.chord)}" aria-pressed="${!!cur&&cur.ch===h.chord}"><b>${esc(h.chord)}</b><small>${h.deg}</small></button>`).join('')
+      +(fora.length?`<span class="palsep" aria-hidden="true">–</span>`+fora.map(c=>`<button type="button" class="fora" data-chord="${esc(c)}" aria-pressed="${!!cur&&cur.ch===c}" aria-label="${esc(c)}, fora do campo harmônico"><b>${esc(c)}</b><small>fora</small></button>`).join(''):'')})()}</div>
     <div class="otherrow"><input type="text" id="pk-other" placeholder="Outro: E7, D/F#, Bb" aria-label="Outro acorde"><button type="button" class="btn" data-act="pk-other">Pôr</button>
       <button type="button" class="btn ghost danger" data-act="pk-remove">Tirar</button>${S.undo&&S.undo.length?`<button type="button" class="btn ghost" data-act="pk-undo">${ic('left')} Desfazer</button>`:''}</div>
   </div></div>`;
