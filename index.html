@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-24a">
+<meta name="clave-build" content="2026-11-24b">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -905,6 +905,7 @@ const PAPEL={dev:'Responsável',editor:'Editor',mod2:'Mod2',leitor:'Pode ver'};
 function setMember(m){
   S.member=m;S.role=m?m.papel:null;
   S.canWrite=S.role==='editor'||S.role==='mod2'||S.role==='dev';S.isDev=S.role==='dev';
+  if(S.isDev&&store.get('cifras:asmod2',false))S.role='mod2'; /* responsável testando o Mod2 */
   document.body.classList.toggle('facil',S.role==='mod2');
 }
 function unsubData(){B.unsubs.forEach(u=>{try{u()}catch{}});B.unsubs=[];B.subscribed=false}
@@ -1574,7 +1575,7 @@ function renderOverlay(){
     const m=S.member||{};
     body=`<h2>Sua conta</h2>
     ${S.demo?`<p class="muted" style="margin-top:-6px">Modo demonstração: o app ainda não foi ligado ao Firebase.</p>`:
-      `<p style="margin:-6px 0 2px"><b>${esc(m.nome||S.email||'')}</b></p><p class="muted" style="margin:0 0 14px">${esc(S.email||'')} · ${PAPEL[S.role]||''}</p>`}
+      `<p style="margin:-6px 0 2px"><b>${esc(m.nome||S.email||'')}</b></p><p class="muted" style="margin:0 0 14px">${esc(S.email||'')} · ${PAPEL[m.papel]||''}</p>${m.papel==='dev'?`<div class="setrow" style="margin:0 0 14px"><div class="l"><b>Ver como Mod2</b><span>Só pra testar, só neste aparelho</span></div><button class="switch" role="switch" aria-checked="${S.role==='mod2'}" data-act="asmod2" aria-label="Ver o app como Mod2"></button></div>`:''}`}
     <div class="eyebrow" style="margin-top:4px">Cor do app</div>
     <div class="colors" role="group" aria-label="Cor do app">${Object.entries(TEMAS).map(([k,t])=>`<button data-act="tema" data-t="${k}" aria-pressed="${(P.tema||'oceano')===k}"><i style="background:${t.grad}"></i>${t.nome}</button>`).join('')}</div>
     <div class="eyebrow" style="margin-top:14px">Criar a minha</div>
@@ -2225,6 +2226,7 @@ document.addEventListener('click',async ev=>{
     case 'pk-close': S.selW=null;renderPlacer();renderPickPanel();break;
     case 'pk-remove': removeChordAtSel();break;
     case 'pk-undo': undoPlacer();break;
+    case 'asmod2': store.set('cifras:asmod2',!store.get('cifras:asmod2',false));setMember(S.member);render();toast(S.role==='mod2'?'Vendo como Mod2':'Voltou ao normal');break;
     case 'upd-go': location.reload();break;
     case 'upd-no':{const u=document.getElementById('upd');if(u)u.remove();break}
     case 'ditar': toggleDitar();break;
