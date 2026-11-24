@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-24c">
+<meta name="clave-build" content="2026-11-24d">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1653,6 +1653,7 @@ function viewEdit(){
       ${paste?`<div class="importbox"><button type="button" class="btn primary" data-act="pick-file">${ic('clip')} Escolher arquivo da cifra</button><span>PDF, Word, texto, foto ou print</span></div>`:''}
       ${paste?'<p class="hint" style="margin:0 0 10px">Ou cole aqui o texto da cifra, do site ou do WhatsApp. Depois confira em <b>Acordes</b>.</p>':''}
       ${'webkitSpeechRecognition' in window||'SpeechRecognition' in window?`<div class="ditar"><button type="button" class="btn ${S.ditando?'primary':'ghost'}" data-act="ditar" aria-pressed="${!!S.ditando}">${ic('mic')} ${S.ditando?'Parar de ditar':'Ditar a letra'}</button><span id="ditar-ao" aria-live="polite">${S.ditando?'Pode falar ou cantar. Cada frase vira uma linha.':''}</span></div>`:''}
+      <div class="ditar"><button type="button" class="btn ghost" data-act="tirar-acordes">${ic('x')} Tirar os acordes</button></div>
       <div class="palette secs" style="margin-bottom:10px">${['Intro','Verso','Pré-refrão','Refrão','Ponte','Final'].map(p=>`<button type="button" data-ins-sec="${p}">+ ${p}</button>`).join('')}</div>
       <textarea id="lyr" spellcheck="false" aria-label="Letra da música" placeholder="${paste?'Cole a cifra aqui':'[Verso]&#10;Primeira frase da letra&#10;Segunda frase da letra'}">${esc(plainOf(normFull(e.content)))}</textarea>
       <textarea id="content" hidden aria-hidden="true">${esc(normFull(e.content||''))}</textarea>
@@ -1775,7 +1776,7 @@ function normFull(t){return toModel(String(t||'')).map(L=>L.type==='lyric'?lyric
 function secChords(l){const c=classify(l);return c.type==='section'&&c.rest&&c.rest.trim()&&isChordLine(c.rest)?c:null}
 function plainLine(l){const c=classify(l);if(c.type==='inline')return l.replace(/\[[^\]]*\]/g,'');const sc=secChords(l);return sc?'['+sc.label+']':l}
 function plainOf(full){return String(full||'').split('\n').map(plainLine).join('\n')}
-function carryChords(fl,po,pn){const sc=secChords(fl);if(sc)return classify(pn).type==='section'?pn.replace(/\s+$/,'')+' '+sc.rest:pn;if(classify(fl).type!=='inline')return pn;
+function carryChords(fl,po,pn){const sc=secChords(fl);if(sc)return classify(pn).type==='section'&&!secChords(pn)?pn.replace(/\s+$/,'')+' '+sc.rest:pn;if(classify(fl).type!=='inline')return pn;
   const ch=[];let txt='',last=0;for(const m of fl.matchAll(/\[([^\]]+)\]/g)){txt+=fl.slice(last,m.index);last=m.index+m[0].length;ch.push({pos:txt.length,c:m[1]})}
   let p=0;while(p<po.length&&p<pn.length&&po[p]===pn[p])p++;
   let q=0;while(q<po.length-p&&q<pn.length-p&&po[po.length-1-q]===pn[pn.length-1-q])q++;
@@ -1820,6 +1821,12 @@ function toggleDitar(){
   REC.onend=()=>{if(S.ditando&&S.view==='edit'&&S.etab==='letra'){try{REC.start()}catch{}}else{S.ditando=false;ditarBtn()}};
   S.ditando=true;try{REC.start()}catch{}ditarBtn();const ly=$('#lyr');if(ly){const n=ly.value.length;if(document.activeElement!==ly){try{ly.setSelectionRange(n,n)}catch{}}}
 }
+/* tira todos os acordes e deixa só a letra (para quem colou uma cifra pronta e quer pôr os próprios acordes) */
+function semAcordes(full){return String(full||'').split('\n').filter(l=>!(l.trim()&&classify(l).type==='chords')).map(plainLine).join('\n')}
+function tirarAcordes(b){const ta=$('#content'),ly=$('#lyr');if(!ta||!ly)return;syncLyr();
+  const limpo=semAcordes(normFull(ta.value));if(limpo===ta.value&&!/\[[^\]]+\]/.test(ta.value)){toast('Essa letra já está sem acordes');return}
+  if(!b.dataset.ok){b.dataset.ok='1';b.innerHTML=ic('x')+' Tirar todos? Toque de novo';b.classList.add('danger');clearTimeout(b._t);b._t=setTimeout(()=>{delete b.dataset.ok;b.innerHTML=ic('x')+' Tirar os acordes';b.classList.remove('danger')},3500);return}
+  pushUndo();ta.value=limpo;ly.value=plainOf(limpo);saveDraft();delete b.dataset.ok;b.innerHTML=ic('x')+' Tirar os acordes';b.classList.remove('danger');toast('Pronto, ficou só a letra')}
 function syncLyr(){const ta=$('#content'),ly=$('#lyr');if(ta&&ly){ta.value=mergeLyr(ta.value,ly.value);saveDraft()}}
 function refreshLyr(){const ta=$('#content'),ly=$('#lyr');if(ta&&ly){ta.value=normFull(ta.value);ly.value=plainOf(ta.value)}}
 function lyricToInline(L){let out='',last=0;for(const c of L.chords){out+=L.text.slice(last,c.pos)+'['+c.ch+']';last=c.pos}return out+L.text.slice(last)}
@@ -2229,6 +2236,7 @@ document.addEventListener('click',async ev=>{
     case 'upd-go': location.reload();break;
     case 'upd-no':{const u=document.getElementById('upd');if(u)u.remove();break}
     case 'ditar': toggleDitar();break;
+    case 'tirar-acordes': tirarAcordes(b);break;
     case 'cifra-min':{cifraMin();S.cifraMin=true;S.selW=null;renderPlacer();renderPickPanel();const p=$('#pane-acordes');if(p){const y=p.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--st'))||0)-90;scrollTo({top:Math.max(0,y),behavior:'smooth'})}posRecolher();break}
     case 'cifra-max': cifraMin();S.cifraMin=false;renderPlacer();break;
     case 'pk-other':{const o=$('#pk-other');const v=o.value.trim().replace(/^\[|\]$/g,'');if(v){setChordAtSel(v)}break}
@@ -2322,9 +2330,9 @@ document.addEventListener('submit',async ev=>{
   const data=collectForm(); if(!data.title){$('#f-title').focus();return}
   data.updatedAt=Date.now();data.updatedBy=S.uid||null;
   const id=S.edit.id||db.newId('songs');
-  const btn=ev.target.querySelector('[type=submit]');btn.disabled=true;btn.textContent='Salvando…';
+  const btn=ev.submitter||ev.target.querySelector('[type=submit]')||document.querySelector('[form=songform][type=submit]');if(btn){btn.disabled=true;btn.textContent='Salvando…'}
   if(await guard(db.setSong(id,data))){S.songs.set(id,data);clearDraft();openSong(id,null,S.edit.id?S.ctx:null)}
-  else{btn.disabled=false;btn.innerHTML=ic('check')+' Salvar cifra'}
+  else if(btn){btn.disabled=false;btn.innerHTML=ic('check')+' Salvar cifra'}
 });
 document.addEventListener('click',()=>{setAwake(S.view==='song'&&P.awake!==false)});
 applyTema();
