@@ -672,11 +672,17 @@ function toDegree(t,key){
   return out;
 }
 /* campo harmônico do tom, para a paleta do editor */
+/* campo harmônico com a grafia certa de cada grau (uma letra por grau: em F# o VII é E#º, não Fº) */
+const LET='CDEFGAB',NAT=[0,2,4,5,7,9,11];
+function degName(tonic,idx,s,d,sp){
+  const L0=LET.indexOf(tonic[0]),li=(L0+d)%7,pc=mod(idx+s),diff=mod(pc-NAT[li]);
+  const acc=diff===0?'':diff===1?'#':diff===11?'b':null;
+  return acc===null||P.acc==='sharp'||P.acc==='flat'?sp[pc]:LET[li]+acc}
 function harmonicField(key){
-  const sp=spellFor(key.idx,key.minor);
-  const steps=key.minor?[[0,'m','Im'],[2,'m(b5)','IIø'],[3,'','III'],[5,'m','IVm'],[7,'m','Vm'],[7,'','V'],[8,'','VI'],[10,'','VII']]
-                        :[[0,'','I'],[2,'m','IIm'],[4,'m','IIIm'],[5,'','IV'],[7,'','V'],[9,'m','VIm'],[11,'m(b5)','VIIø']];
-  return steps.map(([s,q,d])=>({chord:sp[mod(key.idx+s)]+q,deg:d}));
+  const sp=spellFor(key.idx,key.minor),tonic=sp[mod(key.idx)];
+  const steps=key.minor?[[0,0,'m','Im'],[2,1,'º','IIº'],[3,2,'','III'],[5,3,'m','IVm'],[7,4,'m','Vm'],[7,4,'','V'],[8,5,'','VI'],[10,6,'','VII']]
+                        :[[0,0,'','I'],[2,1,'m','IIm'],[4,2,'m','IIIm'],[5,3,'','IV'],[7,4,'','V'],[9,5,'m','VIm'],[11,6,'º','VIIº']];
+  return steps.map(([s,d,q,g])=>({chord:degName(tonic,key.idx,s,d,sp)+q,deg:g}));
 }
 function mkLyric(text,chords){
   const len=text.length,out=[],used=new Set();
