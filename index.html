@@ -81,6 +81,8 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;tex
 /* lista de músicas */
 .group{margin-bottom:18px}
 .letter{font:800 13px var(--f-body);color:var(--muted);letter-spacing:.08em;margin:0 0 8px 4px}
+.letter{display:flex;align-items:baseline}
+.letter .tot{margin-left:auto;margin-right:8px;font:700 15px var(--f-mono);letter-spacing:0;color:var(--honey)}
 .cards{list-style:none;margin:0;padding:0;background:var(--raise);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
 .cards li+li{border-top:1px solid var(--line)}
 .song{width:100%;display:flex;gap:14px;align-items:center;text-align:left;border:0;background:none;padding:12px 14px}
@@ -1237,7 +1239,8 @@ function renderList(){
     ${aberto?`<ul class="cards">${est.map(songRow).join('')}</ul>`:''}</section>`:'';
   const groups=new Map();
   for(const s of normais){const L=(norm(s.title)[0]||'#').toUpperCase();const k=/[A-Z]/.test(L)?L:'#';if(!groups.has(k))groups.set(k,[]);groups.get(k).push(s)}
-  el.innerHTML=balao+[...groups].map(([L,arr])=>`<section class="group"><h2 class="letter">${L}</h2><ul class="cards">${arr.map(songRow).join('')}</ul></section>`).join('');
+  const tot=S.songs.size;
+  el.innerHTML=balao+[...groups].map(([L,arr],gi)=>`<section class="group"><h2 class="letter"><span>${L}</span>${gi===0?`<span class="tot" title="${tot} cifras no Clave" aria-label="${tot} cifras no Clave">${tot}</span>`:''}</h2><ul class="cards">${arr.map(songRow).join('')}</ul></section>`).join('');
 }
 function songCalc(){
   const s=S.song,o=parseKey(s.key);
