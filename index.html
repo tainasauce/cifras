@@ -1903,8 +1903,10 @@ function textResult(raw){
 }
 async function readDocx(buf){
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
-  const r=await window.mammoth.extractRawText({arrayBuffer:buf});return r.value;
+  const r=await window.mammoth.extractRawText({arrayBuffer:buf});return docxLines(r.value);
 }
+/* o Word separa cada parágrafo com uma linha em branco: junta de volta para o acorde ficar colado na letra */
+function docxLines(t){return String(t||'').replace(/\r/g,'').replace(/\n\n/g,'\n').split('\n').map(l=>{let o='';for(const c of l){if(c==='\t'){do o+=' ';while(o.length%8)}else o+=c}return o}).join('\n')}
 /* posição de cada letra dentro de um trecho, respeitando fontes de largura variável */
 let mctx=null;
 function charXs(str,w,fam){
