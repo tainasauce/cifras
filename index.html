@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-24d">
+<meta name="clave-build" content="2026-11-24e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1652,7 +1652,7 @@ function viewEdit(){
     <div id="pane-letra" ${S.etab==='letra'?'':'hidden'}>
       ${paste?`<div class="importbox"><button type="button" class="btn primary" data-act="pick-file">${ic('clip')} Escolher arquivo da cifra</button><span>PDF, Word, texto, foto ou print</span></div>`:''}
       ${paste?'<p class="hint" style="margin:0 0 10px">Ou cole aqui o texto da cifra, do site ou do WhatsApp. Depois confira em <b>Acordes</b>.</p>':''}
-      ${'webkitSpeechRecognition' in window||'SpeechRecognition' in window?`<div class="ditar"><button type="button" class="btn ${S.ditando?'primary':'ghost'}" data-act="ditar" aria-pressed="${!!S.ditando}">${ic('mic')} ${S.ditando?'Parar de ditar':'Ditar a letra'}</button><span id="ditar-ao" aria-live="polite">${S.ditando?'Pode falar ou cantar. Cada frase vira uma linha.':''}</span></div>`:''}
+      ${S.role==='mod2'&&('webkitSpeechRecognition' in window||'SpeechRecognition' in window)?`<div class="ditar"><button type="button" class="btn ${S.ditando?'primary':'ghost'}" data-act="ditar" aria-pressed="${!!S.ditando}">${ic('mic')} ${S.ditando?'Parar de ditar':'Ditar a letra'}</button><span id="ditar-ao" aria-live="polite">${S.ditando?'Pode falar ou cantar. Cada frase vira uma linha.':''}</span></div>`:''}
       <div class="ditar"><button type="button" class="btn ghost" data-act="tirar-acordes">${ic('x')} Tirar os acordes</button></div>
       <div class="palette secs" style="margin-bottom:10px">${['Intro','Verso','Pré-refrão','Refrão','Ponte','Final'].map(p=>`<button type="button" data-ins-sec="${p}">+ ${p}</button>`).join('')}</div>
       <textarea id="lyr" spellcheck="false" aria-label="Letra da música" placeholder="${paste?'Cole a cifra aqui':'[Verso]&#10;Primeira frase da letra&#10;Segunda frase da letra'}">${esc(plainOf(normFull(e.content)))}</textarea>
