@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-24b">
+<meta name="clave-build" content="2026-11-24c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -417,7 +417,7 @@ body.facil .letters button{min-width:44px;min-height:48px;font-size:20px}
 body.facil .pick .icon{min-width:52px;min-height:52px}
 .facilbar{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 4px;width:100%}
 .facilbar .btn{flex:1 1 180px;justify-content:center}
-.facilsp{height:78px}
+.facilsp{height:88px}
 .facilsave{position:fixed;top:calc(var(--st,0px) + 4px);left:0;right:0;margin:0 auto;width:calc(100% - 36px);max-width:724px;box-sizing:border-box;z-index:30;display:flex;gap:10px;padding:10px;border-radius:var(--r);background:var(--raise);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .facilsave .btn{flex:1;justify-content:center}
 .swedit{background:#7a5cff}
@@ -1635,7 +1635,6 @@ function viewEdit(){
   const paste=e.mode==='paste';
   return `${S.role==='mod2'?`<div class="facilsave"><button type="submit" form="songform" class="btn primary">${ic('check')} Salvar cifra</button><button type="button" class="btn ghost" data-act="cancel-edit">Cancelar</button></div><div class="facilsp"></div>`:''}
   ${S.role==='mod2'?'':`<button class="back" data-act="cancel-edit">${ic('left')} Cancelar</button>`}
-  <div class="pagehead"><h1>${e.id?'Editar cifra':paste?'Cifra existente':'Nova cifra'}</h1></div>
   <form class="form" id="songform" autocomplete="off">
     <div class="grid2 lado">
       <label class="f" for="f-title">Nome da música<input type="text" id="f-title" required value="${esc(e.title)}" placeholder="Ex.: Grande é o Senhor"></label>
@@ -1652,25 +1651,25 @@ function viewEdit(){
     </div>
     <div id="pane-letra" ${S.etab==='letra'?'':'hidden'}>
       ${paste?`<div class="importbox"><button type="button" class="btn primary" data-act="pick-file">${ic('clip')} Escolher arquivo da cifra</button><span>PDF, Word, texto, foto ou print</span></div>`:''}
-      <p class="hint" style="margin:0 0 10px">${paste?'Ou cole aqui o texto da cifra, do site ou do WhatsApp. Depois confira em <b>Acordes</b>.':'Escreva só a letra, uma frase por linha. Depois vá em <b>Acordes</b> e toque nas palavras para pôr os acordes.'}</p>
+      ${paste?'<p class="hint" style="margin:0 0 10px">Ou cole aqui o texto da cifra, do site ou do WhatsApp. Depois confira em <b>Acordes</b>.</p>':''}
       ${'webkitSpeechRecognition' in window||'SpeechRecognition' in window?`<div class="ditar"><button type="button" class="btn ${S.ditando?'primary':'ghost'}" data-act="ditar" aria-pressed="${!!S.ditando}">${ic('mic')} ${S.ditando?'Parar de ditar':'Ditar a letra'}</button><span id="ditar-ao" aria-live="polite">${S.ditando?'Pode falar ou cantar. Cada frase vira uma linha.':''}</span></div>`:''}
       <div class="palette secs" style="margin-bottom:10px">${['Intro','Verso','Pré-refrão','Refrão','Ponte','Final'].map(p=>`<button type="button" data-ins-sec="${p}">+ ${p}</button>`).join('')}</div>
       <textarea id="lyr" spellcheck="false" aria-label="Letra da música" placeholder="${paste?'Cole a cifra aqui':'[Verso]&#10;Primeira frase da letra&#10;Segunda frase da letra'}">${esc(plainOf(normFull(e.content)))}</textarea>
       <textarea id="content" hidden aria-hidden="true">${esc(normFull(e.content||''))}</textarea>
     </div>
     <div id="pane-acordes" ${S.etab==='acordes'?'':'hidden'}>
-      <p class="hint" style="margin:0 0 10px">Toque numa palavra e escolha o acorde. Para pôr no meio da palavra, escolha a sílaba.</p>
+      ${S.role==='mod2'?'':`<p class="hint" style="margin:0 0 10px">Toque numa palavra e escolha o acorde. Para pôr no meio da palavra, escolha a sílaba.</p>`}
       <div class="placer" id="placer"></div><button type="button" class="btn ghost placer-more" data-act="cifra-max">${ic('down')} Mostrar a cifra inteira</button>
     </div>
     <div class="grid2">
-      <label class="f" for="f-notes">Observações <span class="h">opcional</span><input type="text" id="f-notes" value="${esc(e.notes||'')}" placeholder="Ex.: repetir o refrão 2x no final"></label>
-      <label class="f" for="f-refs">Links de referência <span class="h">opcional · um por linha</span><textarea id="f-refs" rows="2" placeholder="https://youtu.be/...  ao vivo" style="min-height:0">${esc((e.refs||[]).map(r=>r.url+(r.label?'  '+r.label:'')).join('\n'))}</textarea></label>
+      <label class="f" for="f-notes">Observações<input type="text" id="f-notes" value="${esc(e.notes||'')}" placeholder="Ex.: repetir o refrão 2x no final"></label>
+      <label class="f" for="f-refs">Links de referência<textarea id="f-refs" rows="2" placeholder="https://youtu.be/...  ao vivo" style="min-height:0">${esc((e.refs||[]).map(r=>r.url+(r.label?'  '+r.label:'')).join('\n'))}</textarea></label>
     </div>
-    <label class="check" for="f-draft" style="font-size:14px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="f-draft"${e.draft?' checked':''}> Vamos tirar ainda <span class="muted" style="font-size:12px">· fica em Próximas canções</span></label>
-    <div class="actions">
+    <label class="check" for="f-draft" style="font-size:14px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="f-draft"${e.draft?' checked':''}> Vamos tirar ainda ${S.role==='mod2'?'':`<span class="muted" style="font-size:12px">· fica em Próximas canções</span>`}</label>
+    ${S.role==='mod2'?'':`<div class="actions">
       <button type="submit" class="btn primary">${ic('check')} Salvar cifra</button>
       <button type="button" class="btn ghost" data-act="cancel-edit">Cancelar</button>
-    </div>
+    </div>`}
   </form>`;
 }
 function updatePreview(){ if(S.etab==='acordes'){S.model=toModel($('#content').value);renderPlacer()} }
