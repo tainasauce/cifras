@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-25a">
+<meta name="clave-build" content="2026-11-25b">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1076,6 +1076,76 @@ async function exportBackup(){
   try{const f=new File([blob],name,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Cópia das cifras'});return}}catch(e){if(e&&e.name==='AbortError')return}
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
 }
+/* ================= PDFs de todas as cifras (sem biblioteca: PDF e .zip feitos aqui) ================= */
+const WINANSI={'€':128,'‚':130,'ƒ':131,'„':132,'…':133,'†':134,'‡':135,'ˆ':136,'‰':137,'Š':138,'‹':139,'Œ':140,'Ž':142,'‘':145,'’':146,'“':147,'”':148,'•':149,'–':150,'—':151,'˜':152,'™':153,'š':154,'›':155,'œ':156,'ž':158,'Ÿ':159};
+function pdfStr(t){let o='';for(const ch of String(t)){let c=ch.codePointAt(0);if(c>255)c=WINANSI[ch]||63;else if(c>=128&&c<160)c=63;
+  const x=String.fromCharCode(c);o+=x==='('||x===')'||x==='\\'?'\\'+x:c<32?' ':x}return '('+o+')'}
+function pdfRgb(h){h=String(h||'').trim();const m=/^#?([0-9a-f]{6})$/i.exec(h);if(!m)return [0.1,0.45,0.85];const n=parseInt(m[1],16);return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255].map(v=>+v.toFixed(3))}
+function cifraPdf(s,cor){
+  const W=595,H=842,M=42,FS=11,CW=FS*0.6,maxC=Math.floor((W-2*M)/CW),[cr,cg,cb]=pdfRgb(cor);
+  const pages=[];let ops=[],y=H-M;
+  const novaPag=()=>{if(ops.length)pages.push(ops);ops=[];y=H-M};
+  const precisa=h=>{if(y-h<M+18)novaPag()};
+  const txt=(x,f,sz,t,rgb)=>ops.push(`BT ${rgb?rgb.join(' ')+' rg ':'0.08 0.08 0.1 rg '}/${f} ${sz} Tf ${x.toFixed(1)} ${y.toFixed(1)} Td ${pdfStr(t)} Tj ET`);
+  precisa(60);txt(M,'F1',20,s.title||'Sem título');y-=20;
+  const info=[s.artist,s.key?'Tom: '+s.key:''].filter(Boolean).join('   ·   ');if(info){txt(M,'F4',11,info,[0.4,0.42,0.46]);y-=15}
+  if(s.notes){txt(M,'F4',10,s.notes.slice(0,110),[0.4,0.42,0.46]);y-=14}
+  y-=10;
+  const linhaAc=(chords,txtL)=>{let cl='',tl=txtL,shift=0;
+    for(const c of chords.slice().sort((a,b)=>a.pos-b.pos)){let p=c.pos+shift;if(cl.length&&p<cl.length+1){const pad=cl.length+1-p;tl=tl.slice(0,p)+' '.repeat(pad)+tl.slice(p);shift+=pad;p+=pad}
+      cl=cl.padEnd(p,' ')+c.ch}
+    return [cl,tl]};
+  for(const L of toModel(s.content||'')){
+    if(L.type==='lyric'){
+      let [cl,tl]=linhaAc(L.chords,L.text);
+      while(cl.length||tl.length){const a=cl.slice(0,maxC),b=tl.slice(0,maxC);cl=cl.slice(maxC);tl=tl.slice(maxC);
+        precisa(a.trim()?FS*2.3:FS*1.4);
+        if(a.trim()){txt(M,'F3',FS,a,[cr,cg,cb]);y-=FS*1.12}
+        txt(M,'F2',FS,b);y-=FS*1.3;if(!cl.trim()&&!tl.trim())break}
+      continue}
+    const t=L.text||'',c=classify(t);
+    if(!t.trim()){y-=FS*0.7;continue}
+    if(c.type==='section'){precisa(FS*3);y-=4;txt(M,'F1',FS,'['+c.label+']',[cr,cg,cb]);if(c.rest&&c.rest.trim())txt(M+(c.label.length+3)*FS*0.62,'F3',FS,c.rest.trim(),[cr,cg,cb]);y-=FS*1.45;continue}
+    precisa(FS*1.5);if(c.type==='chords')txt(M,'F3',FS,t.slice(0,maxC),[cr,cg,cb]);else txt(M,'F2',FS,t.slice(0,maxC));y-=FS*1.35}
+  novaPag();
+  /* monta o arquivo */
+  const objs=[],add=o=>{objs.push(o);return objs.length};
+  const fonts=['Helvetica-Bold','Courier','Courier-Bold','Helvetica'].map(b=>add(`<< /Type /Font /Subtype /Type1 /BaseFont /${b} /Encoding /WinAnsiEncoding >>`));
+  const pagesId=objs.length+1;add('');const kids=[];
+  pages.forEach((p,i)=>{p.push(`BT 0.6 0.62 0.66 rg /F4 8 Tf ${M} 24 Td ${pdfStr('Clave · '+(s.title||'')+' · página '+(i+1)+' de '+pages.length)} Tj ET`);
+    const body=p.join('\n'),cid=add(`<< /Length ${latin1Len(body)} >>\nstream\n${body}\nendstream`);
+    kids.push(add(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 ${fonts[0]} 0 R /F2 ${fonts[1]} 0 R /F3 ${fonts[2]} 0 R /F4 ${fonts[3]} 0 R >> >> /Contents ${cid} 0 R >>`))});
+  objs[pagesId-1]=`<< /Type /Pages /Kids [${kids.map(k=>k+' 0 R').join(' ')}] /Count ${kids.length} >>`;
+  const cat=add(`<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
+  let out='%PDF-1.4\n%\xe2\xe3\xcf\xd3\n';const offs=[];
+  objs.forEach((o,i)=>{offs.push(out.length);out+=`${i+1} 0 obj\n${o}\nendobj\n`});
+  const xref=out.length;out+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`+offs.map(o=>String(o).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size ${objs.length+1} /Root ${cat} 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return u}
+function latin1Len(s){return s.length}
+/* .zip simples (sem compressão) */
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC_T[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
+function zipFiles(files){const enc=new TextEncoder(),parts=[],cen=[];let off=0;
+  const d=new Date(),dt=((d.getFullYear()-1980)<<9|(d.getMonth()+1)<<5|d.getDate()),tm=(d.getHours()<<11|d.getMinutes()<<5|(d.getSeconds()>>1));
+  for(const f of files){const nm=enc.encode(f.name),crc=crc32(f.data),sz=f.data.length;
+    const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,tm,true);h.setUint16(12,dt,true);h.setUint32(14,crc,true);h.setUint32(18,sz,true);h.setUint32(22,sz,true);h.setUint16(26,nm.length,true);h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),nm,f.data);
+    const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);c.setUint16(12,tm,true);c.setUint16(14,dt,true);c.setUint32(16,crc,true);c.setUint32(20,sz,true);c.setUint32(24,sz,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+    cen.push(new Uint8Array(c.buffer),nm);off+=30+nm.length+sz}
+  const cs=cen.reduce((a,b)=>a+b.length,0),e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...cen,new Uint8Array(e.buffer)],{type:'application/zip'})}
+function nomeArq(t){return String(t||'Sem título').replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim().slice(0,80)||'Sem título'}
+async function exportPdfs(){
+  const songs=[...S.songs.entries()].map(([id,s])=>({id,...s})).sort((a,b)=>norm(a.title||'').localeCompare(norm(b.title||'')));
+  if(!songs.length){toast('Ainda não tem cifras');return}
+  toast('Gerando '+songs.length+' PDFs…');await new Promise(r=>setTimeout(r,60));
+  const cor=getComputedStyle(document.documentElement).getPropertyValue('--accent');const usados=new Set(),files=[];
+  for(const s of songs){let n=nomeArq(s.title)+(s.artist?' - '+nomeArq(s.artist):''),k=n,i=2;while(usados.has(k.toLowerCase()))k=n+' ('+(i++)+')';usados.add(k.toLowerCase());
+    try{files.push({name:'Clave - cifras/'+k+'.pdf',data:cifraPdf(s,cor)})}catch(e){console.warn('PDF',s.title,e)}}
+  const name='Clave-cifras-'+todayStr()+'.zip',blob=zipFiles(files);
+  try{const f=new File([blob],name,{type:'application/zip'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Cifras do Clave em PDF'});return}}catch(e){if(e&&e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},3000);
+  toast(files.length+' PDFs prontos')}
 async function importBackup(file){
   let d;try{d=JSON.parse(await file.text())}catch{flash('Esse arquivo não é uma cópia de segurança do app.');return}
   const songs=Object.entries(d.songs||{}),cultos=Object.entries(d.cultos||{});
@@ -1635,7 +1705,7 @@ function renderOverlay(){
     <div style="height:14px"></div>
     ${S.isDev?`<button class="btn primary" data-act="sheet" data-s="pessoas" style="width:100%;margin-bottom:8px">${ic('user')} Pessoas${(S.pedidos||[]).length?` · ${S.pedidos.length} ${S.pedidos.length===1?'pedido':'pedidos'}`:''}</button>`:''}
     <div class="set" style="margin-top:10px">
-      <div class="setrow"><div class="l"><b>Cópia de segurança</b><span>Baixa todas as cifras e cultos num arquivo</span></div><button class="btn" data-act="backup-out">Baixar</button></div>
+      <div class="setrow"><div class="l"><b>Cópia de segurança</b><span>Todas as cifras em PDF (uma por música, numa pasta) ou em .json, pra importar de novo</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="backup-pdf">PDFs</button><button class="btn" data-act="backup-out">.json</button></div></div>
       ${S.canWrite?`<div class="setrow"><div class="l"><b>Importar cópia</b><span>Traz as cifras de um arquivo de cópia</span></div><button class="btn" data-act="backup-in">Importar</button></div>`:''}
     </div>
     ${S.demo?'':`<button class="btn ghost" data-act="logout" style="width:100%;margin-top:12px">Sair da conta</button>`}`;
@@ -2249,6 +2319,7 @@ document.addEventListener('click',async ev=>{
     case 'papel': await mudarPapel(b.dataset.id,b.dataset.p);break;
     case 'remover': if(b.dataset.confirm){await removerMembro(b.dataset.id)}else{b.dataset.confirm='1';b.innerHTML='Tirar?';b.style.width='auto';b.style.padding='0 10px'}break;
     case 'backup-out': exportBackup();break;
+    case 'backup-pdf': exportPdfs();break;
     case 'backup-in': $('#bkin').click();break;
     case 'foto-pick': $('#fotoin').click();break;
     case 'foto-del': gravarFoto('');break;
