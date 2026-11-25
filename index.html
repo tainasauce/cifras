@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-24g">
+<meta name="clave-build" content="2026-11-25a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -513,6 +513,13 @@ body.picking main#app{padding-bottom:calc(330px + env(safe-area-inset-top))}
 #upd{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 14px;border-radius:999px;background:var(--raise);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:14px;font-weight:600;white-space:nowrap}
 #upd button{border:0;border-radius:999px;padding:7px 14px;font-weight:700;background:var(--grad,var(--accent));color:#fff}
 #upd button.x{background:transparent;color:var(--muted);padding:6px;display:grid;place-items:center}#upd button.x svg{width:16px;height:16px}
+.capoban{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:9px 8px 9px 12px;border-radius:14px;background:color-mix(in srgb,var(--accent) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 38%,transparent);font-size:13.5px;line-height:1.35;transition:transform .2s ease,opacity .2s ease;touch-action:pan-y;animation:viewIn .3s cubic-bezier(.2,.8,.2,1)}
+.capoban .ct{flex:1;min-width:0}.capoban b{color:var(--accent)}
+.capoban .go{border:0;border-radius:999px;padding:7px 12px;font-weight:800;font-size:13px;background:var(--grad,var(--accent));color:#fff;white-space:nowrap}
+.capoban.on .go{background:var(--raise);color:inherit;border:1px solid var(--line)}
+.capoban .x{border:0;background:transparent;color:var(--muted);width:30px;height:30px;display:grid;place-items:center;flex:0 0 auto}.capoban .x svg{width:16px;height:16px}
+.capoban.saindo{opacity:0;transform:translateX(30%)}
+body.stage .capoban{display:none}
 .palsep{align-self:center;color:var(--muted);font-size:20px;font-weight:700;padding:0 2px}
 .palette button.fora small{color:var(--muted)}
 .palette button{border:1px solid var(--line);background:var(--raise);border-radius:12px;padding:6px 10px;display:grid;justify-items:center;line-height:1.15;min-width:52px}
@@ -1315,6 +1322,19 @@ function songCalc(){
   const shapes=mod(S.target-capo);
   return {s,o,capo,shapes,shift:shapes-o.idx,spell:keySpell(shapes,o.minor)};
 }
+/* "cap2", "capo 2", "capotraste 2" na observação: a cifra avisa e oferece usar o capo */
+function capoNota(s){const m=/\bcap(?:o|otraste)?\.?\s*(?:na\s*)?(\d{1,2})/i.exec((s&&s.notes)||'');const n=m?+m[1]:0;return n>=1&&n<=9?n:0}
+function capoBanner(s,o){const n=capoNota(s);if(!n||store.get('cifras:capohide:'+s.id,false))return '';
+  const capo=store.get('cifras:capo:'+s.id,0),on=capo===n,des=keyName(mod(S.target-n),o.minor);
+  return `<div class="capoban${on?' on':''}" id="capoban" role="status"><span class="ct">${on?`Com <b>capo na ${n}ª casa</b> · desenhos em ${esc(des)}`:`Essa cifra é tocada com <b>capo na ${n}ª casa</b>`}</span><button type="button" class="go" data-act="capo-set" data-n="${on?0:n}">${on?'Tirar capo':'Usar capo'}</button><button type="button" class="x" data-act="capo-x" aria-label="Fechar o aviso do capo">${ic('x')}</button></div>`}
+function capoFechar(){const b=$('#capoban');if(!S.song)return;store.set('cifras:capohide:'+S.song.id,true);
+  if(b){b.classList.add('saindo');setTimeout(()=>{render()},220)}else render()}
+(()=>{let x0=null,dx=0,el=null;
+  document.addEventListener('touchstart',e=>{el=e.target.closest&&e.target.closest('#capoban');if(!el||e.target.closest('button'))return el=null;x0=e.touches[0].clientX;dx=0;el.style.transition='none'},{passive:true});
+  document.addEventListener('touchmove',e=>{if(!el||x0==null)return;dx=e.touches[0].clientX-x0;el.style.transform=`translateX(${dx}px)`;el.style.opacity=String(Math.max(.2,1-Math.abs(dx)/260))},{passive:true});
+  document.addEventListener('touchend',()=>{if(!el)return;el.style.transition='';if(Math.abs(dx)>90){el.style.transform=`translateX(${dx>0?120:-120}%)`;el.style.opacity='0';setTimeout(capoFechar,180)}else{el.style.transform='';el.style.opacity=''}el=null;x0=null});
+  document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('#capoban')){e.preventDefault();capoFechar()}});
+})();
 function ctlCard(){
   const {o,capo,shapes}=songCalc();
   const info=P.degree?'Mostrando graus':capo>0?`Capo ${capo}ª casa · formas de ${keyName(shapes,o.minor)}`:'';
@@ -1348,6 +1368,7 @@ function viewSong(){
     <h1>${esc(s.title)}</h1>${meta?`<p>${meta}</p>`:''}
     ${!open?`<button class="ctl-tog solo" data-act="ctl-toggle" aria-expanded="false" aria-label="Mostrar controles">${ic('down')}</button>`:''}
   </div>
+  ${capoBanner(s,o)}
   <div class="sheetbox${P.sol?' sol':''}" tabindex="0" aria-label="Cifra">${vslotHTML(s)}<div class="sheet" style="--sz:${P.font}px">${renderSheet(s.content,shift,spell,P.lyrics,P.degree?o:null)}</div>
   ${s.notes?`<p class="note" style="margin:16px 0 0">${esc(s.notes)}</p>`:''}
   ${S.canWrite&&S.role!=='mod2'?`<div style="margin-top:14px;text-align:center"><button class="btn ghost" data-act="edit-song">${ic('edit')} Editar esta cifra</button></div>`:''}</div>`;
@@ -2212,6 +2233,8 @@ document.addEventListener('click',async ev=>{
     case 'close-sheet': closeSheet();break;
     case 'key': S.sheet=null;setKey(+b.dataset.k);break;
     case 'step': setKey(S.target+ +b.dataset.d);break;
+    case 'capo-set': store.set('cifras:capo:'+S.song.id,+b.dataset.n);render();toast(+b.dataset.n?'Capo na '+b.dataset.n+'ª casa':'Sem capo');break;
+    case 'capo-x': capoFechar();break;
     case 'capo':{const k='cifras:capo:'+S.song.id;store.set(k,Math.max(0,Math.min(9,store.get(k,0)+ +b.dataset.d)));render();break}
     case 'lyrics': P.lyrics=!P.lyrics;saveP();render();break;
     case 'degree': P.degree=!P.degree;saveP();render();break;
