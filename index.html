@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-25d">
+<meta name="clave-build" content="2026-11-25e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -524,6 +524,14 @@ body.picking main#app{padding-bottom:calc(330px + env(safe-area-inset-top))}
 body.stage .capoban{display:none}
 .cby{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:3px 10px 3px 3px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:11.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cby .cav{width:18px;height:18px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;overflow:hidden;background:var(--soft);font-size:10px;font-weight:800;color:var(--muted)}.cby .cav img{width:100%;height:100%;object-fit:cover}
+.pchips{display:flex;gap:6px;margin:8px 0 4px;flex-wrap:wrap}.pchips button{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:700}.pchips button[aria-pressed=true]{background:var(--grad,var(--accent));color:#fff;border-color:transparent}
+.res .uso{display:block;font-size:11px;color:var(--muted);opacity:.85;margin-top:1px}
+.qrbtn{margin-left:auto;align-self:flex-start;opacity:.8}
+.qrwrap{display:grid;place-items:center;margin:4px 0}.qrsvg{width:min(64vw,240px);height:auto;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.qrlink{text-align:center;font-size:12px;color:var(--muted);word-break:break-all;margin:10px 0 0}
+.pubhead{display:flex;gap:12px;align-items:center;margin:4px 0 16px}.pubhead .pl{width:44px;height:44px;flex:0 0 auto}.pubhead .pl svg{width:100%;height:100%}.pubhead h1{margin:2px 0}
+.pubsong{display:flex;align-items:flex-start;gap:10px;margin:0 0 12px}.pubsong>div:first-child{flex:1;min-width:0}.pubsong h1{margin:0;font-size:24px}.pubfont{display:flex;gap:6px}
+.sheetbox.pub{position:static;max-height:none;overflow:visible}
 .palsep{align-self:center;color:var(--muted);font-size:20px;font-weight:700;padding:0 2px}
 .palette button.fora small{color:var(--muted)}
 .palette button{border:1px solid var(--line);background:var(--raise);border-radius:12px;padding:6px 10px;display:grid;justify-items:center;line-height:1.15;min-width:52px}
@@ -816,6 +824,7 @@ const I={
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
   cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
+  qr:'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/>',
   plus:'<path d="M12 5v14M5 12h14"/>', book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11M9 8h6"/>', bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>', fone:'<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="5" height="7" rx="2"/><rect x="16" y="14" width="5" height="7" rx="2"/>', ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>', heart:'<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>', sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
   cloudoff:'<path d="M3 3l18 18M8 7a5.5 5.5 0 0 1 9.6 3.2A4 4 0 0 1 20.5 17M17 19H7a4.5 4.5 0 0 1-1.6-8.7"/>', share:'<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>', minus:'<path d="M5 12h14"/>',
   left:'<path d="m15 18-6-6 6-6"/>', right:'<path d="m9 18 6-6-6-6"/>',
@@ -908,6 +917,8 @@ const db={
   newId(col){return B.mode==='fb'?B.ff.doc(B.ff.collection(B.fs,col)).id:col[0]+Date.now().toString(36)+Math.random().toString(36).slice(2,6)},
   async setSong(id,data){if(B.mode==='fb')return fire(B.ff.setDoc(B.ff.doc(B.fs,'songs',id),clean(data)));S.songs.set(id,data);demoSave();onData()},
   async setCulto(id,data){if(B.mode==='fb')return fire(B.ff.setDoc(B.ff.doc(B.fs,'cultos',id),clean(data)));S.cultos.set(id,data);demoSave();onData()},
+  async setPub(id,data){if(B.mode==='fb')return B.ff.setDoc(B.ff.doc(B.fs,'publico',id),clean(data));store.set('cifras:pub:'+id,data)},
+  async getPub(id){if(B.mode==='fb'){const d=await B.ff.getDoc(B.ff.doc(B.fs,'publico',id));return d.exists()?d.data():null}return store.get('cifras:pub:'+id,null)},
   async setLive(d){if(B.mode==='fb')return fire(B.ff.setDoc(B.ff.doc(B.fs,'live','atual'),clean(d)));S.live=d;renderLive()},
   /* exclusão: o servidor confere a senha (regras do Firestore) */
   async del(col,id,pin){
@@ -982,6 +993,8 @@ function watchUser(u){
   let cfg=null;
   try{cfg=(await import('./config.js')).FIREBASE_CONFIG}catch{}
   const demo=!cfg||!cfg.apiKey||/[?&]demo\b/.test(location.search);
+  {const v=/[?&]ver=([a-z0-9]{6,20})/.exec(location.search);if(v){S.pubId=v[1];renderPublico()}}
+  if(demo&&S.pubId){B.mode='demo';loadPublico();return}
   if(demo){B.mode='demo';S.demo=true;setMember({papel:'dev',nome:'Demonstração'});S.uid='demo';S.authReady=true;demoSeed();S.loaded=true;clearTimeout(timer);render();return}
   try{
     const base=window.FB_BASE||('https://www.gstatic.com/firebasejs/'+FB_VER+'/');
@@ -990,6 +1003,7 @@ function watchUser(u){
     B.ff=ff;B.fa=au;B.mode='fb';B.unsubs=[];B.peopleUnsubs=[];
     B.fs=ff.initializeFirestore(app,{localCache:ff.persistentLocalCache({tabManager:ff.persistentMultipleTabManager()})});
     B.auth=au.getAuth(app);
+    if(S.pubId){clearTimeout(timer);loadPublico();return}
     au.onAuthStateChanged(B.auth,u=>{
       clearTimeout(timer);
       if(!u||u.isAnonymous){
@@ -1250,6 +1264,7 @@ function notesHTML(){
 }
 function skelHTML(n){return `<ul class="skel" aria-label="Carregando">${'<li><i></i><span><b></b><em></em></span></li>'.repeat(n)}</ul>`}
 function render(){
+  if(S.pubId){renderPublico();return}
   renderLive();
   if(B.mode!=='demo'&&(!S.authReady||!S.member)){
     document.body.classList.remove('songmode');stopScroll();
@@ -1729,8 +1744,10 @@ function renderOverlay(){
     body=`<h2>Adicionar cifra</h2><div class="choices">
       <button class="choice" data-act="new-song" data-mode="paste"><span class="ci">${ic('clip')}</span><span><b>Cifra existente</b><span>Escolher o arquivo (PDF, Word, foto ou print) e o app monta a cifra</span></span></button>
       <button class="choice" data-act="new-song" data-mode="write"><span class="ci">${ic('edit')}</span><span><b>Nova cifra</b><span>Escrever a letra e pôr os acordes, para tirar de ouvido</span></span></button></div>`;
+  } else if(S.sheet==='qr'){
+    body=qrSheet();
   } else if(S.sheet==='picker'){
-    body=`<h2>${S.pickMode==='sug'?'Sugerir música':'Adicionar música'}</h2>${S.pickMode==='sug'?'<p class="muted" style="margin:-6px 0 10px">Escolha uma. Ela aparece no tom original.</p>':''}<div class="picker"><label class="search" for="pq" style="margin:0">${ic('search')}<input type="search" id="pq" placeholder="Buscar música" value="${esc(S.pq)}" aria-label="Buscar música para adicionar"></label><div class="res" id="pres"></div></div>
+    body=`<h2>${S.pickMode==='sug'?'Sugerir música':'Adicionar música'}</h2>${S.pickMode==='sug'?'<p class="muted" style="margin:-6px 0 10px">Escolha uma. Ela aparece no tom original.</p>':''}<div class="picker"><label class="search" for="pq" style="margin:0">${ic('search')}<input type="search" id="pq" placeholder="Buscar música" value="${esc(S.pq)}" aria-label="Buscar música para adicionar"></label>${S.pickMode==='sug'?'':`<div class="pchips" role="group" aria-label="Ordem da lista">${[['az','A–Z'],['mais','Mais tocadas'],['tempo','Faz tempo']].map(([k,l])=>`<button type="button" data-act="pick-ord" data-o="${k}" aria-pressed="${(S.pickOrd||'az')===k}">${l}</button>`).join('')}</div>`}<div class="res" id="pres"></div></div>
       <div style="margin-top:14px;text-align:center"><button class="btn primary" data-act="close-sheet">Pronto</button></div>`;
   }
   /* a mesma folha já aberta: troca só o conteúdo, sem repetir a animação (evitava o "abre e fecha") */
@@ -1741,11 +1758,21 @@ function renderOverlay(){
   painelMais();
   if(S.sheet==='picker') renderPicker();
 }
+/* quantas vezes cada música já foi tocada nos cultos (e quando foi a última) */
+function usoMusicas(){const hoje=todayStr(),m=new Map();
+  for(const [id,c] of S.cultos){if(id===S.cultoId||!c.date||c.date>hoje)continue;
+    for(const it of new Set((c.items||[]).map(i=>i.songId))){const u=m.get(it)||{n:0,last:''};u.n++;if(c.date>u.last)u.last=c.date;m.set(it,u)}}
+  return m}
+function haQuanto(d){const dias=Math.round((new Date(todayStr()+'T12:00')-new Date(d+'T12:00'))/864e5);
+  if(dias<=0)return 'hoje';if(dias===1)return 'ontem';if(dias<14)return 'há '+dias+' dias';if(dias<60)return 'há '+Math.round(dias/7)+' semanas';if(dias<365)return 'há '+Math.round(dias/30)+' meses';const a=Math.round(dias/365);return 'há '+a+(a===1?' ano':' anos')}
 function renderPicker(){
   const r=$('#pres'); if(!r) return;
   const c=S.cultos.get(S.cultoId); const inC=new Set((c&&c.items||[]).map(i=>i.songId));
-  const res=songsSorted(S.pq).slice(0,50);
-  r.innerHTML=res.length?res.map(s=>`<button data-act="${S.pickMode==='sug'?'sug-add':'add-item'}" data-id="${esc(s.id)}" class="${S.pickMode!=='sug'&&inC.has(s.id)?'added':''}"><span class="keyb">${esc(s.key)}</span><span style="flex:1;min-width:0"><b>${esc(s.title)}</b><br><span class="muted" style="font-size:13px">${S.pickMode!=='sug'&&inC.has(s.id)?'Já está no culto · toque para repetir':esc(s.artist||'')}</span></span>${ic('plus')}</button>`).join(''):'<p class="muted" style="margin:6px">Nada encontrado.</p>';
+  const uso=usoMusicas(),ord=S.pickMode==='sug'?'az':(S.pickOrd||'az');let res=songsSorted(S.pq);
+  if(ord==='mais')res=res.slice().sort((a,b)=>((uso.get(b.id)||{}).n||0)-((uso.get(a.id)||{}).n||0));
+  else if(ord==='tempo')res=res.slice().sort((a,b)=>{const x=(uso.get(a.id)||{}).last||'9',y=(uso.get(b.id)||{}).last||'9';return x<y?-1:x>y?1:0});
+  res=res.slice(0,60);const usoTag=id=>{if(S.pickMode==='sug')return '';const u=uso.get(id);return `<span class="uso">${u?`tocada ${u.n}x · ${haQuanto(u.last)}`:'ainda não tocada'}</span>`};
+  r.innerHTML=res.length?res.map(s=>`<button data-act="${S.pickMode==='sug'?'sug-add':'add-item'}" data-id="${esc(s.id)}" class="${S.pickMode!=='sug'&&inC.has(s.id)?'added':''}"><span class="keyb">${esc(s.key)}</span><span style="flex:1;min-width:0"><b>${esc(s.title)}</b><br><span class="muted" style="font-size:13px">${S.pickMode!=='sug'&&inC.has(s.id)?'Já está no culto · toque para repetir':esc(s.artist||'')}</span>${usoTag(s.id)}</span>${ic('plus')}</button>`).join(''):'<p class="muted" style="margin:6px">Nada encontrado.</p>';
 }
 function viewEdit(){
   const e=S.edit,o=parseKey(e.key);
@@ -1831,6 +1858,41 @@ function sugHTML(c){const L=sugDo(S.cultoId),open=S.sugOpen!==false,minha=L.find
       ${meu||S.canWrite?`<button class="icon" data-act="sug-tirar" data-id="${esc(x.id)}" aria-label="Tirar a sugestão">${ic('x')}</button>`:''}</li>`}).join('')}</ul>`
     :'<p class="muted" style="margin:4px 2px 10px">Ninguém sugeriu ainda. Cada pessoa pode sugerir uma música.</p>'}
     <button class="btn" data-act="sug-pick" style="width:100%">${ic('plus')} ${minha?'Trocar minha sugestão':'Sugerir uma música'}</button></div>`:''}</div>`}
+/* ===== QR para visitantes: publica uma cópia só das cifras daquele culto, que vale até o fim do dia ===== */
+function fimDoDia(d){const t=new Date((d||todayStr())+'T23:59:59');return Math.max(t.getTime(),Date.now()+6*3600e3)}
+function pubToken(){const a=new Uint8Array(9);crypto.getRandomValues(a);return [...a].map(x=>'abcdefghijkmnpqrstuvwxyz23456789'[x%32]).join('')}
+async function abrirQr(){const c=S.cultos.get(S.cultoId);if(!c)return;
+  const items=(c.items||[]).map(it=>{const s=S.songs.get(it.songId);return s?{title:s.title||'',artist:s.artist||'',key:it.key||s.key||'',orig:s.key||'',content:s.content||''}:null}).filter(Boolean);
+  if(!items.length){toast('Ponha músicas no culto primeiro');return}
+  let id=c.pub;if(!id){id=pubToken();await db.setCulto(S.cultoId,{...c,pub:id})}
+  S.qr={id,ate:fimDoDia(c.date),erro:false,pronto:false};S.sheet='qr';renderOverlay();
+  try{await db.setPub(id,{nome:c.name||'Culto',data:c.date||'',expira:S.qr.ate,musicas:items,at:Date.now()});await loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js');S.qr.pronto=true}
+  catch(e){S.qr.erro=true}
+  if(S.sheet==='qr')renderOverlay()}
+function qrSvg(txt){const q=window.qrcode(0,'M');q.addData(txt);q.make();const n=q.getModuleCount();let p='';
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))p+=`M${c} ${r}h1v1h-1z`;
+  return `<svg viewBox="-2 -2 ${n+4} ${n+4}" class="qrsvg" role="img" aria-label="QR code"><rect x="-2" y="-2" width="${n+4}" height="${n+4}" fill="#fff"/><path d="${p}" fill="#111"/></svg>`}
+function pubLink(id){return location.origin+location.pathname+'?ver='+id}
+function qrSheet(){const q=S.qr||{};const link=pubLink(q.id||'');
+  return `<h2>Cifras para visitantes</h2><p class="muted" style="margin:-6px 0 12px">Quem ler o QR vê só as cifras deste culto, sem entrar no app.</p>
+  <div class="qrwrap">${q.erro?'<p class="muted">Não consegui gerar agora. Confira a internet e tente de novo.</p>':q.pronto&&window.qrcode?qrSvg(link):'<ul class="skel"><li style="height:200px"></li></ul>'}</div>
+  <p class="qrlink" id="qrlink">${esc(link)}</p>
+  <p class="muted" style="text-align:center;font-size:13px;margin:4px 0 12px">O link some sozinho depois do culto</p>
+  <div style="display:flex;gap:8px;justify-content:center"><button class="btn" data-act="qr-copy">${ic('clip')} Copiar link</button><button class="btn primary" data-act="close-sheet">Pronto</button></div>`}
+/* tela de quem abriu o link do QR (sem conta) */
+async function loadPublico(){try{S.pub=await db.getPub(S.pubId);S.pubErr=!S.pub}catch{S.pubErr=true}renderPublico()}
+function renderPublico(){document.body.classList.remove('songmode');$('#bottomroot').innerHTML='';const a=$('#app');const p=S.pub;
+  if(!p&&!S.pubErr){a.innerHTML=`<div class="gate"><div class="gate-logo loading">${LOGO}</div><p class="muted">Abrindo as cifras…</p></div>`;return}
+  if(S.pubErr||!p||Date.now()>(p.expira||0)){a.innerHTML=`<div class="gate"><div class="gate-logo">${LOGO}</div><h1 style="font-size:22px">Esse link expirou</h1><p class="muted">Peça um QR novo pra quem está conduzindo o louvor.</p></div>`;return}
+  const L=p.musicas||[];
+  if(S.pubSong==null||!L[S.pubSong]){a.innerHTML=`<div class="pubhead"><div class="pl">${LOGO}</div><div><p class="eyebrow" style="margin:0">Clave · cifras do culto</p><h1>${esc(p.nome)}</h1>${p.data?`<p class="muted" style="margin:0">${esc(fmtDate(p.data))}</p>`:''}</div></div>
+    <ol class="items">${L.map((m,i)=>`<li class="item"><span class="n">${i+1}</span><button class="t" data-act="pub-song" data-i="${i}"><b>${esc(m.title)}</b><span>${esc(m.artist)}</span></button><span class="keyb">${esc(m.key)}</span></li>`).join('')}</ol>`;return}
+  const m=L[S.pubSong],o=parseKey(m.orig||m.key),t=parseKey(m.key||m.orig),shift=t.idx-o.idx;
+  a.innerHTML=`<button class="back" data-act="pub-back">${ic('left')} ${esc(p.nome)}</button>
+    <div class="pubsong"><div><h1>${esc(m.title)}</h1><p class="muted" style="margin:0">${esc(m.artist)}${m.artist?' · ':''}Tom ${esc(m.key)}</p></div>
+    <div class="pubfont"><button class="chip2" data-act="pub-font" data-d="-2" aria-label="Letra menor">A</button><button class="chip2" data-act="pub-font" data-d="2" aria-label="Letra maior" style="font-size:18px">A</button></div></div>
+    <div class="sheetbox pub"><div class="sheet" style="--sz:${P.font}px">${renderSheet(m.content,shift,keySpell(t.idx,o.minor),false,null)}</div></div>
+    ${S.pubSong<L.length-1?`<button class="btn" data-act="pub-song" data-i="${S.pubSong+1}" style="width:100%;margin-top:12px">Próxima: ${esc(L[S.pubSong+1].title)} ${ic('right')}</button>`:''}`}
 /* quem criou o evento: selinho discreto dentro do evento aberto */
 function criadorNome(c){if(!c||!c.criadoPor)return '';if(c.criadoNome)return c.criadoNome;
   const m=(S.membros||[]).find(x=>x.id===c.criadoPor);if(m&&m.nome)return m.nome;return c.criadoPor===S.uid&&S.member&&S.member.nome||''}
@@ -1847,7 +1909,7 @@ function viewCulto(){
   return `<button class="back" data-act="tab" data-tab="cultos">${ic('left')} Cultos</button>
   <div class="chead"><span class="datebox" style="background:var(--tint);color:var(--accent)">${dateboxIn(c,d)}</span>
     <div style="flex:1;min-width:0">${w?`<input type="text" id="c-name" value="${esc(c.name)}" aria-label="Nome do culto"><br><input type="date" id="c-date" value="${esc(c.date)}" aria-label="Data do culto"><label class="showdate"><input type="checkbox" id="c-showdate"${c.showDate?' checked':''}> Mostrar data abaixo do nome</label>`
-      :`<h1>${esc(c.name)}</h1><div class="muted" style="font-size:14px">${esc(fmtDate(c.date))}</div>`}${criadorHTML(c)}</div></div>
+      :`<h1>${esc(c.name)}</h1><div class="muted" style="font-size:14px">${esc(fmtDate(c.date))}</div>`}${criadorHTML(c)}</div>${w&&items.length?`<button class="icon qrbtn" data-act="qr-open" aria-label="QR code para visitantes" title="QR para visitantes">${ic('qr')}</button>`:''}</div>
   ${items.length?`<div style="margin-bottom:16px">${mineLive?`<button class="btn" data-act="live-stop" style="width:100%">Encerrar ao vivo</button>`:`<button class="btn live" data-act="live-start" style="width:100%">● Conduzir ao vivo</button>`}</div>`:''}
   <div class="toolrow"><span class="eyebrow">${items.length} ${items.length===1?'música':'músicas'}</span>${w&&items.length?`<button class="btn ghost" data-act="organize" style="padding:6px 10px">${S.organize?ic('check')+' Pronto':'Organizar'}</button>`:''}</div>
   ${items.length?`<ol class="items">${items.map((it,i)=>{const s=S.songs.get(it.songId);const mi=s?parseKey(s.key).minor:false;
@@ -2354,6 +2416,12 @@ document.addEventListener('click',async ev=>{
     case 'pk-close': S.selW=null;renderPlacer();renderPickPanel();break;
     case 'pk-remove': removeChordAtSel();break;
     case 'pk-undo': undoPlacer();break;
+    case 'pick-ord':{S.pickOrd=b.dataset.o;document.querySelectorAll('[data-act=pick-ord]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.o===S.pickOrd));renderPicker();const r=$('#pres');if(r)r.scrollTop=0;break}
+    case 'qr-open': abrirQr();break;
+    case 'qr-copy':{const u=$('#qrlink');if(u){try{navigator.clipboard.writeText(u.textContent);toast('Link copiado')}catch{}}break}
+    case 'pub-song': S.pubSong=+b.dataset.i;renderPublico();scrollTo(0,0);break;
+    case 'pub-back': S.pubSong=null;renderPublico();break;
+    case 'pub-font': P.font=Math.max(12,Math.min(30,P.font+ +b.dataset.d));saveP();renderPublico();break;
     case 'asmod2': store.set('cifras:asmod2',!store.get('cifras:asmod2',false));setMember(S.member);render();toast(S.role==='mod2'?'Vendo como Mod2':'Voltou ao normal');break;
     case 'upd-go': location.reload();break;
     case 'upd-no':{const u=document.getElementById('upd');if(u)u.remove();break}
