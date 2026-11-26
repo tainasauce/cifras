@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-25b">
+<meta name="clave-build" content="2026-11-25c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -520,6 +520,8 @@ body.picking main#app{padding-bottom:calc(330px + env(safe-area-inset-top))}
 .capoban .x{border:0;background:transparent;color:var(--muted);width:30px;height:30px;display:grid;place-items:center;flex:0 0 auto}.capoban .x svg{width:16px;height:16px}
 .capoban.saindo{opacity:0;transform:translateX(30%)}
 body.stage .capoban{display:none}
+.cby{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:3px 10px 3px 3px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:11.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cby .cav{width:18px;height:18px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;overflow:hidden;background:var(--soft);font-size:10px;font-weight:800;color:var(--muted)}.cby .cav img{width:100%;height:100%;object-fit:cover}
 .palsep{align-self:center;color:var(--muted);font-size:20px;font-weight:700;padding:0 2px}
 .palette button.fora small{color:var(--muted)}
 .palette button{border:1px solid var(--line);background:var(--raise);border-radius:12px;padding:6px 10px;display:grid;justify-items:center;line-height:1.15;min-width:52px}
@@ -1267,6 +1269,7 @@ function render(){
   renderOverlay();
   if(S.view==='edit'){if(S.etab==='acordes'){S.model=toModel($('#content').value);renderPlacer()}renderPickPanel()}
   syncHistory();placeMini();posRecolher();
+  if(S.view==='culto')guardaCriador();
 }
 /* só o texto da letra (sem acordes nem nomes de parte), para buscar por um trecho */
 function lyricText(c){return String(c||'').split('\n').map(l=>{const t=classify(l).type;return t==='inline'?l.replace(/\[[^\]]*\]/g,''):t==='lyric'?l:''}).join(' ').replace(/\s+/g,' ')}
@@ -1826,6 +1829,14 @@ function sugHTML(c){const L=sugDo(S.cultoId),open=S.sugOpen!==false,minha=L.find
       ${meu||S.canWrite?`<button class="icon" data-act="sug-tirar" data-id="${esc(x.id)}" aria-label="Tirar a sugestão">${ic('x')}</button>`:''}</li>`}).join('')}</ul>`
     :'<p class="muted" style="margin:4px 2px 10px">Ninguém sugeriu ainda. Cada pessoa pode sugerir uma música.</p>'}
     <button class="btn" data-act="sug-pick" style="width:100%">${ic('plus')} ${minha?'Trocar minha sugestão':'Sugerir uma música'}</button></div>`:''}</div>`}
+/* quem criou o evento: selinho discreto dentro do evento aberto */
+function criadorNome(c){if(!c||!c.criadoPor)return '';if(c.criadoNome)return c.criadoNome;
+  const m=(S.membros||[]).find(x=>x.id===c.criadoPor);if(m&&m.nome)return m.nome;return c.criadoPor===S.uid&&S.member&&S.member.nome||''}
+function criadorHTML(c){const n=criadorNome(c);if(!n)return '';const f=fotoDe(c.criadoPor);
+  return `<span class="cby" title="Criado por ${esc(n)}" aria-label="Criado por ${esc(n)}"><span class="cav">${f?`<img src="${f}" alt="">`:esc(n.charAt(0).toUpperCase())}</span>Criado por ${esc(n)}</span>`}
+const criadorFeito=new Set();
+function guardaCriador(){const id=S.cultoId,c=S.cultos.get(id);if(!c||!S.isDev||B.mode!=='fb'||c.criadoNome||!c.criadoPor||criadorFeito.has(id))return;
+  const m=(S.membros||[]).find(x=>x.id===c.criadoPor);if(!m||!m.nome)return;criadorFeito.add(id);db.setCulto(id,{...c,criadoNome:m.nome}).catch(()=>{})}
 function viewCulto(){
   const c=S.cultos.get(S.cultoId); if(!c) return `<button class="back" data-act="tab" data-tab="cultos">${ic('left')} Cultos</button><p class="empty">Esse culto foi excluído.</p>`;
   const items=c.items||[];const w=S.canWrite;const d=dParts(c.date);
@@ -1834,7 +1845,7 @@ function viewCulto(){
   return `<button class="back" data-act="tab" data-tab="cultos">${ic('left')} Cultos</button>
   <div class="chead"><span class="datebox" style="background:var(--tint);color:var(--accent)">${dateboxIn(c,d)}</span>
     <div style="flex:1;min-width:0">${w?`<input type="text" id="c-name" value="${esc(c.name)}" aria-label="Nome do culto"><br><input type="date" id="c-date" value="${esc(c.date)}" aria-label="Data do culto"><label class="showdate"><input type="checkbox" id="c-showdate"${c.showDate?' checked':''}> Mostrar data abaixo do nome</label>`
-      :`<h1>${esc(c.name)}</h1><div class="muted" style="font-size:14px">${esc(fmtDate(c.date))}</div>`}</div></div>
+      :`<h1>${esc(c.name)}</h1><div class="muted" style="font-size:14px">${esc(fmtDate(c.date))}</div>`}${criadorHTML(c)}</div></div>
   ${items.length?`<div style="margin-bottom:16px">${mineLive?`<button class="btn" data-act="live-stop" style="width:100%">Encerrar ao vivo</button>`:`<button class="btn live" data-act="live-start" style="width:100%">● Conduzir ao vivo</button>`}</div>`:''}
   <div class="toolrow"><span class="eyebrow">${items.length} ${items.length===1?'música':'músicas'}</span>${w&&items.length?`<button class="btn ghost" data-act="organize" style="padding:6px 10px">${S.organize?ic('check')+' Pronto':'Organizar'}</button>`:''}</div>
   ${items.length?`<ol class="items">${items.map((it,i)=>{const s=S.songs.get(it.songId);const mi=s?parseKey(s.key).minor:false;
@@ -2377,7 +2388,7 @@ document.addEventListener('click',async ev=>{
       toast(f.type==='song'?'Cifra excluída':'Culto excluído');
       break}
     case 'new-culto':{const id=db.newId('cultos');const t=new Date();
-      if(await guard(db.setCulto(id,{name:'Culto de '+t.toLocaleDateString('pt-BR',{weekday:'long'}),date:todayStr(),items:[],updatedAt:Date.now(),criadoPor:S.uid||null}))){marcarVisto(id);S.cultoId=id;S.pq='';go('culto');setTimeout(()=>{const n=$('#c-name');if(n){n.focus();n.select()}},80)}break}
+      if(await guard(db.setCulto(id,{name:'Culto de '+t.toLocaleDateString('pt-BR',{weekday:'long'}),date:todayStr(),items:[],updatedAt:Date.now(),criadoPor:S.uid||null,criadoNome:(S.member&&S.member.nome)||null}))){marcarVisto(id);S.cultoId=id;S.pq='';go('culto');setTimeout(()=>{const n=$('#c-name');if(n){n.focus();n.select()}},80)}break}
     case 'open-culto': marcarVisto(b.dataset.id);S.cultoId=b.dataset.id;go('culto');break;
     case 'fav': toggleFav(b.dataset.id);break;
     case 'est-toggle': P.estOpen=!(P.estOpen!==false);saveP();renderList();break;
