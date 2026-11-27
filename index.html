@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27j">
+<meta name="clave-build" content="2026-11-27k">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -742,6 +742,20 @@ function spellChord(t,spell){
   let out=root+m[3];
   if(m[4]){const bpc=mod(IDX[m[4]+m[5]]);out+='/'+(smart?bassByRoot(bpc,root,spell):spell[bpc])}
   return out;
+}
+/* reescreve os acordes da cifra na grafia certa do tom, para salvar (G#9 em Ab vira Ab9). Notas não mudam. */
+function respellText(text,idx,minor){
+  const old=P.acc;P.acc='auto';
+  try{const sp=keySpell(idx,minor);
+    const fix=c=>{const r=spellChord(c,sp);return /[EB]#/.test(r)&&!/[EB]#/.test(c)?c:r};
+    const toks=s=>s.replace(/\S+/g,tk=>{const [a,core,b]=splitTok(tk);return parseChord(core)?a+fix(core)+b:tk});
+    return String(text||'').split('\n').map(line=>{
+      const c=classify(line);
+      if(c.type==='chords')return toks(line);
+      if(c.type==='section'&&c.rest&&isChordLine(c.rest)){const i=line.lastIndexOf(c.rest);return line.slice(0,i)+toks(c.rest)}
+      return line.replace(/\[([^\]\n]+)\]/g,(m,x)=>parseChord(x.trim())?'['+fix(x.trim())+']':m);
+    }).join('\n');
+  }finally{P.acc=old}
 }
 const NEUTRAL=/^(\|+|x\d+|\d+x|-+|\.+|%|\/|:|→|>|\*+|\(|\)|n\.?c\.?)$/i;
 function splitTok(t){const m=/^([(]*)(.*?)([)*,.]*)$/.exec(t);return m?[m[1],m[2],m[3]]:['',t,'']}
@@ -2610,6 +2624,7 @@ document.addEventListener('submit',async ev=>{
     const m=await login($('#l-email').value,$('#l-pass').value);if(m){const e=$('#l-err');if(e)e.textContent=m;b.disabled=false;b.textContent='Entrar'}return}
   if(ev.target.id!=='songform') return; ev.preventDefault();
   const data=collectForm(); if(!data.title){$('#f-title').focus();return}
+  {const k=parseKey(data.key);try{data.content=respellText(data.content,k.idx,k.minor)}catch(e){console.warn('grafia',e)}}
   data.updatedAt=Date.now();data.updatedBy=S.uid||null;
   const id=S.edit.id||db.newId('songs');
   const btn=ev.submitter||ev.target.querySelector('[type=submit]')||document.querySelector('[form=songform][type=submit]');if(btn){btn.disabled=true;btn.textContent='Salvando…'}
