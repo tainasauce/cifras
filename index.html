@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27a">
+<meta name="clave-build" content="2026-11-27b">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -393,7 +393,7 @@ textarea{resize:vertical}
 .icon{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:inline-grid;place-items:center;flex:0 0 auto}
 .icon svg{width:18px;height:18px}
 .icon:disabled{opacity:.35}
-.picker .res{display:grid;gap:6px;max-height:50vh;overflow:auto;margin-top:12px}
+.picker .res{display:grid;gap:6px;height:50vh;align-content:start;overflow:auto;margin-top:12px}
 .picker .res button{display:flex;gap:12px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--raise);border-radius:14px;padding:8px 10px}
 .picker .res .keyb{width:38px;height:38px;font-size:15px}
 .picker .res .added{opacity:.5}
@@ -609,6 +609,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .colors button{border:0;border-radius:14px;padding:0 0 8px;background:var(--raise);box-shadow:var(--hl);color:var(--muted);font-size:12px;font-weight:700;display:grid;gap:6px;overflow:hidden}
 .colors button i{display:block;height:34px}
 .colors button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ink);color:var(--ink)}
+/* gradiente cobre a borda inteira (sem faixa de cor vazando nas pontas dos balões) */
+.favtog,.pchips button,.btn,.tile,.fab,.chip2,.steps button span,.letters button,.keygrid button,.switch,.nav,.tag,[data-act=scroll],#upd button,.capoban .go,.next,.culto.next{background-origin:border-box!important}
 </style>
 </head>
 <body>
