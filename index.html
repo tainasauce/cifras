@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27d">
+<meta name="clave-build" content="2026-11-27e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -631,6 +631,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .cbyrow{position:relative;display:flex;justify-content:center;align-items:center;min-height:36px;margin:-8px 0 14px}
 .cbyrow .cby{margin:0}
 .cbyrow .qrbtn{position:absolute;right:0;top:50%;transform:translateY(-50%);margin:0}
+/* botões de deslizar arredondados, com respiro entre eles e o balão */
+.swacts{width:var(--sw,92px);padding:5px;gap:5px;box-sizing:border-box}
+.swacts>button{flex:1;width:auto;border-radius:12px}
+.swipe>.swdel{top:5px;bottom:5px;right:5px;width:82px;border-radius:12px}
+.swipe>.song{transition:transform .22s cubic-bezier(.2,.9,.25,1),border-radius .22s}
+.swipe>.song.open,.swipe.drag>.song{border-radius:12px}
 </style>
 </head>
 <body>
