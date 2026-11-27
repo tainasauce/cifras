@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27e">
+<meta name="clave-build" content="2026-11-27f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -295,7 +295,7 @@ body.stage .dock button{pointer-events:auto;box-shadow:0 8px 24px -8px rgba(0,0,
 @keyframes fade{from{opacity:0}}
 /* movimento suave: entrada de tela, toque nos botões, carregando e respiração */
 @keyframes viewIn{from{opacity:0;transform:translateY(10px)}}
-#app.enter>*:not(.facilsave):not(.fab):not(.facilsp){animation:viewIn .32s cubic-bezier(.2,.8,.2,1) both}
+#app.enter>*:not(.facilsave):not(.fab):not(.facilsp):not(.farw):not(.fzone){animation:viewIn .32s cubic-bezier(.2,.8,.2,1) both}
 #app.enter>*:nth-child(2){animation-delay:.03s}#app.enter>*:nth-child(3){animation-delay:.06s}#app.enter>*:nth-child(n+4){animation-delay:.09s}
 .btn,.chip2,.fab,.nav,.icon,.kbig,.palette button,.steps button,.colors button,.acct,.back,.ref{transition:transform .14s cubic-bezier(.2,.8,.2,1),filter .14s,background-color .2s,box-shadow .2s}
 .btn:active,.chip2:active,.nav:active,.icon:active,.kbig:active,.palette button:active,.steps button:active,.colors button:active,.acct:active,.back:active,.ref:active{transform:scale(.96);filter:brightness(1.12)}
@@ -637,6 +637,28 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .swipe>.swdel{top:5px;bottom:5px;right:5px;width:82px;border-radius:12px}
 .swipe>.song{transition:transform .22s cubic-bezier(.2,.9,.25,1),border-radius .22s}
 .swipe>.song.open,.swipe.drag>.song{border-radius:12px}
+/* Mod2 ao editar: Letra/Acordes na barra de cima, setas grandes, faixas de rolar, linha atual destacada */
+.facilsave.fs2{align-items:stretch;gap:8px}
+.facilsave.fs2 .fx{flex:0 0 auto;width:52px;padding:0}
+.facilsave.fs2 .fsv{flex:0 0 auto;padding:0 18px}
+.fseg{flex:1;display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--tint)}
+.fseg button{flex:1;border:0;border-radius:10px;background:none;color:var(--muted);font-weight:800;font-size:17px;min-height:44px;cursor:pointer}
+.fseg button[aria-selected="true"]{background:var(--grad,var(--accent));background-origin:border-box;color:#fff}
+body.facil #songform .steps{display:none}
+.farw{position:fixed;right:max(8px,calc(50% - 380px - 76px));bottom:calc(var(--bh,0px) + 22px);z-index:24;display:flex;flex-direction:column;gap:10px}
+.farw .fa{width:56px;height:64px;border-radius:16px;border:1px solid var(--line);background:color-mix(in srgb,var(--raise) 92%,transparent);color:var(--ink);display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.farw .fa svg{width:28px;height:28px}
+.farw .fa:active{transform:scale(.94)}
+@media (max-width:920px){body.facil #songform{padding-right:66px}}
+.fzone span{display:none}.fzone.on span{display:inline}
+@media (max-width:920px){body.facil #recolher{right:74px}}
+.fzone{position:fixed;left:0;right:0;z-index:23;height:36px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:700;color:color-mix(in srgb,var(--accent) 80%,transparent);background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.fzone svg{width:16px;height:16px}
+.fzone.up{top:calc(var(--st,0px) + 86px);border-bottom:1px dashed color-mix(in srgb,var(--accent) 35%,transparent)}
+.fzone.dn{bottom:var(--bh,0px);border-top:1px dashed color-mix(in srgb,var(--accent) 35%,transparent)}
+.fzone{transition:opacity .2s}body.ftop .fzone.up,body.fend .fzone.dn{opacity:0;pointer-events:none}
+.fzone.on{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+body.facil .pl-line.cur{padding:4px 6px;margin-left:-6px;margin-right:-6px;background:color-mix(in srgb,var(--accent) 10%,transparent);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent);border-radius:12px}
 </style>
 </head>
 <body>
@@ -1721,7 +1743,7 @@ function renderOverlay(){
       return `<button data-act="key" data-k="${i}" aria-pressed="${i===S.target}">${a}${k.minor?'m':''}<small>${b?b+(k.minor?'m':''):(i===k.idx?'original':'')}${b&&i===k.idx?' · orig.':''}</small></button>`}).join('')}</div>`;
   } else if(S.sheet==='adjust'&&S.song){
     const {capo,o:k,shapes}=songCalc();
-    body=`<h2>Ajustes</h2><div class="set">${S.role==='mod2'?`<div class="setrow"><div class="l"><b>Rolar a cifra</b><span>Desce a cifra sozinha</span></div><button class="btn ${scrollState.on?'primary':''}" data-act="scroll" aria-pressed="${scrollState.on}">${ic(scrollState.on?'pause':'play')} ${scrollState.on?'Pausar':'Rolar'}</button></div>
+    body=`<h2>Ajustes</h2><div class="set">${S.role==='mod2'?`<div class="setrow"><div class="l"><b>Rolar a cifra</b><span>Desce a cifra sozinha</span></div><button class="btn ${scrollState.on?'primary':''}" data-act="scroll" aria-pressed="${scrollState.on}">${ic(scrollState.on?'pause':'play')} ${scrollState.on?'Pausar':'Rolar'}</button></div><div class="setrow"><div class="l"><b>Rolar parando o mouse</b><span>Ao editar, pare o mouse na faixa de cima ou de baixo</span></div><button class="switch" role="switch" aria-checked="${!!store.get('cifras:hoverRolar',false)}" data-act="hover-rolar" aria-label="Rolar parando o mouse"></button></div>
       <div class="setrow"><div class="l"><b>Só a letra</b><span>Esconde os acordes</span></div><button class="switch" role="switch" aria-checked="${!!P.lyrics}" data-act="lyrics" aria-label="Só a letra"></button></div>
       <div class="setrow"><div class="l"><b>Modo claro</b><span>Fundo branco, bom pra ler no sol</span></div><button class="switch" role="switch" aria-checked="${!!P.sol}" data-act="sol" aria-label="Modo claro"></button></div>`:''}${refsHTML(S.song)}
       <div class="setrow"><div class="l"><b>Capotraste</b><span>${capo?`Soa em ${keyName(S.target,k.minor)}, você toca formas de ${keyName(shapes,k.minor)}`:'Só no seu aparelho'}</span></div>
@@ -1809,7 +1831,9 @@ function viewEdit(){
   const e=S.edit,o=parseKey(e.key);
   const rootOpts=KEY_LABELS.map((l,i)=>`<option value="${i}"${i===o.idx?' selected':''}>${l}</option>`).join('');
   const paste=e.mode==='paste';
-  return `${S.role==='mod2'?`<div class="facilsave"><button type="submit" form="songform" class="btn primary">${ic('check')} Salvar cifra</button><button type="button" class="btn ghost" data-act="cancel-edit">Cancelar</button></div><div class="facilsp"></div>`:''}
+  return `${S.role==='mod2'?`<div class="facilsave fs2"><button type="button" class="btn ghost fx" data-act="cancel-edit" aria-label="Cancelar" title="Cancelar">${ic('x')}</button><div class="fseg" role="tablist" aria-label="Etapas"><button type="button" role="tab" data-act="etab" data-t="letra" aria-selected="${S.etab==='letra'}">Letra</button><button type="button" role="tab" data-act="etab" data-t="acordes" aria-selected="${S.etab==='acordes'}">Acordes</button></div><button type="submit" form="songform" class="btn primary fsv">${ic('check')} Salvar</button></div><div class="facilsp"></div>
+  <div class="farw"><button type="button" class="fa" data-act="frolar" data-d="-1" aria-label="Subir" title="Subir">${ic('up')}</button><button type="button" class="fa" data-act="frolar" data-d="1" aria-label="Descer" title="Descer">${ic('down')}</button></div>
+  ${store.get('cifras:hoverRolar',false)?`<div class="fzone up" data-z="-1" aria-hidden="true">${ic('up')}<span>subindo</span></div><div class="fzone dn" data-z="1" aria-hidden="true">${ic('down')}<span>descendo</span></div>`:''}`:''}
   ${S.role==='mod2'?'':`<button class="back" data-act="cancel-edit">${ic('left')} Cancelar</button>`}
   <form class="form" id="songform" autocomplete="off">
     <div class="grid2 lado">
@@ -2054,6 +2078,14 @@ function posRecolher(){let b=document.getElementById('recolher');const el=$('#pl
   if(!b){if(!show)return;b=document.createElement('button');b.id='recolher';b.type='button';b.dataset.act='cifra-min';b.setAttribute('aria-label','Recolher a cifra');b.innerHTML=ic('up');b.title='Recolher a cifra';document.body.appendChild(b)}
   b.classList.toggle('on',!!show)}
 document.addEventListener('scroll',()=>posRecolher(),true);window.addEventListener('resize',()=>posRecolher());
+/* Mod2: faixas que rolam a tela só de parar o mouse em cima */
+(()=>{const br=document.getElementById('bottomroot');let lastBh=-1;
+  const bh=()=>{if(!br)return;let h=0;for(const c of br.querySelectorAll(':scope>*,:scope>*>*')){const r=c.getBoundingClientRect();if(r.height&&getComputedStyle(c).position==='fixed')h=Math.max(h,innerHeight-r.top)}h=Math.max(0,Math.round(h));if(h!==lastBh){lastBh=h;document.documentElement.style.setProperty('--bh',h+'px')}};
+  if(br){new MutationObserver(()=>requestAnimationFrame(bh)).observe(br,{childList:true,subtree:true});addEventListener('resize',bh)}
+  const ends=()=>{document.body.classList.toggle('ftop',scrollY<8);document.body.classList.toggle('fend',scrollY+innerHeight>=document.documentElement.scrollHeight-8)};
+  addEventListener('scroll',ends,{passive:true});addEventListener('resize',ends);setInterval(()=>{if(document.querySelector('.fzone'))ends()},250);let raf=0,dir=0;const loop=()=>{if(!dir||!document.querySelector('.fzone.on')){dir=0;raf=0;return}scrollBy(0,dir*5);raf=requestAnimationFrame(loop)};
+  document.addEventListener('pointerover',e=>{const z=e.target.closest&&e.target.closest('.fzone');if(!z||e.pointerType!=='mouse')return;dir=+z.dataset.z;z.classList.add('on');if(!raf)raf=requestAnimationFrame(loop)});
+  document.addEventListener('pointerout',e=>{const z=e.target.closest&&e.target.closest('.fzone');if(!z||(e.relatedTarget&&z.contains(e.relatedTarget)))return;dir=0;z.classList.remove('on')});})();
 function renderPlacer(){
   const el=$('#placer');if(!el)return;
   el.classList.toggle('min',cifraMin());requestAnimationFrame(posRecolher);
@@ -2081,7 +2113,7 @@ function renderPlacer(){
     const ends=L.chords.filter(c=>c.pos>=len);
     const selEnd=W&&W.li===li&&W.ws===len;
     html+=`<button type="button" class="w end${selEnd?' sel':''}" data-pl="${li}" data-ws="${len}" data-we="${len}" aria-label="Acorde no fim da linha"><span class="pc"><b>${ends.length?esc(ends.map(c=>c.ch).join(' ')):'&nbsp;'}</b><span>${ends.length?'&nbsp;':'+'}</span></span></button>`;
-    return `<div class="pl-line">${html}</div>`;
+    return `<div class="pl-line${W&&W.li===li?' cur':''}">${html}</div>`;
   }).join('');
 }
 function selectWord(li,ws,we,keepPos){
@@ -2143,12 +2175,14 @@ function renderPickPanel(){
   </div></div>`;
 }
 function switchTab(t){
-  S.etab=t;
+  const keep=S.role==='mod2'&&S.etab!==t?(()=>{const p=$(S.etab==='letra'?'#pane-letra':'#pane-acordes');if(!p)return null;const r=p.getBoundingClientRect();return r.height?Math.min(1,Math.max(0,(innerHeight/2-r.top)/r.height)):null})():null;
+  S.etab=t;document.querySelectorAll('[data-act=etab]').forEach(x=>x.setAttribute('aria-selected',x.dataset.t===t));
   $('#pane-letra').hidden=t!=='letra';$('#pane-acordes').hidden=t!=='acordes';
   $('#et-letra').setAttribute('aria-selected',t==='letra');$('#et-acordes').setAttribute('aria-selected',t==='acordes');
   if(t==='acordes'){S.model=toModel($('#content').value);S.selW=null;renderPlacer()}
   else{S.selW=null;refreshLyr()}
   if(t!=='letra'&&S.ditando)toggleDitar();
+  if(keep!=null)requestAnimationFrame(()=>{const p=$(t==='letra'?'#pane-letra':'#pane-acordes');if(!p)return;const r=p.getBoundingClientRect();if(keep<=0.02||r.height<innerHeight*.5)return;scrollTo({top:scrollY+r.top+keep*r.height-innerHeight/2})});
   requestAnimationFrame(posRecolher);
   renderPickPanel();
 }
@@ -2442,6 +2476,8 @@ document.addEventListener('click',async ev=>{
       const d=store.get('cifras:draft:new',null);S.restored=mode!=='paste'&&!!(d&&(d.title||d.content));if(S.restored)S.edit={...S.edit,...d,id:null};go('edit');if(mode==='paste')$('#filein').click();break}
     case 'discard-draft': clearDraft();S.edit=newEdit(S.edit.mode);sel=null;S.etab='letra';S.selW=null;render();break;
     case 'etab': switchTab(b.dataset.t);break;
+    case 'frolar': scrollBy({top:+b.dataset.d*Math.round(innerHeight*.5),behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});break;
+    case 'hover-rolar': store.set('cifras:hoverRolar',!store.get('cifras:hoverRolar',false));renderOverlay();break;
     case 'pick-file': $('#filein').click();break;
     case 'pk-prev': nextWord(-1);break;
     case 'pk-next': nextWord(1);break;
