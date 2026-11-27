@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27h">
+<meta name="clave-build" content="2026-11-27i">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -732,6 +732,15 @@ function transChord(t,shift,spell){
   const root=smart?rootByKey(rpc,spell,m[3]):spell[rpc];
   let out=root+m[3];
   if(m[4]){const bpc=mod(IDX[m[4]+m[5]]+shift);out+='/'+(smart?bassByRoot(bpc,root,spell):spell[bpc])}
+  return out;
+}
+/* mesma grafia do tom, sem transpor (G#9 em Ab vira Ab9) */
+function spellChord(t,spell){
+  const m=parseChord(t); if(!m) return t;
+  const rpc=mod(IDX[m[1]+m[2]]),smart=spell.tonic!=null&&P.acc!=='sharp'&&P.acc!=='flat';
+  const root=smart?rootByKey(rpc,spell,m[3]):spell[rpc];
+  let out=root+m[3];
+  if(m[4]){const bpc=mod(IDX[m[4]+m[5]]);out+='/'+(smart?bassByRoot(bpc,root,spell):spell[bpc])}
   return out;
 }
 const NEUTRAL=/^(\|+|x\d+|\d+x|-+|\.+|%|\/|:|→|>|\*+|\(|\)|n\.?c\.?)$/i;
@@ -2160,7 +2169,8 @@ function removeChordAtSel(){
 /* acordes que a música já usa e que não são do campo harmônico do tom (empréstimo, dominante, inversão...) */
 function chordKey(c){const m=parseChord(c);if(!m)return null;let suf=m[3].replace(/m\(b5\)|dim|°/g,'º');return IDX[m[1]+m[2]]+'|'+suf+'|'+(m[4]?IDX[m[4]+(m[5]||'')]:'')}
 function chordsOutside(hf){const inF=new Set(hf.map(h=>chordKey(h.chord))),seen=new Set(),out=[];
-  const add=c=>{c=String(c||'').trim();const k=chordKey(c);if(!k||inF.has(k)||seen.has(k))return;seen.add(k);out.push(c)};
+  const sp=keySpell(+($('#f-root')||{}).value||0,($('#f-minor')||{}).value==='m');
+  const add=c=>{c=String(c||'').trim();const k=chordKey(c);if(!k||inF.has(k)||seen.has(k))return;seen.add(k);out.push(spellChord(c,sp))};
   for(const L of S.model||[]){if(L.type==='lyric')L.chords.forEach(x=>add(x.ch));else if(L.type==='chords'||classify(L.text||'').type==='chords')String(L.text||'').split(/\s+/).forEach(add)}
   return out.slice(0,10)}
 function renderPickPanel(){
