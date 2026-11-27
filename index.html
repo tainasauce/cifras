@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27k">
+<meta name="clave-build" content="2026-11-27l">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -669,6 +669,9 @@ body.facil .pl-line.cur{padding:4px 6px;margin-left:-6px;margin-right:-6px;backg
 /* faixas de rolar invisíveis: continuam funcionando, sem tira colorida */
 .fzone,.fzone.on{background:transparent!important;border:0!important;color:transparent!important}
 .fzone svg,.fzone span{display:none!important}
+/* capa do vídeo do YouTube no lugar das iniciais (só a capa oficial do vídeo; sem internet volta às iniciais) */
+.capa .capaimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s}
+.capa .capaimg.ok{opacity:1}
 </style>
 </head>
 <body>
@@ -1409,7 +1412,8 @@ function capa(s){
     `<i style="width:36px;height:36px;right:-10px;bottom:-10px;background:${fg}"></i><i style="width:22px;height:22px;left:4px;top:4px;background:${fg};opacity:.7"></i>`,
     `<i style="width:80px;height:18px;border-radius:0;left:-14px;top:${16+j*4}px;transform:rotate(-35deg);background:${fg}"></i>`][v];
   const ini=String(s.title||'?').trim().split(/\s+/).filter(w=>w.length>1||/^[A-ZÀ-Ú]$/i.test(w)).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'♪';
-  return `<span class="capa" aria-hidden="true" style="background:${bg}">${shapes}<b>${esc(ini)}</b></span>`;
+  const yt=(s.refs||[]).map(r=>ytId(r.url)).find(Boolean);
+  return `<span class="capa" aria-hidden="true" style="background:${bg}">${shapes}<b>${esc(ini)}</b>${yt?`<img class="capaimg" src="https://i.ytimg.com/vi/${yt}/mqdefault.jpg" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onload="if(this.naturalWidth<=120)this.remove();else this.classList.add('ok')" onerror="this.remove()">`:''}</span>`;
 }
 /* ===== Links de referência + mini player do YouTube ===== */
 function parseRefs(t){return String(t).split('\n').map(l=>{const m=/(https?:\/\/\S+)/.exec(l);return m?{url:m[1],label:l.replace(m[1],'').trim().slice(0,40)}:null}).filter(Boolean).slice(0,6)}
