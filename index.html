@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27c">
+<meta name="clave-build" content="2026-11-27d">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -619,6 +619,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .culto.next{animation:none}
 .tlc:has(>.culto.next){border-radius:var(--r);animation:auraCulto 4.5s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.tlc{animation:none!important}}
+/* topo do culto: nome, caixinha e data numa linha; criador centralizado embaixo */
+.chrow{display:flex;align-items:center;gap:8px}
+.chead .chrow #c-name{flex:1;min-width:0;width:auto;margin-left:-8px;text-overflow:ellipsis}
+.chead .chrow #c-date{flex:0 0 auto;margin:0}
+.chead input.cbox{-webkit-appearance:none;appearance:none;flex:0 0 auto;width:22px;height:22px;margin:0;padding:0;border-radius:7px;border:1.5px solid color-mix(in srgb,var(--muted) 70%,transparent);background:transparent;cursor:pointer;transition:background .15s,border-color .15s}
+.chead input.cbox:hover{border-color:var(--muted)}
+.chead input.cbox:checked{border-color:transparent;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/15px no-repeat,var(--grad,var(--accent));background-origin:border-box}
+.chead input.cbox:focus{outline:none;box-shadow:none}.chead input.cbox:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:480px){.chead .chrow #c-name{font-size:19px}.chead .chrow #c-date{font-size:13px;padding:2px 6px}.chrow{gap:6px}}
+.cbyrow{position:relative;display:flex;justify-content:center;align-items:center;min-height:36px;margin:-8px 0 14px}
+.cbyrow .cby{margin:0}
+.cbyrow .qrbtn{position:absolute;right:0;top:50%;transform:translateY(-50%);margin:0}
 </style>
 </head>
 <body>
@@ -1921,8 +1933,9 @@ function viewCulto(){
   const mineLive=isLive&&S.broadcast===S.cultoId;
   return `<button class="back" data-act="tab" data-tab="cultos">${ic('left')} Cultos</button>
   <div class="chead"><span class="datebox" style="background:var(--tint);color:var(--accent)">${dateboxIn(c,d)}</span>
-    <div style="flex:1;min-width:0">${w?`<input type="text" id="c-name" value="${esc(c.name)}" aria-label="Nome do culto"><br><input type="date" id="c-date" value="${esc(c.date)}" aria-label="Data do culto"><label class="showdate"><input type="checkbox" id="c-showdate"${c.showDate?' checked':''}> Mostrar data abaixo do nome</label>`
-      :`<h1>${esc(c.name)}</h1><div class="muted" style="font-size:14px">${esc(fmtDate(c.date))}</div>`}${criadorHTML(c)}</div>${w&&items.length?`<button class="icon qrbtn" data-act="qr-open" aria-label="QR code para visitantes" title="QR para visitantes">${ic('qr')}</button>`:''}</div>
+    <div style="flex:1;min-width:0">${w?`<div class="chrow"><input type="text" id="c-name" value="${esc(c.name)}" aria-label="Nome do culto"><input type="checkbox" class="cbox" id="c-showdate"${c.showDate?' checked':''} title="Mostrar data abaixo do nome" aria-label="Mostrar data abaixo do nome"><input type="date" id="c-date" value="${esc(c.date)}" aria-label="Data do culto"></div>`
+      :`<h1>${esc(c.name)}</h1><div class="muted" style="font-size:14px">${esc(fmtDate(c.date))}</div>`}</div></div>
+  ${criadorHTML(c)||(w&&items.length)?`<div class="cbyrow">${criadorHTML(c)}${w&&items.length?`<button class="icon qrbtn" data-act="qr-open" aria-label="QR code para visitantes" title="QR para visitantes">${ic('qr')}</button>`:''}</div>`:''}
   ${items.length?`<div style="margin-bottom:16px">${mineLive?`<button class="btn" data-act="live-stop" style="width:100%">Encerrar ao vivo</button>`:`<button class="btn live" data-act="live-start" style="width:100%">● Conduzir ao vivo</button>`}</div>`:''}
   <div class="toolrow"><span class="eyebrow">${items.length} ${items.length===1?'música':'músicas'}</span>${w&&items.length?`<button class="btn ghost" data-act="organize" style="padding:6px 10px">${S.organize?ic('check')+' Pronto':'Organizar'}</button>`:''}</div>
   ${items.length?`<ol class="items">${items.map((it,i)=>{const s=S.songs.get(it.songId);const mi=s?parseKey(s.key).minor:false;
@@ -2519,7 +2532,7 @@ document.addEventListener('change',ev=>{
   if(t.id==='f-root'||t.id==='f-minor'){renderPickPanel();saveDraft()}
   else if(t.id==='f-draft') saveDraft();
   else if(t.dataset.act==='item-key'){const c=S.cultos.get(S.cultoId);const items=c.items.map((it,k)=>k===+t.dataset.i?{...it,key:t.value}:it);guard(db.setCulto(S.cultoId,{...c,items,updatedAt:Date.now()}))}
-  else if(t.id==='c-showdate'){const c=S.cultos.get(S.cultoId);if(!c)return;guard(db.setCulto(S.cultoId,{...c,showDate:t.checked,updatedAt:Date.now()}))}
+  else if(t.id==='c-showdate'){const c=S.cultos.get(S.cultoId);if(!c)return;guard(db.setCulto(S.cultoId,{...c,showDate:t.checked,updatedAt:Date.now()}));toast(t.checked?'Data aparece abaixo do nome':'Data escondida')}
   else if(t.id==='c-name'||t.id==='c-date'){const c=S.cultos.get(S.cultoId);if(!c)return;const patch=t.id==='c-name'?{name:t.value.trim()||c.name}:{date:t.value||c.date};guard(db.setCulto(S.cultoId,{...c,...patch,updatedAt:Date.now()}))}
 });
 document.addEventListener('submit',async ev=>{
