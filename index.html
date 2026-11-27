@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27b">
+<meta name="clave-build" content="2026-11-27c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -611,6 +611,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .colors button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ink);color:var(--ink)}
 /* gradiente cobre a borda inteira (sem faixa de cor vazando nas pontas dos balões) */
 .favtog,.pchips button,.btn,.tile,.fab,.chip2,.steps button span,.letters button,.keygrid button,.switch,.nav,.tag,[data-act=scroll],#upd button,.capoban .go,.next,.culto.next{background-origin:border-box!important}
+/* botões de excluir/favoritar escondidos até deslizar (sem bordinha vermelha nas pontas) */
+.swipe>.swdel,.swipe>.swacts{opacity:0;transition:opacity 0s .25s}
+.swipe.drag>.swdel,.swipe.drag>.swacts,.swipe:has(>.open)>.swdel,.swipe:has(>.open)>.swacts{opacity:1;transition:none}
+/* aura do próximo culto: respirando, sutil e centrada no balão */
+@keyframes auraCulto{0%,100%{box-shadow:0 0 16px -6px color-mix(in srgb,var(--accent) 45%,transparent)}50%{box-shadow:0 0 24px -4px color-mix(in srgb,var(--accent) 65%,transparent)}}
+.culto.next{animation:none}
+.tlc:has(>.culto.next){border-radius:var(--r);animation:auraCulto 4.5s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.tlc{animation:none!important}}
 </style>
 </head>
 <body>
@@ -1495,11 +1503,11 @@ function marcarVisto(id){const v=vistos();if(!v.has(id)){v.add(id);store.set('ci
     if(!sw)return;const t=e.touches[0];const dx=t.clientX-sw.x,dy=t.clientY-sw.y;
     if(!sw.lock&&(Math.abs(dx)>8||Math.abs(dy)>8))sw.lock=Math.abs(dx)>Math.abs(dy)?'h':'v';
     if(sw.lock!=='h')return;
-    e.preventDefault();sw.dx=dx;sw.el.style.transition='none';
+    e.preventDefault();sw.dx=dx;sw.el.style.transition='none';sw.el.parentElement.classList.add('drag');
     sw.el.style.transform=`translateX(${Math.min(0,Math.max(-sw.w-30,sw.base+dx))}px)`;
   },{passive:false});
   document.addEventListener('touchend',()=>{
-    if(!sw)return;const s=sw;sw=null;if(s.lock!=='h')return;
+    if(!sw)return;const s=sw;sw=null;if(s.lock!=='h')return;s.el.parentElement.classList.remove('drag');
     s.el.style.transition='';s.el.style.transform='';
     const open=s.base+s.dx<-s.w/2;closeAll(s.el);s.el.classList.toggle('open',open);S.swipedAt=Date.now();
   },{passive:true});
