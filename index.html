@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-25e">
+<meta name="clave-build" content="2026-11-27a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1759,8 +1759,8 @@ function renderOverlay(){
   if(S.sheet==='picker') renderPicker();
 }
 /* quantas vezes cada música já foi tocada nos cultos (e quando foi a última) */
-function usoMusicas(){const hoje=todayStr(),m=new Map();
-  for(const [id,c] of S.cultos){if(id===S.cultoId||!c.date||c.date>hoje)continue;
+function usoMusicas(desde){const hoje=todayStr(),m=new Map();
+  for(const [id,c] of S.cultos){if(id===S.cultoId||!c.date||c.date>hoje||(desde&&c.date<desde))continue;
     for(const it of new Set((c.items||[]).map(i=>i.songId))){const u=m.get(it)||{n:0,last:''};u.n++;if(c.date>u.last)u.last=c.date;m.set(it,u)}}
   return m}
 function haQuanto(d){const dias=Math.round((new Date(todayStr()+'T12:00')-new Date(d+'T12:00'))/864e5);
@@ -1768,11 +1768,14 @@ function haQuanto(d){const dias=Math.round((new Date(todayStr()+'T12:00')-new Da
 function renderPicker(){
   const r=$('#pres'); if(!r) return;
   const c=S.cultos.get(S.cultoId); const inC=new Set((c&&c.items||[]).map(i=>i.songId));
-  const uso=usoMusicas(),ord=S.pickMode==='sug'?'az':(S.pickOrd||'az');let res=songsSorted(S.pq);
-  if(ord==='mais')res=res.slice().sort((a,b)=>((uso.get(b.id)||{}).n||0)-((uso.get(a.id)||{}).n||0));
+  const ord=S.pickMode==='sug'?'az':(S.pickOrd||'az');
+  /* Mais tocadas: só as que tocaram nos últimos 3 meses, contando só esse período */
+  const desde=ord==='mais'?(()=>{const d=new Date(todayStr()+'T12:00');d.setMonth(d.getMonth()-3);return d.toISOString().slice(0,10)})():null;
+  const uso=usoMusicas(desde);let res=songsSorted(S.pq);
+  if(ord==='mais')res=res.filter(x=>uso.has(x.id)).sort((a,b)=>(uso.get(b.id).n-uso.get(a.id).n)||(uso.get(a.id).last<uso.get(b.id).last?1:-1));
   else if(ord==='tempo')res=res.slice().sort((a,b)=>{const x=(uso.get(a.id)||{}).last||'9',y=(uso.get(b.id)||{}).last||'9';return x<y?-1:x>y?1:0});
-  res=res.slice(0,60);const usoTag=id=>{if(S.pickMode==='sug')return '';const u=uso.get(id);return `<span class="uso">${u?`tocada ${u.n}x · ${haQuanto(u.last)}`:'ainda não tocada'}</span>`};
-  r.innerHTML=res.length?res.map(s=>`<button data-act="${S.pickMode==='sug'?'sug-add':'add-item'}" data-id="${esc(s.id)}" class="${S.pickMode!=='sug'&&inC.has(s.id)?'added':''}"><span class="keyb">${esc(s.key)}</span><span style="flex:1;min-width:0"><b>${esc(s.title)}</b><br><span class="muted" style="font-size:13px">${S.pickMode!=='sug'&&inC.has(s.id)?'Já está no culto · toque para repetir':esc(s.artist||'')}</span>${usoTag(s.id)}</span>${ic('plus')}</button>`).join(''):'<p class="muted" style="margin:6px">Nada encontrado.</p>';
+  res=res.slice(0,60);const usoTag=id=>{if(S.pickMode==='sug')return '';const u=uso.get(id);return `<span class="uso">${u?`tocada ${u.n}x${ord==='mais'?' em 3 meses':''} · ${haQuanto(u.last)}`:'ainda não tocada'}</span>`};
+  r.innerHTML=res.length?res.map(s=>`<button data-act="${S.pickMode==='sug'?'sug-add':'add-item'}" data-id="${esc(s.id)}" class="${S.pickMode!=='sug'&&inC.has(s.id)?'added':''}"><span class="keyb">${esc(s.key)}</span><span style="flex:1;min-width:0"><b>${esc(s.title)}</b><br><span class="muted" style="font-size:13px">${S.pickMode!=='sug'&&inC.has(s.id)?'Já está no culto · toque para repetir':esc(s.artist||'')}</span>${usoTag(s.id)}</span>${ic('plus')}</button>`).join(''):`<p class="muted" style="margin:6px">${ord==='mais'&&!S.pq?'Nenhuma música tocada nos últimos 3 meses ainda.':'Nada encontrado.'}</p>`;
 }
 function viewEdit(){
   const e=S.edit,o=parseKey(e.key);
