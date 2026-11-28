@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27p">
+<meta name="clave-build" content="2026-11-27q">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -689,6 +689,12 @@ html.claro input,html.claro select,html.claro textarea,html.claro .search{border
 html.claro .tabbar,html.claro .dock,html.claro .pick{border-top-color:var(--line)}
 html.claro .farw .fa{box-shadow:0 8px 22px rgba(30,30,60,.18)}
 html.claro .scrim{background:rgba(20,20,40,.28)}
+/* modo claro: textos bem legíveis */
+html.claro{--muted:#53555f;--line:rgba(20,20,40,.12);--danger:#dc2626;--live:#16a34a}
+html.claro .sheet{color:var(--ink)}
+html.claro .sheet .sec{color:#4b4d57}
+/* cor do app clara (ex.: Dourado): texto escuro em cima dela, pra não sumir */
+html.claro.acc-claro :is(.btn.primary,.fab,.chip2[aria-pressed="true"],.favtog[aria-pressed="true"],.tag.novo,.keygrid button[aria-pressed="true"],.steps button[aria-selected="true"] span,.letters button[aria-pressed="true"],#upd button,.capoban .go,.pchips button[aria-pressed=true],.fseg button[aria-selected="true"],.pk-top.pk2 .letters.big button[aria-pressed="true"],.swfav,.nav.sol[aria-pressed="true"],[data-act=scroll].holding,.next,.next *,.culto.next,.culto.next *,.tabic .badge,.acct .badge,.chip2 .badge){color:#17181d!important}
 /* compartilhar cifra */
 .titlebox{position:relative}
 .titlebox .sharebtn{position:absolute;right:0;top:-6px;opacity:.75}
@@ -981,7 +987,9 @@ function temaCustom(){
 function applyTema(){
   document.documentElement.classList.toggle('claro',!!P.claro);{const m=document.querySelector('meta[name=theme-color]');if(m)m.content=P.claro?'#f4f3f7':'#16171c'}
   const t=P.tema==='custom'?temaCustom():(TEMAS[P.tema]||TEMAS.oceano),r=document.documentElement.style;
-  r.setProperty('--grad',t.grad);r.setProperty('--s1',t.s[0]);r.setProperty('--s2',t.s[1]);r.setProperty('--accent',t.a);r.setProperty('--honey',t.c);r.setProperty('--chord-sol',mixHex(t.a,'#000000',.28));
+  r.setProperty('--grad',t.grad);r.setProperty('--s1',t.s[0]);r.setProperty('--s2',t.s[1]);r.setProperty('--accent',t.a);r.setProperty('--honey',P.claro?mixHex(t.a,'#000000',.32):t.c);
+  {const lum=h=>{const [a,b,c]=hexRgb(h).map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*a+.7152*b+.0722*c};document.documentElement.classList.toggle('acc-claro',lum(mixHex(t.s[0],t.s[1],.5))>.4)}
+  r.setProperty('--chord-sol',mixHex(t.a,'#000000',.28));
   /* o iPhone não repinta o ícone quando só a cor do gradiente muda: cria um gradiente novo e troca a referência */
   const old=document.getElementById('gradStroke');if(old){const id='gs'+Date.now().toString(36);const g=old.cloneNode(true);g.id=id;
     g.children[0].setAttribute('stop-color',t.s[0]);g.children[1].setAttribute('stop-color',t.s[1]);
