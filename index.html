@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-28a">
+<meta name="clave-build" content="2026-11-28b">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -704,6 +704,8 @@ body.stage .titlebox .sharebtn{display:none}
 .pubbrand{display:flex;align-items:center;gap:8px;font:800 15px var(--f-display);color:var(--muted);margin:0 0 10px}
 .pubbrand .pl{width:26px;height:26px;display:inline-block}.pubbrand .pl svg{width:100%;height:100%}
 .swshare{background:#3f8f6b}
+/* PC: reserva o lugar da barra de rolagem, pra barra de baixo não pular de lado ao trocar de aba */
+html{scrollbar-gutter:stable}
 </style>
 </head>
 <body>
@@ -985,6 +987,11 @@ function temaCustom(){
   const main=sat(c2)>=sat(c1)?c2:c1;
   return {nome:'A minha',grad:`linear-gradient(120deg,${c1},${c2})`,a:main,c:mixHex(main,'#ffffff',.42),s:[c1,c2]};
 }
+/* cor do app (e modo claro) salvos na conta: segue a pessoa em qualquer aparelho */
+function salvarTemaConta(){if(B.mode==='demo'||!B.ff||!S.uid)return;const v={tema:P.tema||'oceano',c1:P.c1||'',c2:P.c2||'',claro:!!P.claro,at:Date.now()};S.temaAt=v.at;
+  B.ff.setDoc(B.ff.doc(B.fs,'favs',S.uid),{visual:v},{merge:true}).catch(()=>{})}
+function temaDaConta(v){if(!v||v.at===S.temaAt)return;const mud=(v.tema||'oceano')!==(P.tema||'oceano')||(v.c1||'')!==(P.c1||'')||(v.c2||'')!==(P.c2||'')||!!v.claro!==!!P.claro;S.temaAt=v.at;if(!mud)return;
+  P.tema=v.tema||'oceano';if(v.c1)P.c1=v.c1;if(v.c2)P.c2=v.c2;P.claro=!!v.claro;saveP();applyTema();if(S.sheet==='conta')renderOverlay()}
 function applyTema(){
   document.documentElement.classList.toggle('claro',!!P.claro);{const m=document.querySelector('meta[name=theme-color]');if(m)m.content=P.claro?'#f4f3f7':'#16171c'}
   const t=P.tema==='custom'?temaCustom():(TEMAS[P.tema]||TEMAS.oceano),r=document.documentElement.style;
@@ -1080,7 +1087,7 @@ function subscribe(){
   const ok=()=>{S.loaded=true;S.slow=false};
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'songs'),s=>{S.songs=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'cultos'),s=>{S.cultos=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
-  if(S.uid)B.unsubs.push(ff.onSnapshot(ff.doc(fs,'favs',S.uid),s=>{if(s.metadata.hasPendingWrites)return;if(s.exists()&&Array.isArray(s.data().capoOff)){S.capoOff=new Set(s.data().capoOff);for(const id of S.capoOff)store.set('cifras:capohide:'+id,true)}const ids=s.exists()?(s.data().ids||[]):store.get(favKey(),[]);S.favs=new Set(ids);store.set(favKey(),ids);if(S.view==='songs')renderList()},()=>{}));
+  if(S.uid)B.unsubs.push(ff.onSnapshot(ff.doc(fs,'favs',S.uid),s=>{if(s.metadata.hasPendingWrites)return;if(s.exists()&&s.data().visual)temaDaConta(s.data().visual);if(s.exists()&&Array.isArray(s.data().capoOff)){S.capoOff=new Set(s.data().capoOff);for(const id of S.capoOff)store.set('cifras:capohide:'+id,true)}const ids=s.exists()?(s.data().ids||[]):store.get(favKey(),[]);S.favs=new Set(ids);store.set(favKey(),ids);if(S.view==='songs')renderList()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'sugestoes'),s=>{S.sug=s.docs.map(d=>({id:d.id,...d.data()}));sugMudou()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'fotos'),s=>{S.fotos=Object.fromEntries(s.docs.map(d=>[d.id,d.data().img||'']));fotosMudaram()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.doc(fs,'live','atual'),s=>{
@@ -2554,8 +2561,8 @@ document.addEventListener('click',async ev=>{
     case 'degree': P.degree=!P.degree;saveP();render();break;
     case 'ctl-toggle': toggleCtl();break;
     case 'logout': logout();break;
-    case 'tema': P.tema=b.dataset.t;saveP();applyTema();renderOverlay();break;
-    case 'claro': P.claro=!P.claro;saveP();applyTema();renderOverlay();break;
+    case 'tema': P.tema=b.dataset.t;saveP();applyTema();renderOverlay();salvarTemaConta();break;
+    case 'claro': P.claro=!P.claro;saveP();applyTema();renderOverlay();salvarTemaConta();break;
     case 'gtab': S.gateTab=b.dataset.t;render();break;
     case 'pedir': pedirAcesso();break;
     case 'reset':{const e=$('#g-email'),er=$('#g-err');const r=await resetSenha(e&&e.value);if(er)er.textContent=r==='ok'?'Enviei um e-mail para você criar uma senha nova.':r;break}
@@ -2679,7 +2686,7 @@ document.addEventListener('input',ev=>{
 });
 document.addEventListener('change',ev=>{
   const t=ev.target;
-  if(t.id==='c1'||t.id==='c2'){saveP();return}
+  if(t.id==='c1'||t.id==='c2'){saveP();salvarTemaConta();return}
   if(t.id==='f-root'||t.id==='f-minor'){renderPickPanel();saveDraft()}
   else if(t.id==='f-draft') saveDraft();
   else if(t.dataset.act==='item-key'){const c=S.cultos.get(S.cultoId);const items=c.items.map((it,k)=>k===+t.dataset.i?{...it,key:t.value}:it);guard(db.setCulto(S.cultoId,{...c,items,updatedAt:Date.now()}))}
