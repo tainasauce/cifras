@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27s">
+<meta name="clave-build" content="2026-11-28a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1080,7 +1080,7 @@ function subscribe(){
   const ok=()=>{S.loaded=true;S.slow=false};
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'songs'),s=>{S.songs=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'cultos'),s=>{S.cultos=new Map(s.docs.map(d=>[d.id,d.data()]));ok();onData()},fail));
-  if(S.uid)B.unsubs.push(ff.onSnapshot(ff.doc(fs,'favs',S.uid),s=>{if(s.metadata.hasPendingWrites)return;const ids=s.exists()?(s.data().ids||[]):store.get(favKey(),[]);S.favs=new Set(ids);store.set(favKey(),ids);if(S.view==='songs')renderList()},()=>{}));
+  if(S.uid)B.unsubs.push(ff.onSnapshot(ff.doc(fs,'favs',S.uid),s=>{if(s.metadata.hasPendingWrites)return;if(s.exists()&&Array.isArray(s.data().capoOff)){S.capoOff=new Set(s.data().capoOff);for(const id of S.capoOff)store.set('cifras:capohide:'+id,true)}const ids=s.exists()?(s.data().ids||[]):store.get(favKey(),[]);S.favs=new Set(ids);store.set(favKey(),ids);if(S.view==='songs')renderList()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'sugestoes'),s=>{S.sug=s.docs.map(d=>({id:d.id,...d.data()}));sugMudou()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.collection(fs,'fotos'),s=>{S.fotos=Object.fromEntries(s.docs.map(d=>[d.id,d.data().img||'']));fotosMudaram()},()=>{}));
   B.unsubs.push(ff.onSnapshot(ff.doc(fs,'live','atual'),s=>{
@@ -1433,7 +1433,7 @@ function isFav(id){return favSet().has(id)}
 function toggleFav(id){
   const f=new Set(favSet());f.has(id)?f.delete(id):f.add(id);S.favs=f;const ids=[...f];store.set(favKey(),ids);
   const y=window.scrollY;render();window.scrollTo(0,y);
-  if(B.mode!=='demo'&&B.ff&&S.uid)B.ff.setDoc(B.ff.doc(B.fs,'favs',S.uid),{ids,at:Date.now()}).catch(()=>flash('Não consegui salvar a favorita agora. Tente de novo.'));
+  if(B.mode!=='demo'&&B.ff&&S.uid)B.ff.setDoc(B.ff.doc(B.fs,'favs',S.uid),{ids,at:Date.now()},{merge:true}).catch(()=>flash('Não consegui salvar a favorita agora. Tente de novo.'));
 }
 /* ===== Capa de cada música: desenhada a partir do nome, só com as cores do tema ===== */
 function hashStr(t){let h=2166136261;for(const ch of String(t||''))h=Math.imul(h^ch.charCodeAt(0),16777619);return h>>>0}
@@ -1539,10 +1539,11 @@ function songCalc(){
 }
 /* "cap2", "capo 2", "capotraste 2" na observação: a cifra avisa e oferece usar o capo */
 function capoNota(s){const m=/\bcap(?:o|otraste)?\.?\s*[:\-–]?\s*(?:(?:n[ao]|em)\s+)?(?:(?:a\s+)?casa\s*)?(\d{1,2})/i.exec((s&&s.notes)||'');const n=m?+m[1]:0;return n>=1&&n<=9?n:0}
-function capoBanner(s,o){const n=capoNota(s);if(!n||store.get('cifras:capohide:'+s.id,false))return '';
+function capoBanner(s,o){const n=capoNota(s);if(!n||store.get('cifras:capohide:'+s.id,false)||(S.capoOff&&S.capoOff.has(s.id)))return '';
   const capo=store.get('cifras:capo:'+s.id,0),on=capo===n,des=keyName(mod(S.target-n),o.minor);
   return `<div class="capoban${on?' on':''}" id="capoban" role="status"><span class="ct">${on?`Com <b>capo na ${n}ª casa</b> · desenhos em ${esc(des)}`:`Essa cifra é tocada com <b>capo na ${n}ª casa</b>`}</span><button type="button" class="go" data-act="capo-set" data-n="${on?0:n}">${on?'Tirar capo':'Usar capo'}</button><button type="button" class="x" data-act="capo-x" aria-label="Fechar o aviso do capo">${ic('x')}</button></div>`}
 function capoFechar(){const b=$('#capoban');if(!S.song)return;store.set('cifras:capohide:'+S.song.id,true);
+  S.capoOff=S.capoOff||new Set();S.capoOff.add(S.song.id);if(B.mode!=='demo'&&B.ff&&S.uid)B.ff.setDoc(B.ff.doc(B.fs,'favs',S.uid),{capoOff:[...S.capoOff]},{merge:true}).catch(()=>{});
   if(b){b.classList.add('saindo');setTimeout(()=>{render()},220)}else render()}
 (()=>{let x0=null,dx=0,el=null;
   document.addEventListener('touchstart',e=>{el=e.target.closest&&e.target.closest('#capoban');if(!el||e.target.closest('button'))return el=null;x0=e.touches[0].clientX;dx=0;el.style.transition='none'},{passive:true});
