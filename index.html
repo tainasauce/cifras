@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27o">
+<meta name="clave-build" content="2026-11-27p">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1860,6 +1860,8 @@ function renderOverlay(){
     body=`<h2>Adicionar cifra</h2><div class="choices">
       <button class="choice" data-act="new-song" data-mode="paste"><span class="ci">${ic('clip')}</span><span><b>Cifra existente</b><span>Escolher o arquivo (PDF, Word, foto ou print) e o app monta a cifra</span></span></button>
       <button class="choice" data-act="new-song" data-mode="write"><span class="ci">${ic('edit')}</span><span><b>Nova cifra</b><span>Escrever a letra e pôr os acordes, para tirar de ouvido</span></span></button></div>`;
+  } else if(S.sheet==='share'){
+    body=shareSheet();
   } else if(S.sheet==='qr'){
     body=qrSheet();
   } else if(S.sheet==='picker'){
@@ -2001,12 +2003,23 @@ function qrSheet(){const q=S.qr||{};const link=pubLink(q.id||'');
   <p class="muted" style="text-align:center;font-size:13px;margin:4px 0 12px">O link some sozinho depois do culto</p>
   <div style="display:flex;gap:8px;justify-content:center"><button class="btn" data-act="qr-copy">${ic('clip')} Copiar link</button><button class="btn primary" data-act="close-sheet">Pronto</button></div>`}
 /* compartilhar uma cifra: link curto que abre só essa música, no tom que está na tela */
-async function compartilharCifra(rowId){const s=rowId?{id:rowId,...(S.songs.get(rowId)||{})}:S.song;if(!s||!s.title)return;const o=parseKey(s.key),k=rowId?keyName(o.idx,o.minor):keyName(S.target,o.minor);
+const SHARE_BASE='https://appclave.github.io/';
+function compartilharCifra(rowId){const s=rowId?{id:rowId,...(S.songs.get(rowId)||{})}:S.song;if(!s||!s.title)return;
+  const n=capoNota(s);if(!n)return enviarCifra(rowId,false);
+  S.shareCtx={rowId,n};S.sheet='share';renderOverlay()}
+function shareSheet(){const c=S.shareCtx||{};const s=c.rowId?S.songs.get(c.rowId):S.song;if(!s)return '';const o=parseKey(s.key),t=c.rowId?o.idx:S.target;
+  const k=keyName(t,o.minor),f=keyName(mod(t-c.n),o.minor);
+  return `<h2>Enviar cifra</h2><p class="muted" style="margin:-6px 0 14px">${esc(s.title)} tem capo na ${c.n}ª casa.</p>
+  <div class="choices"><button class="choice" data-act="share-go" data-capo="0"><span class="ci">${ic('share')}</span><span><b>No tom ${esc(k)}</b><span>Pra teclado, baixo e quem toca sem capo</span></span></button>
+  <button class="choice" data-act="share-go" data-capo="1"><span class="ci">${ic('share')}</span><span><b>Com capo ${c.n} (formas de ${esc(f)})</b><span>Pro violão: soa em ${esc(k)}</span></span></button></div>`}
+async function enviarCifra(rowId,comCapo){const s=rowId?{id:rowId,...(S.songs.get(rowId)||{})}:S.song;if(!s||!s.title)return;
+  const o=parseKey(s.key),t=rowId?o.idx:S.target,k=keyName(t,o.minor),n=comCapo?capoNota(s):0,f=keyName(mod(t-n),o.minor);
   const id=s.id||'';const a=hashStr('clave:'+id),b=hashStr(id+':cifra'),al='abcdefghijkmnpqrstuvwxyz23456789';
-  let tok='';for(let i=0;i<5;i++)tok+=al[(a>>>(i*5))&31];for(let i=0;i<4;i++)tok+=al[(b>>>(i*5))&31];
-  const url=location.origin+location.pathname+'?c='+tok,text=`${s.title} · Tom ${k} · Clave`;
-  try{await db.setPub(tok,{nome:s.title||'',data:'',single:true,expira:Date.now()+90*864e5,musicas:[{title:s.title||'',artist:s.artist||'',key:k,orig:s.key||k,content:s.content||''}],at:Date.now()})}
+  let tok='';for(let i=0;i<5;i++)tok+=al[(a>>>(i*5))&31];for(let i=0;i<4;i++)tok+=al[(b>>>(i*5))&31];if(n)tok+='c'+n;
+  const url=SHARE_BASE+'?c='+tok,text=n?`${s.title} · Tom ${k} (capo ${n}, formas de ${f}) · Clave`:`${s.title} · Tom ${k} · Clave`;
+  try{await db.setPub(tok,{nome:s.title||'',data:'',single:true,expira:Date.now()+90*864e5,musicas:[{title:s.title||'',artist:s.artist||'',key:n?f:k,orig:s.key||k,content:s.content||'',capo:n||0,soa:k}],at:Date.now()})}
   catch(e){toast('Sem internet agora. Tente de novo.');return}
+  if(S.sheet==='share'){S.sheet=null;renderOverlay()}
   if(navigator.share){try{await navigator.share({title:s.title,text,url});return}catch(e){if(e&&e.name==='AbortError')return}}
   try{await navigator.clipboard.writeText(text+'\n'+url);toast('Link copiado')}catch{prompt('Copie o link:',url)}}
 /* tela de quem abriu o link do QR (sem conta) */
@@ -2019,7 +2032,7 @@ function renderPublico(){document.body.classList.remove('songmode');$('#bottomro
     <ol class="items">${L.map((m,i)=>`<li class="item"><span class="n">${i+1}</span><button class="t" data-act="pub-song" data-i="${i}"><b>${esc(m.title)}</b><span>${esc(m.artist)}</span></button><span class="keyb">${esc(m.key)}</span></li>`).join('')}</ol>`;return}
   const m=L[S.pubSong],o=parseKey(m.orig||m.key),t=parseKey(m.key||m.orig),shift=t.idx-o.idx;
   a.innerHTML=`${p.single?`<div class="pubbrand"><span class="pl">${LOGO}</span>Clave</div>`:`<button class="back" data-act="pub-back">${ic('left')} ${esc(p.nome)}</button>`}
-    <div class="pubsong"><div><h1>${esc(m.title)}</h1><p class="muted" style="margin:0">${esc(m.artist)}${m.artist?' · ':''}Tom ${esc(m.key)}</p></div>
+    <div class="pubsong"><div><h1>${esc(m.title)}</h1><p class="muted" style="margin:0">${esc(m.artist)}${m.artist?' · ':''}${m.capo?`Formas de ${esc(m.key)} · capo na ${m.capo}ª casa · soa em ${esc(m.soa||'')}`:`Tom ${esc(m.key)}`}</p></div>
     <div class="pubfont"><button class="chip2" data-act="pub-font" data-d="-2" aria-label="Letra menor">A</button><button class="chip2" data-act="pub-font" data-d="2" aria-label="Letra maior" style="font-size:18px">A</button></div></div>
     <div class="sheetbox pub"><div class="sheet" style="--sz:${P.font}px">${renderSheet(m.content,shift,keySpell(t.idx,o.minor),false,null)}</div></div>
     ${S.pubSong<L.length-1?`<button class="btn" data-act="pub-song" data-i="${S.pubSong+1}" style="width:100%;margin-top:12px">Próxima: ${esc(L[S.pubSong+1].title)} ${ic('right')}</button>`:''}`}
@@ -2570,6 +2583,7 @@ document.addEventListener('click',async ev=>{
     case 'qr-open': abrirQr();break;
     case 'share-song': compartilharCifra();break;
     case 'share-row': compartilharCifra(b.dataset.id);break;
+    case 'share-go': {const c=S.shareCtx||{};enviarCifra(c.rowId,b.dataset.capo==='1');break}
     case 'qr-copy':{const u=$('#qrlink');if(u){try{navigator.clipboard.writeText(u.textContent);toast('Link copiado')}catch{}}break}
     case 'pub-song': S.pubSong=+b.dataset.i;renderPublico();scrollTo(0,0);break;
     case 'pub-back': S.pubSong=null;renderPublico();break;
