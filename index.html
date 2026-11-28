@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27l">
+<meta name="clave-build" content="2026-11-27m">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -672,6 +672,23 @@ body.facil .pl-line.cur{padding:4px 6px;margin-left:-6px;margin-right:-6px;backg
 /* capa do vídeo do YouTube no lugar das iniciais (só a capa oficial do vídeo; sem internet volta às iniciais) */
 .capa .capaimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s}
 .capa .capaimg.ok{opacity:1}
+/* ===== Modo claro do app todo: só troca os fundos e textos; a cor escolhida continua ===== */
+html.claro{--bg:#f4f3f7;--surface:#ffffff;--raise:#ffffff;--ink:#17181d;--muted:#6a6c78;--line:rgba(20,20,40,.09);--soft:#ebeaf0;--tint:#eeedf2;
+  --hl:inset 0 1px 0 rgba(255,255,255,.6);--shadow:0 1px 0 rgba(255,255,255,.8) inset,0 10px 28px -16px rgba(30,30,60,.28);--glass:rgba(255,255,255,.8);color-scheme:light}
+html.claro .panel{background:rgba(255,255,255,.96);box-shadow:0 -10px 40px rgba(30,30,60,.18)}
+html.claro .speedpop{background:rgba(255,255,255,.97);color:var(--ink);box-shadow:0 12px 34px rgba(30,30,60,.2)}
+html.claro .song:hover,html.claro .culto:not(.next):hover{background:#f0eff5}
+html.claro .tag.semcifra{background:#fdf0c2;color:#7a5600}
+html.claro .swest{background:#8e909c}
+html.claro .datebox{background:var(--soft)}
+html.claro .culto.next .datebox{background:rgba(255,255,255,.22)!important}
+html.claro .skel i,html.claro .skel b,html.claro .skel em{background:linear-gradient(90deg,rgba(20,20,40,.05) 0%,rgba(20,20,40,.1) 45%,rgba(20,20,40,.05) 90%);background-size:220% 100%}
+html.claro .cby{background:rgba(20,20,40,.04)}
+html.claro .cards li+li,html.claro .item+.item{border-top-color:var(--line)}
+html.claro input,html.claro select,html.claro textarea,html.claro .search{border-color:var(--line)}
+html.claro .tabbar,html.claro .dock,html.claro .pick{border-top-color:var(--line)}
+html.claro .farw .fa{box-shadow:0 8px 22px rgba(30,30,60,.18)}
+html.claro .scrim{background:rgba(20,20,40,.28)}
 </style>
 </head>
 <body>
@@ -953,6 +970,7 @@ function temaCustom(){
   return {nome:'A minha',grad:`linear-gradient(120deg,${c1},${c2})`,a:main,c:mixHex(main,'#ffffff',.42),s:[c1,c2]};
 }
 function applyTema(){
+  document.documentElement.classList.toggle('claro',!!P.claro);{const m=document.querySelector('meta[name=theme-color]');if(m)m.content=P.claro?'#f4f3f7':'#16171c'}
   const t=P.tema==='custom'?temaCustom():(TEMAS[P.tema]||TEMAS.oceano),r=document.documentElement.style;
   r.setProperty('--grad',t.grad);r.setProperty('--s1',t.s[0]);r.setProperty('--s2',t.s[1]);r.setProperty('--accent',t.a);r.setProperty('--honey',t.c);r.setProperty('--chord-sol',mixHex(t.a,'#000000',.28));
   /* o iPhone não repinta o ícone quando só a cor do gradiente muda: cria um gradiente novo e troca a referência */
@@ -1796,6 +1814,7 @@ function renderOverlay(){
     body=`<h2>Sua conta</h2>
     ${S.demo?`<p class="muted" style="margin-top:-6px">Modo demonstração: o app ainda não foi ligado ao Firebase.</p>`:
       `<p style="margin:-6px 0 2px"><b>${esc(m.nome||S.email||'')}</b></p><p class="muted" style="margin:0 0 14px">${esc(S.email||'')} · ${PAPEL[m.papel]||''}</p>${m.papel==='dev'?`<div class="setrow" style="margin:0 0 14px"><div class="l"><b>Ver como Mod2</b><span>Só pra testar, só neste aparelho</span></div><button class="switch" role="switch" aria-checked="${S.role==='mod2'}" data-act="asmod2" aria-label="Ver o app como Mod2"></button></div>`:''}`}
+    <div class="setrow" style="margin:0 0 14px"><div class="l"><b>Modo claro</b><span>O app todo com fundo branco. A cor escolhida continua igual.</span></div><button class="switch" role="switch" aria-checked="${!!P.claro}" data-act="claro" aria-label="Modo claro do app"></button></div>
     <div class="eyebrow" style="margin-top:4px">Cor do app</div>
     <div class="colors" role="group" aria-label="Cor do app">${Object.entries(TEMAS).map(([k,t])=>`<button data-act="tema" data-t="${k}" aria-pressed="${(P.tema||'oceano')===k}"><i style="background:${t.grad}"></i>${t.nome}</button>`).join('')}</div>
     <div class="eyebrow" style="margin-top:14px">Criar a minha</div>
@@ -2493,6 +2512,7 @@ document.addEventListener('click',async ev=>{
     case 'ctl-toggle': toggleCtl();break;
     case 'logout': logout();break;
     case 'tema': P.tema=b.dataset.t;saveP();applyTema();renderOverlay();break;
+    case 'claro': P.claro=!P.claro;saveP();applyTema();renderOverlay();break;
     case 'gtab': S.gateTab=b.dataset.t;render();break;
     case 'pedir': pedirAcesso();break;
     case 'reset':{const e=$('#g-email'),er=$('#g-err');const r=await resetSenha(e&&e.value);if(er)er.textContent=r==='ok'?'Enviei um e-mail para você criar uma senha nova.':r;break}
