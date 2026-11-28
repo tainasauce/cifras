@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27r">
+<meta name="clave-build" content="2026-11-27s">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -690,6 +690,7 @@ html.claro .tabbar,html.claro .dock,html.claro .pick{border-top-color:var(--line
 html.claro .farw .fa{box-shadow:0 8px 22px rgba(30,30,60,.18)}
 html.claro .scrim{background:rgba(20,20,40,.28)}
 /* modo claro: textos bem legíveis */
+html:not(.claro) :is(.btn.live,.btn.save){color:#052e16}
 html.claro{--muted:#53555f;--line:rgba(20,20,40,.12);--danger:#dc2626;--live:#16a34a}
 html.claro .sheet{color:var(--ink)}
 html.claro .sheet .sec{color:#4b4d57}
@@ -1385,6 +1386,7 @@ function notesHTML(){
 }
 function skelHTML(n){return `<ul class="skel" aria-label="Carregando">${'<li><i></i><span><b></b><em></em></span></li>'.repeat(n)}</ul>`}
 function render(){
+  if(S.view!=='edit'&&document.body.classList.contains('picking'))document.body.classList.remove('picking');
   if(S.pubId){renderPublico();return}
   renderLive();
   if(B.mode!=='demo'&&(!S.authReady||!S.member)){
