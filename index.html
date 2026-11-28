@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cifras do ministério de louvor, com troca de tom, repertório dos cultos e modo ao vivo.">
 <meta name="theme-color" content="#16171c">
-<meta name="clave-build" content="2026-11-27q">
+<meta name="clave-build" content="2026-11-27r">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1536,7 +1536,7 @@ function songCalc(){
   return {s,o,capo,shapes,shift:shapes-o.idx,spell:keySpell(shapes,o.minor)};
 }
 /* "cap2", "capo 2", "capotraste 2" na observação: a cifra avisa e oferece usar o capo */
-function capoNota(s){const m=/\bcap(?:o|otraste)?\.?\s*(?:na\s*)?(\d{1,2})/i.exec((s&&s.notes)||'');const n=m?+m[1]:0;return n>=1&&n<=9?n:0}
+function capoNota(s){const m=/\bcap(?:o|otraste)?\.?\s*[:\-–]?\s*(?:(?:n[ao]|em)\s+)?(?:(?:a\s+)?casa\s*)?(\d{1,2})/i.exec((s&&s.notes)||'');const n=m?+m[1]:0;return n>=1&&n<=9?n:0}
 function capoBanner(s,o){const n=capoNota(s);if(!n||store.get('cifras:capohide:'+s.id,false))return '';
   const capo=store.get('cifras:capo:'+s.id,0),on=capo===n,des=keyName(mod(S.target-n),o.minor);
   return `<div class="capoban${on?' on':''}" id="capoban" role="status"><span class="ct">${on?`Com <b>capo na ${n}ª casa</b> · desenhos em ${esc(des)}`:`Essa cifra é tocada com <b>capo na ${n}ª casa</b>`}</span><button type="button" class="go" data-act="capo-set" data-n="${on?0:n}">${on?'Tirar capo':'Usar capo'}</button><button type="button" class="x" data-act="capo-x" aria-label="Fechar o aviso do capo">${ic('x')}</button></div>`}
